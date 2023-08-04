@@ -1,0 +1,11 @@
+"0",""
+"0","library(dplyr)"
+"0","library(janitor)"
+"0","library(stringr)"
+"0","library(SummaryTable)"
+"0","library(kableExtra)"
+"0",""
+"0","full_dat <- readxl::read_excel(""V:/Home Safe Eval 23_25/June 2023 Exploratory Data/7.12.23.Home Safe Data-FY 22-23 Q3.xlsx"", "
+"0","    sheet = ""Full Dataset"")"
+"2","Error: `path` does not exist: ‘V:/Home Safe Eval 23_25/June 2023 Exploratory Data/7.12.23.Home Safe Data-FY 22-23 Q3.xlsx’
+"

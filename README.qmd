@@ -1,0 +1,199 @@
+---
+title: "Data Exploration"
+format: 
+   gfm
+---
+
+# Read in data & libraries
+
+```{r, warning = F, message = F}
+library(dplyr)
+library(janitor)
+library(stringr)
+library(SummaryTable)
+
+full_dat <- readxl::read_excel("V:/Home Safe Eval 23_25/June 2023 Exploratory Data/7.12.23.Home Safe Data-FY 22-23 Q3.xlsx", 
+    sheet = "Full Dataset")
+
+full_dat <- full_dat %>% 
+  janitor::clean_names()
+```
+
+Break data out by 
+
+  - Demographics
+  - Intervention data
+  - Follow-up data
+  
+  
+Demographic data  
+  
+```{r}
+demo_dat <- full_dat %>% 
+  select(reporting_agency:other_income)
+```
+
+Case data 
+
+  - Intervention binary (yes/no)
+  - Case start date
+  - Client referred to CES
+
+```{r}
+case_dat <- full_dat %>% 
+  select(id, case_start_date:client_referred_to_ces)
+```
+
+Intervention data
+
+```{r}
+int_dat <- full_dat %>% 
+  select(id,
+         starts_with("intervention"))
+```
+
+
+```{r}
+int_dat_long <- int_dat %>% 
+  tidyr::pivot_longer(matches("type"))
+```
+
+
+Follow-up data
+
+```{r}
+follow_dat <- full_dat %>% 
+  select(id, case_closure_date:twelve_month_follow_up_substantiated_aps_reports)
+```
+
+# Clean up demographic data
+
+Make all variables of `character` lower case, trim trailing and starting white spaces and 'extra' inner spaces.
+
+```{r}
+clean_characters <- function(x){
+  str_to_lower(x) %>% 
+    str_trim() %>% 
+    str_squish()
+}
+
+demo_dat <- demo_dat %>% 
+  mutate(across(where(is.character), clean_characters))
+
+```
+
+Clean APS Report Location indicator, remove "'",", ca" and " ca" from strings
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, ", ca| ca|,ca", ""))
+```
+
+Examine APS Report Location
+
+```{r}
+demo_dat %>% 
+  count(aps_report_location)
+```
+
+## Question for Gina
+
+Should we drop everything from " -" (i.e. space and then dash)
+```{r}
+demo_dat %>%  
+  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, ", ca|\\ ca|,ca", "")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, "-")) %>% 
+  filter(str_detect(aps_report_location, "-"))
+```
+Counts of `gender`
+
+```{r}
+demo_dat %>% 
+  count(race_1, gender_identity)
+```
+
+  - Ask Gina, is the data transposition between `race` variables and `gender` being corrected prior to getting to us?
+
+What does the `gender` data look like when `race_1` equals`transgender` ,`female` or `male`
+
+```{r}
+demo_dat %>% 
+  filter(race_1 %in% c("female", "male", "transgender")) %>% 
+  count(gender_identity, race_1)
+```
+
+Was all the data with this issue just a matter of a column shift???
+
+One solution (remove these--re-shift and then re add)
+
+```{r}
+shifted_data <- demo_dat %>% 
+    filter(race_1 %in% c("female", "male", "transgender")) 
+
+# Anti join, remove shifted data
+demo_dat <- demo_dat %>% 
+      filter(!race_1 %in% c("female", "male", "transgender")) 
+
+
+# Fix the shifted data
+
+shifted_data <- shifted_data %>% 
+  mutate(
+    location_of_participation = gender_identity,
+    gender_identity = race_1,
+    race_1 = race_2,
+    race_2 = ethnicity
+  )
+
+```
+
+Glimpse shifted data
+
+```{r}
+shifted_data %>% 
+  count(gender_identity)
+
+shifted_data %>% 
+  count(race_1)
+
+shifted_data %>% 
+  count(ethnicity)
+```
+
+Looks good, now re-add the shifted data BACK to the main demo_dat.
+
+```{r}
+demo_dat <- demo_dat %>% 
+  bind_rows(shifted_data)
+
+# Remove the shifted data subset from RAM
+
+rm(shifted_data)
+```
+
+Check data dimensions.
+
+```{r}
+demo_dat %>% 
+  dim()
+```
+
+# Explore data quickly
+
+
+## Data types
+
+```{r}
+demo_dat %>% 
+  glimpse()
+```
+
+
+# Quick descriptives
+
+```{r}
+demo_dat %>% 
+  select(-id, -aps_report_date, -aps_report_location) %>% 
+  var_summarise()
+```

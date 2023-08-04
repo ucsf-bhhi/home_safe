@@ -1,0 +1,2 @@
+"0","follow_dat <- full_dat %>% "
+"0","  select(id, case_closure_date:twelve_month_follow_up_substantiated_aps_reports)"

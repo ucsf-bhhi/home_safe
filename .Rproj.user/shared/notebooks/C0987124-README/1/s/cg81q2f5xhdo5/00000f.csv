@@ -1,0 +1,46 @@
+"0","demo_dat %>% "
+"0","  glimpse()"
+"1","Rows: 14,690"
+"1",""
+"1","
+"
+"1","Columns: 33"
+"1",""
+"1","
+"
+"1","$ reporting_agency                                              [3m[38;5;246m<chr>[39m[23m ""calav…
+$ id                                                            [3m[38;5;246m<dbl>[39m[23m 177331…
+$ location_of_participation                                     [3m[38;5;246m<chr>[39m[23m NA, ""c…
+$ gender_identity                                               [3m[38;5;246m<chr>[39m[23m NA, ""u…
+$ race_1                                                        [3m[38;5;246m<chr>[39m[23m NA, ""b…
+$ race_2                                                        [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ ethnicity                                                     [3m[38;5;246m<chr>[39m[23m NA, ""n…
+$ current_marital_status                                        [3m[38;5;246m<chr>[39m[23m NA, ""n…
+$ sexual_orientation                                            [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ preferred_language                                            [3m[38;5;246m<chr>[39m[23m NA, ""e…
+$ veteran_status                                                [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ medi_cal                                                      [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ medicare                                                      [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ representative_payee_or_conservator                           [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ living_situation_upon_entry                                   [3m[38;5;246m<chr>[39m[23m NA, NA…
+$ monthly_rent_mortgage_contribution                            [3m[38;5;246m<dbl>[39m[23m NA, 0.…
+$ client_homeless_within_the_last_three_years                   [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ number_of_times_homelessness_occurred_in_the_last_three_years [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ total_duration_of_homelessness                                [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ last_period_of_homelessness                                   [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ current_eviction_or_foreclosures                              [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ previous_evictions_or_foreclosures                            [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ discharge_from_institution_in_the_last_six_months             [3m[38;5;246m<chr>[39m[23m NA, ""d…
+$ aps_report_date                                               [3m[38;5;246m<dttm>[39m[23m NA, N…
+$ aps_report_location                                           [3m[38;5;246m<chr>[39m[23m NA, ""c…
+$ abuse_by_other_financial                                      [3m[38;5;246m<chr>[39m[23m ""no"", …
+$ abuse_by_other_non_financial                                  [3m[38;5;246m<chr>[39m[23m ""no"", …
+$ self_neglect                                                  [3m[38;5;246m<chr>[39m[23m ""no"", …
+$ reporting_source                                              [3m[38;5;246m<chr>[39m[23m NA, ""u…
+$ previous_aps_involvement                                      [3m[38;5;246m<chr>[39m[23m NA, ""y…
+$ income_from_benefits                                          [3m[38;5;246m<dbl>[39m[23m 0, 0, …
+$ work_for_pay                                                  [3m[38;5;246m<dbl>[39m[23m NA, 0,…
+$ other_income                                                  [3m[38;5;246m<dbl>[39m[23m 0, 0, …"
+"1",""
+"1","
+"

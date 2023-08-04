@@ -1,0 +1,3 @@
+"0","demo_dat %>% "
+"0","  filter(race_1 %in% c(""female"", ""male"", ""transgender"")) %>% "
+"0","  count(gender_identity, race_1)"
