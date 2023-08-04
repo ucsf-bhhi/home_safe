@@ -1,0 +1,138 @@
+---
+title: "Cleaning Demographic Data"
+author: "Sara Colom"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    df_print: kable
+---
+
+
+# Read in data & libraries
+
+```{r, Read in Data & Libraries, warning = F, message = F}
+source("R/helpers.R")
+```
+
+
+
+# Clean up demographic data
+
+Make all variables of `character` lower case, trim trailing and starting white spaces and 'extra' inner spaces.
+
+```{r}
+clean_characters <- function(x){
+  str_to_lower(x) %>% 
+    str_trim() %>% 
+    str_squish()
+}
+
+demo_dat <- demo_dat %>% 
+  mutate(across(where(is.character), clean_characters))
+
+```
+
+Clean APS Report Location indicator, remove "'",", ca" and " ca" from strings
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, ", ca| ca|,ca", ""))
+```
+
+Examine APS Report Location
+
+```{r}
+demo_dat %>% 
+  count(aps_report_location)
+```
+
+## Question for Gina
+
+Should we drop everything from " -" (i.e. space and then dash)
+```{r}
+demo_dat %>%  
+  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, ", ca|\\ ca|,ca", "")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, "-")) %>% 
+  filter(str_detect(aps_report_location, "-"))
+```
+
+Counts of `gender`
+
+```{r}
+demo_dat %>% 
+  count(race_1, gender_identity)
+```
+
+  - Ask Gina, is the data transposition between `race` variables and `gender` being corrected prior to getting to us?
+
+What does the `gender` data look like when `race_1` equals`transgender` ,`female` or `male`
+
+```{r}
+demo_dat %>% 
+  filter(race_1 %in% c("female", "male", "transgender")) %>% 
+  count(gender_identity, race_1)
+```
+
+Was all the data with this issue just a matter of a column shift???
+
+One solution (remove these--re-shift and then re add)
+
+```{r}
+shifted_data <- demo_dat %>% 
+    filter(race_1 %in% c("female", "male", "transgender")) 
+
+# Anti join, remove shifted data
+demo_dat <- demo_dat %>% 
+      filter(!race_1 %in% c("female", "male", "transgender")) 
+
+
+# Fix the shifted data
+
+shifted_data <- shifted_data %>% 
+  mutate(
+    location_of_participation = gender_identity,
+    gender_identity = race_1,
+    race_1 = race_2,
+    race_2 = ethnicity
+  )
+
+```
+
+Glimpse shifted data
+
+```{r}
+shifted_data %>% 
+  count(gender_identity)
+
+shifted_data %>% 
+  count(race_1)
+
+shifted_data %>% 
+  count(ethnicity)
+```
+
+Looks good, now re-add the shifted data BACK to the main demo_dat.
+
+```{r}
+demo_dat <- demo_dat %>% 
+  bind_rows(shifted_data)
+
+# Remove the shifted data subset from RAM
+
+rm(shifted_data)
+```
+
+Check data dimensions.
+
+```{r}
+demo_dat %>% 
+  dim()
+```
+
+# Re-coding variables
+
+```{r}
+
+
+```
