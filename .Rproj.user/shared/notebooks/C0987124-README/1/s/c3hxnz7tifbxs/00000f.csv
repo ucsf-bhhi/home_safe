@@ -1,3 +1,0 @@
-"0","int_dat <- full_dat %>% "
-"0","  select(id,"
-"0","         starts_with(""intervention""))"
