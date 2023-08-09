@@ -1,4 +1,0 @@
-"0","demo_dat %>%  "
-"0","  mutate(aps_report_location = str_replace(aps_report_location, ""'"", """")) %>% "
-"0","  mutate(aps_report_location = str_replace(aps_report_location, "", ca|\\ ca|,ca"", """")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, ""-"")) %>% "
-"0","  filter(str_detect(aps_report_location, ""-""))"
