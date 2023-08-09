@@ -431,6 +431,18 @@ id
 
 Display data missing-ness.
 
+``` r
+missing_count %>% 
+  ggplot(aes(reorder(variable, -freq_missing), freq_missing)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1)) +
+  ylab("Frequency of missing data") +
+  xlab("Variable") +
+  scale_y_continuous(labels = scales::percent) 
+```
+
+![](cleaning_intervention_data_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 Counts of intervention types.
 
 ``` r
