@@ -1,0 +1,57 @@
+---
+title: "Cleaning intervention data"
+author: "Sara Colom"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    df_print: kable
+---
+
+
+```{r, warning = F, message = F}
+source("R/helpers.R")
+```
+
+
+Quick look at the data
+
+```{r}
+int_dat %>% 
+  glimpse()
+```
+
+# Check data missingness
+
+
+```{r}
+var_ls <- names(int_dat)
+
+missing_count <- purrr::map2_df(rep(list(int_dat), length(var_ls)), var_ls, missing_count) %>% 
+        mutate(across(where(is.numeric), ~round(.x, 3))) %>% 
+        arrange(desc(freq_missing))
+
+missing_count
+```
+
+Display data missing-ness.
+
+```{r}
+
+```
+
+Counts of intervention types.
+
+```{r}
+int_type <- int_dat %>% 
+        select(id, matches("type")) %>% 
+        pivot_longer(matches("type"), names_to = "intervention") %>% 
+        filter(!is.na(value)) %>% 
+        mutate(value = clean_characters(value))
+
+int_type %>% 
+  count(value)
+  
+```
+
+
+
