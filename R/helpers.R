@@ -5,6 +5,7 @@ library(SummaryTable)
 library(kableExtra)
 library(ggplot2)
 library(tidyr)
+library(scales)
 
 source("R/count_missing.R")
 source("R/cleaning_functions.R")
