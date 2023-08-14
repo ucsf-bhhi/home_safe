@@ -14,6 +14,10 @@ output:
 source("R/helpers.R")
 ```
 
+```{r}
+demo_dat %>% 
+  glimpse()
+```
 
 
 # Clean up demographic data
@@ -21,12 +25,6 @@ source("R/helpers.R")
 Make all variables of `character` lower case, trim trailing and starting white spaces and 'extra' inner spaces.
 
 ```{r}
-clean_characters <- function(x){
-  str_to_lower(x) %>% 
-    str_trim() %>% 
-    str_squish()
-}
-
 demo_dat <- demo_dat %>% 
   mutate(across(where(is.character), clean_characters))
 
@@ -52,9 +50,85 @@ demo_dat %>%
 Should we drop everything from " -" (i.e. space and then dash)
 ```{r}
 demo_dat %>%  
-  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
-  mutate(aps_report_location = str_replace(aps_report_location, ", ca|\\ ca|,ca", "")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, "-")) %>% 
+  count(aps_report_location) %>% 
+  filter(str_detect(aps_report_location, "-")) %>% 
   filter(str_detect(aps_report_location, "-"))
+```
+
+replace all locations that contain Roseville in the name to just Roseville as a new location variable 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_location_recode = case_when(str_detect(aps_report_location,"rosev") ~ "roseville",
+                                      
+                                         TRUE ~ aps_report_location))
+```
+
+sanity check
+```{r}
+demo_dat %>% 
+  count(aps_report_location, aps_location_recode) %>% 
+  filter(str_starts(aps_report_location, "r"))
+```
+
+Race_1 - replace american indian/alaskan native with american indian/alaskan native/indigenous. Replace asian with asian/asian american. Replace black/african american with black/african american/african. Replace pacific islander/native hawaiian with native hawaiian/pacific islander. Replace whte with white. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_1_recode = case_when(str_starts(race_1,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_1, "asian") ~ "asian/asian american",
+                                      str_starts(race_1, "bla") ~ "black/african american/african",
+                                      str_starts(race_1, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_1, "wh") ~ "white",
+                                      
+                                         TRUE ~ race_1))
+```
+
+Sanity check
+```{r}
+demo_dat %>% 
+  count(race_1, race_1_recode)
+```
+
+race_2 - doing the same as for race_1, and replacing no applicable with not applicable
+
+### question - there's a lot of what looks like ethnicity data in this variable
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_2_recode = case_when(str_starts(race_2,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_2, "asian") ~ "asian/asian american",
+                                      str_starts(race_2, "bla") ~ "black/african american/african",
+                                      str_starts(race_2, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_2, "wh") ~ "white",
+                                   str_detect(race_2, "hisp") ~ "unknown",
+                                   str_detect(race_2, "unknown|unable|refused|not collected|applicable|verified|#|client|mex") ~ "unknown",
+                                   is.na(race_2) ~ "unknown",
+                                      
+                                         TRUE ~ race_2))
+```
+
+
+
+Ethnicity - replace all instances of different spellings or orders of hispanic/latino/a/x to hispanic/latinx. Also, replace all instances of different spellings or orders of not hispanic/latino to non-hispanic/latinx 
+
+### question to come back to, how to have two conditions met in case_when? i.e. how to have that it both starts with no and contains hispa
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(ethnicity_recode = case_when(str_starts(ethnicity, "no") ~ "non-hispanic/latinx",
+                                      str_detect(ethnicity,"hispa") ~ "hispanic/latinx", 
+                                      str_detect(race_2, "not hispanic|no hispanic") ~ "non-hispanic/latinx",
+                                      str_detect(race_2, "hispanic") ~ "hispanic/latinx",
+                                      str_detect(race_2, "mex") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "mex|puerto|cuban") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "unknown|#|applicable|data not|client|missing|rent") ~ "unknown",
+                                      is.na(ethnicity) ~ "unknown",
+                                      
+                                      
+                                         TRUE ~ ethnicity))
+```
+
+Sanity check 
+```{r}
+demo_dat %>% 
+  count(ethnicity, ethnicity_recode) 
 ```
 
 Counts of `gender`
