@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-08-03
+2023-08-09
 
 # Read in data & libraries
 
@@ -9,18 +9,52 @@ Sara Colom
 source("R/helpers.R")
 ```
 
+``` r
+demo_dat %>% 
+  glimpse()
+```
+
+    ## Rows: 14,690
+    ## Columns: 32
+    ## $ id                                                            <dbl> 116726, …
+    ## $ location_of_participation                                     <chr> NA, NA, …
+    ## $ gender_identity                                               <chr> "29 Palm…
+    ## $ race_1                                                        <chr> "Female"…
+    ## $ race_2                                                        <chr> "Unknown…
+    ## $ ethnicity                                                     <chr> "Data No…
+    ## $ current_marital_status                                        <chr> "Unknown…
+    ## $ sexual_orientation                                            <chr> "English…
+    ## $ preferred_language                                            <chr> "No", "N…
+    ## $ veteran_status                                                <chr> "Yes", "…
+    ## $ medi_cal                                                      <chr> "No", "Y…
+    ## $ medicare                                                      <chr> "No", "N…
+    ## $ representative_payee_or_conservator                           <chr> "Homeles…
+    ## $ living_situation_upon_entry                                   <chr> "0", "0"…
+    ## $ monthly_rent_mortgage_contribution                            <dbl> NA, NA, …
+    ## $ client_homeless_within_the_last_three_years                   <chr> "Current…
+    ## $ number_of_times_homelessness_occurred_in_the_last_three_years <chr> "No", "Y…
+    ## $ total_duration_of_homelessness                                <chr> "Yes", "…
+    ## $ last_period_of_homelessness                                   <chr> "No", "N…
+    ## $ current_eviction_or_foreclosures                              <chr> "No", "N…
+    ## $ previous_evictions_or_foreclosures                            <chr> "44789.7…
+    ## $ discharge_from_institution_in_the_last_six_months             <chr> "No", "N…
+    ## $ aps_report_date                                               <dttm> 1902-09…
+    ## $ aps_report_location                                           <chr> "Tempora…
+    ## $ abuse_by_other_financial                                      <chr> NA, NA, …
+    ## $ abuse_by_other_non_financial                                  <chr> NA, NA, …
+    ## $ self_neglect                                                  <chr> NA, NA, …
+    ## $ reporting_source                                              <chr> NA, NA, …
+    ## $ previous_aps_involvement                                      <chr> NA, NA, …
+    ## $ income_from_benefits                                          <dbl> NA, NA, …
+    ## $ work_for_pay                                                  <dbl> NA, NA, …
+    ## $ other_income                                                  <dbl> NA, NA, …
+
 # Clean up demographic data
 
 Make all variables of `character` lower case, trim trailing and starting
 white spaces and ‘extra’ inner spaces.
 
 ``` r
-clean_characters <- function(x){
-  str_to_lower(x) %>% 
-    str_trim() %>% 
-    str_squish()
-}
-
 demo_dat <- demo_dat %>% 
   mutate(across(where(is.character), clean_characters))
 ```
@@ -6130,8 +6164,8 @@ Should we drop everything from ” -” (i.e. space and then dash)
 
 ``` r
 demo_dat %>%  
-  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
-  mutate(aps_report_location = str_replace(aps_report_location, ", ca|\\ ca|,ca", "")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, "-")) %>% 
+  count(aps_report_location) %>% 
+  filter(str_detect(aps_report_location, "-")) %>% 
   filter(str_detect(aps_report_location, "-"))
 ```
 
@@ -6192,6 +6226,673 @@ rocklin-
 <tr>
 <td style="text-align:left;">
 twenty-nine palms
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+replace all locations that contain Roseville in the name to just
+Roseville as a new location variable
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(aps_location_recode = case_when(str_detect(aps_report_location,"rosev") ~ "roseville",
+                                      
+                                         TRUE ~ aps_report_location))
+```
+
+sanity check
+
+``` r
+demo_dat %>% 
+  count(aps_report_location, aps_location_recode) %>% 
+  filter(str_starts(aps_report_location, "r"))
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+aps_report_location
+</th>
+<th style="text-align:left;">
+aps_location_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ramona
+</td>
+<td style="text-align:left;">
+ramona
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ranch mirage
+</td>
+<td style="text-align:left;">
+ranch mirage
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho
+</td>
+<td style="text-align:left;">
+rancho
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho bernardo
+</td>
+<td style="text-align:left;">
+rancho bernardo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cordova
+</td>
+<td style="text-align:left;">
+rancho cordova
+</td>
+<td style="text-align:right;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cucamong
+</td>
+<td style="text-align:left;">
+rancho cucamong
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cucamonga
+</td>
+<td style="text-align:left;">
+rancho cucamonga
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho mirage
+</td>
+<td style="text-align:left;">
+rancho mirage
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho palos verdes
+</td>
+<td style="text-align:left;">
+rancho palos verdes
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho santa fe
+</td>
+<td style="text-align:left;">
+rancho santa fe
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho santa margarita
+</td>
+<td style="text-align:left;">
+rancho santa margarita
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+red bluff
+</td>
+<td style="text-align:left;">
+red bluff
+</td>
+<td style="text-align:right;">
+71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redcrest
+</td>
+<td style="text-align:left;">
+redcrest
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redding
+</td>
+<td style="text-align:left;">
+redding
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redlands
+</td>
+<td style="text-align:left;">
+redlands
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redondo beach
+</td>
+<td style="text-align:left;">
+redondo beach
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redway
+</td>
+<td style="text-align:left;">
+redway
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redwood city
+</td>
+<td style="text-align:left;">
+redwood city
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+redwood valley
+</td>
+<td style="text-align:left;">
+redwood valley
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reedley
+</td>
+<td style="text-align:left;">
+reedley
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent payment
+</td>
+<td style="text-align:left;">
+rent payment
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+renting a room at: 1437 stone hearth ,lincoln
+</td>
+<td style="text-align:left;">
+renting a room at: 1437 stone hearth ,lincoln
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+reseda
+</td>
+<td style="text-align:left;">
+reseda
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rialto
+</td>
+<td style="text-align:left;">
+rialto
+</td>
+<td style="text-align:right;">
+58
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+richmond
+</td>
+<td style="text-align:left;">
+richmond
+</td>
+<td style="text-align:right;">
+56
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+richomond
+</td>
+<td style="text-align:left;">
+richomond
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ridegcrest
+</td>
+<td style="text-align:left;">
+ridegcrest
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ridgecrest
+</td>
+<td style="text-align:left;">
+ridgecrest
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rio dell
+</td>
+<td style="text-align:left;">
+rio dell
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rio linda
+</td>
+<td style="text-align:left;">
+rio linda
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rio vista
+</td>
+<td style="text-align:left;">
+rio vista
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+river pines
+</td>
+<td style="text-align:left;">
+river pines
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverbank
+</td>
+<td style="text-align:left;">
+riverbank
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverdale
+</td>
+<td style="text-align:left;">
+riverdale
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverisde
+</td>
+<td style="text-align:left;">
+riverisde
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+795
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riveside
+</td>
+<td style="text-align:left;">
+riveside
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rocklin
+</td>
+<td style="text-align:left;">
+rocklin
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rocklin 95677
+</td>
+<td style="text-align:left;">
+rocklin 95677
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rocklin-
+</td>
+<td style="text-align:left;">
+rocklin-
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rodeo
+</td>
+<td style="text-align:left;">
+rodeo
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rohnert park
+</td>
+<td style="text-align:left;">
+rohnert park
+</td>
+<td style="text-align:right;">
+41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+romoland
+</td>
+<td style="text-align:left;">
+romoland
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rosamond
+</td>
+<td style="text-align:left;">
+rosamond
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rosemead
+</td>
+<td style="text-align:left;">
+rosemead
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rosevile snf oakridgere center
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+roseville 95661
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+roseville 95661 second home safe intervention 22
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+roseville 95678
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rough & ready
+</td>
+<td style="text-align:left;">
+rough & ready
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rough and ready
+</td>
+<td style="text-align:left;">
+rough and ready
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rough and ready 95975
+</td>
+<td style="text-align:left;">
+rough and ready 95975
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rowland heights
+</td>
+<td style="text-align:left;">
+rowland heights
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rubidoux
+</td>
+<td style="text-align:left;">
+rubidoux
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+running springs
+</td>
+<td style="text-align:left;">
+running springs
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ruth
+</td>
+<td style="text-align:left;">
+ruth
 </td>
 <td style="text-align:right;">
 1
@@ -9590,6 +10291,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 14690    32
+    ## [1] 14690    33
 
 # Re-coding variables
