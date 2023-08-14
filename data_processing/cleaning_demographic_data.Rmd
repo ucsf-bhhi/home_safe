@@ -70,6 +70,54 @@ demo_dat %>%
   filter(str_starts(aps_report_location, "r"))
 ```
 
+Race_1 - replace american indian/alaskan native with american indian/alaskan native/indigenous. Replace asian with asian/asian american. Replace black/african american with black/african american/african. Replace pacific islander/native hawaiian with native hawaiian/pacific islander. Replace whte with white. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_1_recode = case_when(str_starts(race_1,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_1, "asian") ~ "asian/asian american",
+                                      str_starts(race_1, "bla") ~ "black/african american/african",
+                                      str_starts(race_1, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_1, "wh") ~ "white",
+                                      
+                                         TRUE ~ race_1))
+```
+Sanity check
+```{r}
+demo_dat %>% 
+  count(race_1, race_1_recode)
+```
+
+race_2 - doing the same as for race_1, and replacing no applicable with not applicable
+
+### question - there's a lot of what looks like ethnicity data in this variable
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_2_recode = case_when(str_starts(race_2,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_2, "asian") ~ "asian/asian american",
+                                      str_starts(race_2, "bla") ~ "black/african american/african",
+                                      str_starts(race_2, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_2, "wh") ~ "white",
+                                      
+                                         TRUE ~ race_2))
+```
+
+
+Ethnicity - replace all instances of different spellings or orders of hispanic/latino/a/x to Hispanic/Latin(a)(o)(x). Also, replace all instances of different spellings or orders of not hispanic/latino to Non-Hispanic/Latin(a)(o)(x) 
+
+### question to come back to, how to have two conditions met in case_when? i.e. how to have that it both starts with no and contains hispa
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(ethnicity_recode = case_when(str_starts(ethnicity,"hispa") ~ "hispanic/latin(a)(o)(x)", 
+                                      str_starts(ethnicity, "no") ~ "non-hispanic/latin(a)(o)(x)",
+                                      
+                                         TRUE ~ ethnicity))
+```
+
+Sanity check 
+```{r}
+demo_dat %>% 
+  count(ethnicity, ethnicity_recode) 
+```
 
 Counts of `gender`
 
