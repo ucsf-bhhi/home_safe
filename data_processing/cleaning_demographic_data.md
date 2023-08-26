@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-08-09
+2023-08-15
 
 # Read in data & libraries
 
@@ -15,8 +15,9 @@ demo_dat %>%
 ```
 
     ## Rows: 14,690
-    ## Columns: 32
+    ## Columns: 33
     ## $ id                                                            <dbl> 116726, …
+    ## $ reporting_agency                                              <chr> "San Ber…
     ## $ location_of_participation                                     <chr> NA, NA, …
     ## $ gender_identity                                               <chr> "29 Palm…
     ## $ race_1                                                        <chr> "Female"…
@@ -6903,6 +6904,5458 @@ ruth
 
 </div>
 
+Race_1 - replace american indian/alaskan native with american
+indian/alaskan native/indigenous. Replace asian with asian/asian
+american. Replace black/african american with black/african
+american/african. Replace pacific islander/native hawaiian with native
+hawaiian/pacific islander. Replace whte with white. Change all unknowns,
+including data not collected and n/a to “unknown”.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(race_1_recode = case_when(str_detect(race_1,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_1, "asian") ~ "asian/asian american",
+                                      str_starts(race_1, "bla") ~ "black/african american/african",
+                                      str_starts(race_1, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_1, "wh") ~ "white",
+                                   str_detect(race_1, "unkn|#|client|collected") ~ "unknown",
+                                   is.na(race_1) ~ "unknown",
+                                      
+                                         TRUE ~ race_1))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(race_1, race_1_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+race_1
+</th>
+<th style="text-align:left;">
+race_1\_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44252
+</td>
+<td style="text-align:left;">
+44252
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44376
+</td>
+<td style="text-align:left;">
+44376
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44515
+</td>
+<td style="text-align:left;">
+44515
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44519
+</td>
+<td style="text-align:left;">
+44519
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44600
+</td>
+<td style="text-align:left;">
+44600
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44769
+</td>
+<td style="text-align:left;">
+44769
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44774
+</td>
+<td style="text-align:left;">
+44774
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+asian
+</td>
+<td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:right;">
+94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+195
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+585
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+1109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+814
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+female
+</td>
+<td style="text-align:left;">
+female
+</td>
+<td style="text-align:right;">
+586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+401
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+native hawaiian/pacific islander
+</td>
+<td style="text-align:left;">
+native hawaiian/pacific islander
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+1292
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pacific islander/native hawaiian
+</td>
+<td style="text-align:left;">
+native hawaiian/pacific islander
+</td>
+<td style="text-align:right;">
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+transgender
+</td>
+<td style="text-align:left;">
+transgender
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1819
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:right;">
+7311
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+whte
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+198
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+race_2 - doing the same as for race_1, and replacing no applicable with
+not applicable, updating “unknown”. For those who put an ethnicity
+response in race_2, replacing with “unknown” and updating those in the
+ethnicity variable.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(race_2_recode = case_when(str_starts(race_2,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_2, "asian") ~ "asian/asian american",
+                                      str_starts(race_2, "bla") ~ "black/african american/african",
+                                      str_starts(race_2, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_2, "wh") ~ "white",
+                                   str_detect(race_2, "hisp") ~ "unknown",
+                                   str_detect(race_2, "unknown|unable|refused|not collected|applicable|verified|#|client|mex") ~ "unknown",
+                                   is.na(race_2) ~ "unknown",
+                                      
+                                         TRUE ~ race_2))
+```
+
+Sanity check for race_2
+
+``` r
+demo_dat %>% 
+  count(race_2, race_2_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+race_2
+</th>
+<th style="text-align:left;">
+race_2\_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+asian
+</td>
+<td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:right;">
+203
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+9780
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latino/a/spanish origin
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+458
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+98
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pacific islander/native hawaiian
+</td>
+<td style="text-align:left;">
+native hawaiian/pacific islander
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unable to verify
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+912
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+verified - program staff
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:right;">
+773
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2376
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Ethnicity - replace all instances of different spellings or orders of
+hispanic/latino/a/x to hispanic/latinx. Changing mexican/chicano, cuban,
+other hispanic/latino, and puerto rican to hispanic/latinx. Also,
+replace all instances of different spellings or orders of not
+hispanic/latino to non-hispanic/latinx
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(ethnicity_recode = case_when(str_starts(ethnicity, "no") ~ "non-hispanic/latinx",
+                                      str_detect(ethnicity,"hispa") ~ "hispanic/latinx", 
+                                      str_detect(race_2, "not hispanic|no hispanic") ~ "non-hispanic/latinx",
+                                      str_detect(race_2, "hispanic") ~ "hispanic/latinx",
+                                      str_detect(race_2, "mex") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "mex|puerto|cuban") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "unknown|#|applicable|data not|client|missing|rent") ~ "unknown",
+                                      is.na(ethnicity) ~ "unknown",
+                                      
+                                      
+                                         TRUE ~ ethnicity))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(ethnicity, race_2, ethnicity_recode) 
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+ethnicity
+</th>
+<th style="text-align:left;">
+race_2
+</th>
+<th style="text-align:left;">
+ethnicity_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+836
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cuban
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cuban
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+asian
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+194
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1231
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+pacific islander/native hawaiian
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+148
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+597
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+87
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1332
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(o)(a)(x)
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latino
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latino/a/spanish origin
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latino/a/spanish origin
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latino/a/spanish origin
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+missing
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+4454
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+305
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+asian
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+1208
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+no applicable
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+182
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+124
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+146
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+449
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanci/latino
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+299
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+no applicable
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+101
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+252
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+puerto rican
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+puerto rican
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+verified - program staff
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unable to verify
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+329
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+385
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+989
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+hispanic/latino/a/spanish origin
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+no applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+123
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+not hispanic/latino
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+other hispanic/latino
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+210
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+197
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+current_martial_status - replace unknowns and data not collected with
+“unknown”.
+
+### Question: How would we like to recode domestic partnership? (Lump with married?) What to do with single? (100/103 records with single are from LA) ALSO, what to do with “no”? (both from Merced, might get fixed when column shift issue is solved)
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(current_marital_recode = case_when(str_detect(current_marital_status, "unknown|#|applicable|data not") ~ "unknown",
+                                      is.na(current_marital_status) ~ "unknown",
+                                         TRUE ~ current_marital_status))
+```
+
+Sanity check for marital status
+
+``` r
+demo_dat %>% 
+  count(current_marital_status, current_marital_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+current_marital_status
+</th>
+<th style="text-align:left;">
+current_marital_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2759
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+divorced
+</td>
+<td style="text-align:left;">
+divorced
+</td>
+<td style="text-align:right;">
+1909
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+domestic partnership
+</td>
+<td style="text-align:left;">
+domestic partnership
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+married
+</td>
+<td style="text-align:left;">
+married
+</td>
+<td style="text-align:right;">
+1395
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+never married
+</td>
+<td style="text-align:left;">
+never married
+</td>
+<td style="text-align:right;">
+1802
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not married/living with partner
+</td>
+<td style="text-align:left;">
+not married/living with partner
+</td>
+<td style="text-align:right;">
+1557
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+separated
+</td>
+<td style="text-align:left;">
+separated
+</td>
+<td style="text-align:right;">
+453
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+single
+</td>
+<td style="text-align:left;">
+single
+</td>
+<td style="text-align:right;">
+104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:right;">
+92
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+295
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2337
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+widowed
+</td>
+<td style="text-align:left;">
+widowed
+</td>
+<td style="text-align:right;">
+1612
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+312
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+sexual_orientation - changed straight to “straight/heterosexual” to
+match CDSS variable. Changed all unknown or declined or missing
+responses to “unknown”
+
+### Question: do we want to lump “another sexual orientation” or “other” into something? Perhaps an “other sexual orientation” bucket?
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(sexual_orientation_recode = case_when(str_detect(sexual_orientation, "strai") ~ "straight/heterosexual",
+                                               str_detect(sexual_orientation, "unknown|#|client|decline|data not") ~ "unknown",
+                                      is.na(sexual_orientation) ~ "unknown",
+                                         TRUE ~ sexual_orientation))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(sexual_orientation, sexual_orientation_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+sexual_orientation
+</th>
+<th style="text-align:left;">
+sexual_orientation_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+another sexual orientation
+</td>
+<td style="text-align:left;">
+another sexual orientation
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bisexual
+</td>
+<td style="text-align:left;">
+bisexual
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1449
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+147
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1939
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+decline to state
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:right;">
+971
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:right;">
+166
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mandarin/cantonese
+</td>
+<td style="text-align:left;">
+mandarin/cantonese
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+questioning
+</td>
+<td style="text-align:left;">
+questioning
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+spanish
+</td>
+<td style="text-align:left;">
+spanish
+</td>
+<td style="text-align:right;">
+49
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+straight
+</td>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:right;">
+6407
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+253
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2902
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+211
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+preferred_language - leaving alone the responses that don’t appear to be
+languages for now. Combining the mandarin/cantonese responses. Changing
+unknowns and missings to “unknown”.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(preferred_language_recode = case_when(str_detect(preferred_language, "mandarin") ~ "mandarin/cantonese",
+                                               str_detect(preferred_language, "unknown|#|data not") ~ "unknown",
+                                               is.na(preferred_language) ~ "unknown",
+                                               TRUE ~ preferred_language))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(preferred_language, preferred_language_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+preferred_language
+</th>
+<th style="text-align:left;">
+preferred_language_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+\#
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44252
+</td>
+<td style="text-align:left;">
+44252
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44376
+</td>
+<td style="text-align:left;">
+44376
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44519
+</td>
+<td style="text-align:left;">
+44519
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44600
+</td>
+<td style="text-align:left;">
+44600
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44769
+</td>
+<td style="text-align:left;">
+44769
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44774
+</td>
+<td style="text-align:left;">
+44774
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+214
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:right;">
+11996
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+korean
+</td>
+<td style="text-align:left;">
+korean
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mandarin-cantonese
+</td>
+<td style="text-align:left;">
+mandarin/cantonese
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mandarin/cantonese
+</td>
+<td style="text-align:left;">
+mandarin/cantonese
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+944
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+193
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+spanish
+</td>
+<td style="text-align:left;">
+spanish
+</td>
+<td style="text-align:right;">
+892
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:right;">
+41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tagalog
+</td>
+<td style="text-align:left;">
+tagalog
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vietnamese
+</td>
+<td style="text-align:left;">
+vietnamese
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+74
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+215
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+veteran_status - combining client refused, unknown, missing, unable to
+verify, verified by staff, and “b” into “unknown”. Leaving the response
+“none” for now to see if it’s a column shift issue, will revisit.
+
+### Question: I’m guessing “none” should be lumped with “no”?
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(veteran_status_recode = case_when(str_detect(veteran_status, "client|unknown|#|verif|b|data not|n/a") ~ "unknown",
+                                           is.na(veteran_status) ~ "unknown",
+                                           TRUE ~ veteran_status))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(veteran_status, veteran_status_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+veteran_status
+</th>
+<th style="text-align:left;">
+veteran_status_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+b
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+766
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1803
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:left;">
+english
+</td>
+<td style="text-align:right;">
+70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+8195
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+none
+</td>
+<td style="text-align:left;">
+none
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unable to verify
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1634
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+verified - program staff
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+1452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+755
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+medi_cal - combining the unknowns into one “unknown”
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(medi_cal_recode = case_when(str_detect(medi_cal, "client|unknown|#|data not") ~ "unknown",
+                                           is.na(medi_cal) ~ "unknown",
+                                           TRUE ~ medi_cal))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(medi_cal, medi_cal_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+medi_cal
+</th>
+<th style="text-align:left;">
+medi_cal_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5982
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+1216
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1289
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+4084
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2113
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+doing the same for medicare
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(medicare_recode = case_when(str_detect(medicare, "client|unknown|#|data not|n/a") ~ "unknown",
+                                           is.na(medicare) ~ "unknown",
+                                           TRUE ~ medicare))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(medicare, medicare_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+medicare
+</th>
+<th style="text-align:left;">
+medicare_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6504
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+1873
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1273
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+2900
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2136
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+representative payee or conservator: data is real messy, seems to have
+many values that shouldn’t be in this column. Will hold off until new
+dataset comes in to assess how much is a column shift issue.
+
+``` r
+demo_dat %>% 
+  count(representative_payee_or_conservator)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+representative_payee_or_conservator
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+22.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+23.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+25.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+26.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+26.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+26.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+28.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+28.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+28.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+29.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+29.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+29.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2no5no
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+30.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+30.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+32.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+32.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+32.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+33.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+33.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+33.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+34.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+34.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+35.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+35.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+35.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+37.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+38.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+38.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+38.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+42.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+42.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46.4
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+47.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+47.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+47.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+48.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+48.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+48.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51.0
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51.5
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.2
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.0
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.5
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58.0
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58.1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.8
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.7
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60.8
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.2
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.4
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.5
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+62.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.4
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.5
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.8
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.3
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.3
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.4
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.6
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.7
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65.9
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.3
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+66.9
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.0
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.3
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.6
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+67.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.2
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.3
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.4
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.7
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.8
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+69.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.1
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.2
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70.9
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.0
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.5
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+71.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+72.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+72.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+72.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+72.8
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+73.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+73.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+73.4
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+73.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+73.9
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+74.1
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+74.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+74.6
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75.7
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+76.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+76.4
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+76.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+76.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+76.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+77.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+77.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+78.0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+78.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+78.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+78.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+78.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+79.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+79.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+79.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80.5
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+81.6
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+82.0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+82.2
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+82.3
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+82.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+82.9
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+83.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+84.6
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+85.1
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+85.5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+85.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+86.7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+86.8
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+87.4
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:right;">
+7146
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless sheltered
+</td>
+<td style="text-align:right;">
+129
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless unsheltered
+</td>
+<td style="text-align:right;">
+157
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hotel no rights
+</td>
+<td style="text-align:right;">
+95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hotel with rights
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+2850
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+none
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner lives alone
+</td>
+<td style="text-align:right;">
+112
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner with others no rent
+</td>
+<td style="text-align:right;">
+51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner with others rent
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+201
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+854
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:right;">
+63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:right;">
+186
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+195
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+2158
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+living situation upon entry - leaving the numbers alone for now, I’m
+guessing many of them are rent amount, but will wait for column shift
+fix.
+
 Counts of `gender`
 
 ``` r
@@ -10291,6 +15744,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 14690    33
+    ## [1] 14690    43
 
 # Re-coding variables
