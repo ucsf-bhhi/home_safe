@@ -235,8 +235,102 @@ demo_dat %>%
   count(representative_payee_or_conservator)
 ```
 
-living situation upon entry - leaving the numbers alone for now, I'm guessing many of them are rent amount, but will wait for column shift fix. 
+living situation upon entry - changing the numbers to unknown for now, I'm guessing many of them are rent amount, but will wait for column shift fix to verify. Matching responses with dropdown options: combining all "homeless" responses into "homeless." Recoding "hotel" as temporary housing. Changing rent by client, rental by client, etc and "lease holder" into "rent leaseholder". Recoding descriptions of owner, whether living alone or with others, as "owner" (excluding the records where it says rental by owner).Changing "programpermanent-residential program" to "permanent-residential program" as that seems like a typo. Recoding "hospital facility" to "other". Combining unknown, n/a, data not collected as unknown. 
 
+###Questions for the group:
+    "hotel with rights" - I'm thinking this shouldn't be temporary housing, what do you all think? (currently it is lumped into temporary housing in recode)
+    "with others no rent"/"with others" - Is this akin to "staying with friends/family on a temp basis (temporary housing), is it "other permanent housing"?
+    "board and care facility"/"residential care facility"/SNF - in the dropdown, these are in both temporary- residential program and permanent- residential program options. 
+    "rent by owner" - is this rent leaseholder? (that is where I put it for now)
+    "shared housing"/"living in shared house"/"living alone" - rent leaseholder? other permanent housing? Could also be owner I suppose?
+    "living with family"/"living with relative" - this could be either temporary housing or other permanent housing..
+    "with others rent" - my guess is this should go under "other permanent housing" which includes in () "renting a room without a lease? 
+    
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(living_sit_entry_recode = case_when(str_detect(living_situation_upon_entry, "1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                            str_detect(living_situation_upon_entry, "homeless|homless|unsheltered") ~ "homeless",
+                                             str_detect(living_situation_upon_entry, "hotel") ~ "temporary housing",
+                                             str_detect(living_situation_upon_entry, "rent by|rental by|lease holder") ~ "rent leaseholder",
+                                             str_detect(living_situation_upon_entry, "owned|owner") ~ "owner",
+                                             str_detect(living_situation_upon_entry, "programperm") ~ "permanent- residential program",
+                                             str_detect(living_situation_upon_entry, "hospital") ~ "other",
+                                             str_detect(living_situation_upon_entry, "data not|unknown") ~ "unknown",
+                                             is.na(living_situation_upon_entry) ~ "unknown",
+                                          TRUE ~ living_situation_upon_entry))
+```
+
+
+sanity check
+```{r}
+demo_dat %>% 
+  count(living_situation_upon_entry, living_sit_entry_recode)
+```
+
+And! for a breakdown of which counties these hard to classify ones are coming up (it's many different ones it seems):
+```{r}
+demo_dat %>% 
+  count(living_sit_entry_recode, reporting_agency)
+```
+
+client homeless within the last 3 years - answers should be yes or no. Leaving numbers alone for now. Changing 3 years or longer, within the last year, within the last 3 years, currently homeless to "yes". Changing client was not homeless to "no". Combining doesn't know, refused, data not collected, unknown, blank as "unknown".
+
+Question: one response that is "n" - I'm guessing this might be no? But there is another response with n/a, which is what they might've been going for?
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(client_homeless_last_three_years_recode = case_when(str_detect(client_homeless_within_the_last_three_years, "three years or|within the last|currently homel") ~ "yes",
+                                                  str_detect(client_homeless_within_the_last_three_years, "client was not homele") ~ "no",
+                                                  str_detect(client_homeless_within_the_last_three_years, "doesn't know|refused|n/a|data not") ~ "unknown",
+                                                  is.na(client_homeless_within_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ client_homeless_within_the_last_three_years))
+```
+
+Sanity check
+```{r}
+demo_dat %>% 
+  count(client_homeless_within_the_last_three_years, client_homeless_last_three_years_recode)
+```
+
+Number of times homeless in the past 3 years - changing 0 to "client was not homeless", 1 to "one time", 2 to "two times", 3 to "three times" 4 and 4+ to "four or more times". Changing any "0-x" responses to unknown, since it seems the exact number is not known.. Changing refused, doesn't know, n/a, blank to "unknown". 
+
+### Question: 
+  99 is a response with 1366 answers, I'm wondering if this is the same as unknown? (like people we're just using a very big number as a placeholder?) Or just a very large number of times someone (many people) were unhoused? (Putting in unknown for now)
+  0-3 - where to put this one? (putting in unknown for now)
+  "currently homeless" - perhaps should just change to unknown? (unsure also if this is a column shift issue, same with "yes" and "no", leaving alone for now)
+  
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(number_times_homeless_recode = case_when(str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "0") ~ "client was not homeless",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99") ~ "unknown",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "1") ~ "one time",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
+                                                  is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
+```
+
+sanity check
+```{r}
+demo_dat %>% 
+  count(number_of_times_homelessness_occurred_in_the_last_three_years, number_times_homeless_recode)
+```
+
+Total duration of homelessness - Changing "0" to "client was not homeless". Leaving "yes" and "no" responses for now, as I think they're a column shift issue. 
+
+
+### Questions:
+  99 - same question as number of times
+  responses like "1", "2" - no units.. so not sure. My guess would be those are the number of months? (left as is for now)
+  "within the last 3 years" - can't really take a guess at duration, besides saying it's not more than 3 years?
+  "six months to one year" "& months to one year" - what to do?
+  
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(total_duration_homeless_recode = case_when(str_equal(total_duration_of_homelessness, "0") ~ "client was not homeless",
+                                                    
+                                                    TRUE ~ total_duration_of_homelessness))
+```
 
 
 
