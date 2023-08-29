@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-08-15
+2023-08-28
 
 # Read in data & libraries
 
@@ -12352,9 +12352,8347 @@ NA
 
 </div>
 
-living situation upon entry - leaving the numbers alone for now, I’m
-guessing many of them are rent amount, but will wait for column shift
-fix.
+living situation upon entry - changing the numbers to unknown for now,
+I’m guessing many of them are rent amount, but will wait for column
+shift fix to verify. Matching responses with dropdown options: combining
+all “homeless” responses into “homeless.” Recoding “hotel” as temporary
+housing. Changing rent by client, rental by client, etc and “lease
+holder” into “rent leaseholder”. Recoding descriptions of owner, whether
+living alone or with others, as “owner” (excluding the records where it
+says rental by owner).Changing “programpermanent-residential program” to
+“permanent-residential program” as that seems like a typo. Recoding
+“hospital facility” to “other”. Combining unknown, n/a, data not
+collected as unknown.
+
+\###Questions for the group: “hotel with rights” - I’m thinking this
+shouldn’t be temporary housing, what do you all think? (currently it is
+lumped into temporary housing in recode) “with others no rent”/“with
+others” - Is this akin to “staying with friends/family on a temp basis
+(temporary housing), is it”other permanent housing”? “board and care
+facility”/“residential care facility”/SNF - in the dropdown, these are
+in both temporary- residential program and permanent- residential
+program options. “rent by owner” - is this rent leaseholder? (that is
+where I put it for now) “shared housing”/“living in shared
+house”/“living alone” - rent leaseholder? other permanent housing? Could
+also be owner I suppose? “living with family”/“living with relative” -
+this could be either temporary housing or other permanent housing..
+“with others rent” - my guess is this should go under “other permanent
+housing” which includes in () “renting a room without a lease?
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(living_sit_entry_recode = case_when(str_detect(living_situation_upon_entry, "1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                            str_detect(living_situation_upon_entry, "homeless|homless|unsheltered") ~ "homeless",
+                                             str_detect(living_situation_upon_entry, "hotel") ~ "temporary housing",
+                                             str_detect(living_situation_upon_entry, "rent by|rental by|lease holder") ~ "rent leaseholder",
+                                             str_detect(living_situation_upon_entry, "owned|owner") ~ "owner",
+                                             str_detect(living_situation_upon_entry, "programperm") ~ "permanent- residential program",
+                                             str_detect(living_situation_upon_entry, "hospital") ~ "other",
+                                             str_detect(living_situation_upon_entry, "data not|unknown") ~ "unknown",
+                                             is.na(living_situation_upon_entry) ~ "unknown",
+                                          TRUE ~ living_situation_upon_entry))
+```
+
+sanity check
+
+``` r
+demo_dat %>% 
+  count(living_situation_upon_entry, living_sit_entry_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+living_situation_upon_entry
+</th>
+<th style="text-align:left;">
+living_sit_entry_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+345
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1000
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1006
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1015
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1020
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1023
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1027
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1030
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1036
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1040
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1050
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1058
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1070
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1075
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1080
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1085
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1090
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1093
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1095
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1100
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1133
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1134
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1140
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1145
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1188
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1193
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1195
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1200
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1210
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1211
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1230
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1238
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1249
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1250
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1251.78
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1263
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1275
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1293
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1295
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1300
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1306
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1313
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1317
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1320
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1321
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1364
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1368
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1375
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1380
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1400
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1440
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1441
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1453
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1500
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1506
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1553
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+156
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1570
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1600
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1650
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1668
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1685
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1700
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+175
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1750
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1775
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1800
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1850
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1862
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1900
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1925
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1937
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1980
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1988
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+200
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2000
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2066
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2100
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+215
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+216
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+224
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2300
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+234
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2346
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2359
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2400
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+247
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+250
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2500
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+254
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+255
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2550
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2600
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2700
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+280
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2800
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2835
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+289
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+290
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2900
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+298
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+300
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3000
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+305
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+308
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3140
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+342
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+350
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+360
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+368
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+371
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+375
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+377
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3776
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+384
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+390
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+400
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+42
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+420
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+423
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+429
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+438
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+440
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+448
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+45
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+450
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+451
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+459
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+460
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+462.5
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+470
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+482
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+485
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+490
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+495
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+496
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+500
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+66
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+532
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+543
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+550
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+560
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+561
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+567
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+568
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+572
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+575
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+577
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+580
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+581
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+590
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+596
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+598
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+600
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+607
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+610
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+614
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+616
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+618
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+621
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+625
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+635
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+637
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+639
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+650
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+652
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+654
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+657
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+658
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+660
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+668
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+675
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+680
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+682
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+685
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+687
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+689
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+690
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+694
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+695
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+696
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+700
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+705
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+712
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+723
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+725
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+750
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+756
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+757
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+760
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+765
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+768
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+775
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+776
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+780
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+786
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+788
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+791
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+795
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+798
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+800
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+47
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+817
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+823
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+825
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+830
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+841
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+844
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+850
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+875
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+880
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+896
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+900
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+909
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+919
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+925
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+935
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+940
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+950
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+954
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+955
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+975
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+978
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3713
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+home owner- lives alone
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+home owner- with others no rent
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+1933
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless sheltered
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+465
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless unsheltered
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+1508
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homless
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hospital facility
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hotel
+</td>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hotel no rights
+</td>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:right;">
+202
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hotel with rights
+</td>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lease holder
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+live alone
+</td>
+<td style="text-align:left;">
+live alone
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living in a shared house
+</td>
+<td style="text-align:left;">
+living in a shared house
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living with family
+</td>
+<td style="text-align:left;">
+living with family
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living with relative
+</td>
+<td style="text-align:left;">
+living with relative
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+69
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:right;">
+108
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owned by client
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+450
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner lives alone
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+226
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner with others
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner with others no rent
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner with others rent
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+programpermanent-residential program
+</td>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent by client
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent by owner
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+2217
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rental by client
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rental by client with ongoing subsidy
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:right;">
+44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+shared housing
+</td>
+<td style="text-align:left;">
+shared housing
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:right;">
+529
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:right;">
+70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unsheltered
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others
+</td>
+<td style="text-align:left;">
+with others
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:right;">
+408
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:right;">
+816
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+554
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+And! for a breakdown of which counties these hard to classify ones are
+coming up (it’s many different ones it seems):
+
+``` r
+demo_dat %>% 
+  count(living_sit_entry_recode, reporting_agency)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+living_sit_entry_recode
+</th>
+<th style="text-align:left;">
+reporting_agency
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+amador
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+calaveras
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+colusa
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+inyo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1442
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+plumas
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+1212
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+116
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+301
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+46
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+santa barbara
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+siskiyou
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+siskiyou county
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+solano
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+stanislaus
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+sutter
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+trinity
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+yolo
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+live alone
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living in a shared house
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living with family
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+living with relative
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+calaveras
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+lake
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+plumas
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+siskiyou county
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+sutter
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+yolo
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+amador
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+colusa
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+plumas
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+192
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+santa barbara
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+siskiyou
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+siskiyou county
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+56
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+colusa
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+inyo
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent- residential program
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+amador
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+colusa
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+105
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+inyo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+modoc
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+46
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+201
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+98
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+santa barbara
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+84
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+solano
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+84
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+stanislaus
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+sutter
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+56
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+yolo
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+shared housing
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+inyo
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+117
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+122
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+82
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+santa barbara
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+siskiyou
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+siskiyou county
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+solano
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+stanislaus
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+sutter
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+yolo
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary housing
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+siskiyou county
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+temporary- residential program
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+115
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+calaveras
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+147
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+del norte
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+176
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+617
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+87
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+lake
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+lassen
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+304
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+44
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+244
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+2029
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+998
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+santa barbara
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+solano
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+stanislaus
+</td>
+<td style="text-align:right;">
+49
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+trinity
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+yolo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+108
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+43
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+64
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+68
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+82
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+65
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+206
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others rent
+</td>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+client homeless within the last 3 years - answers should be yes or no.
+Leaving numbers alone for now. Changing 3 years or longer, within the
+last year, within the last 3 years, currently homeless to “yes”.
+Changing client was not homeless to “no”. Combining doesn’t know,
+refused, data not collected, unknown, blank as “unknown”.
+
+Question: one response that is “n” - I’m guessing this might be no? But
+there is another response with n/a, which is what they might’ve been
+going for?
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(client_homeless_last_three_years_recode = case_when(str_detect(client_homeless_within_the_last_three_years, "three years or|within the last|currently homel") ~ "yes",
+                                                  str_detect(client_homeless_within_the_last_three_years, "client was not homele") ~ "no",
+                                                  str_detect(client_homeless_within_the_last_three_years, "doesn't know|refused|n/a|data not") ~ "unknown",
+                                                  is.na(client_homeless_within_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ client_homeless_within_the_last_three_years))
+```
+
+Sanity check
+
+``` r
+demo_dat %>% 
+  count(client_homeless_within_the_last_three_years, client_homeless_last_three_years_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+client_homeless_within_the_last_three_years
+</th>
+<th style="text-align:left;">
+client_homeless_last_three_years_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1000
+</td>
+<td style="text-align:left;">
+1000
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1001
+</td>
+<td style="text-align:left;">
+1001
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1100
+</td>
+<td style="text-align:left;">
+1100
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1200
+</td>
+<td style="text-align:left;">
+1200
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1500
+</td>
+<td style="text-align:left;">
+1500
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1692
+</td>
+<td style="text-align:left;">
+1692
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+175
+</td>
+<td style="text-align:left;">
+175
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+186
+</td>
+<td style="text-align:left;">
+186
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+200
+</td>
+<td style="text-align:left;">
+200
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+225
+</td>
+<td style="text-align:left;">
+225
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+275
+</td>
+<td style="text-align:left;">
+275
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+288
+</td>
+<td style="text-align:left;">
+288
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+300
+</td>
+<td style="text-align:left;">
+300
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+325
+</td>
+<td style="text-align:left;">
+325
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+350
+</td>
+<td style="text-align:left;">
+350
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+375
+</td>
+<td style="text-align:left;">
+375
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+400
+</td>
+<td style="text-align:left;">
+400
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+447
+</td>
+<td style="text-align:left;">
+447
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4495
+</td>
+<td style="text-align:left;">
+4495
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+450
+</td>
+<td style="text-align:left;">
+450
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+500
+</td>
+<td style="text-align:left;">
+500
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+540
+</td>
+<td style="text-align:left;">
+540
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+550
+</td>
+<td style="text-align:left;">
+550
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+556
+</td>
+<td style="text-align:left;">
+556
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+575
+</td>
+<td style="text-align:left;">
+575
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60
+</td>
+<td style="text-align:left;">
+60
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+600
+</td>
+<td style="text-align:left;">
+600
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+650
+</td>
+<td style="text-align:left;">
+650
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+675
+</td>
+<td style="text-align:left;">
+675
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+725
+</td>
+<td style="text-align:left;">
+725
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+750
+</td>
+<td style="text-align:left;">
+750
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+800
+</td>
+<td style="text-align:left;">
+800
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+850
+</td>
+<td style="text-align:left;">
+850
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+930
+</td>
+<td style="text-align:left;">
+930
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+950
+</td>
+<td style="text-align:left;">
+950
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+59
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+546
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+276
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5115
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n
+</td>
+<td style="text-align:left;">
+n
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+3842
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+three years or longer
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+685
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last month
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last three years
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last year
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+3499
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+417
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Number of times homeless in the past 3 years - changing 0 to “client was
+not homeless”, 1 to “one time”, 2 to “two times”, 3 to “three times” 4
+and 4+ to “four or more times”. Changing any “0-x” responses to unknown,
+since it seems the exact number is not known.. Changing refused, doesn’t
+know, n/a, blank to “unknown”.
+
+### Question:
+
+99 is a response with 1366 answers, I’m wondering if this is the same as
+unknown? (like people we’re just using a very big number as a
+placeholder?) Or just a very large number of times someone (many people)
+were unhoused? (Putting in unknown for now) 0-3 - where to put this one?
+(putting in unknown for now) “currently homeless” - perhaps should just
+change to unknown? (unsure also if this is a column shift issue, same
+with “yes” and “no”, leaving alone for now)
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(number_times_homeless_recode = case_when(str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "0") ~ "client was not homeless",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99") ~ "unknown",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "1") ~ "one time",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
+                                                  is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
+```
+
+sanity check
+
+``` r
+demo_dat %>% 
+  count(number_of_times_homelessness_occurred_in_the_last_three_years, number_times_homeless_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+number_of_times_homelessness_occurred_in_the_last_three_years
+</th>
+<th style="text-align:left;">
+number_times_homeless_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+1303
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0-3
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+one time
+</td>
+<td style="text-align:right;">
+631
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+two times
+</td>
+<td style="text-align:right;">
+116
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+three times
+</td>
+<td style="text-align:right;">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+30
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1366
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+1717
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+5139
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+four/more times
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+246
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+free form text
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+45
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+817
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+one time
+</td>
+<td style="text-align:left;">
+one time
+</td>
+<td style="text-align:right;">
+725
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+three times
+</td>
+<td style="text-align:left;">
+three times
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+two times
+</td>
+<td style="text-align:left;">
+two times
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+175
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2086
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Total duration of homelessness (in last 3 years) - Changing “0” to
+“client was not homeless”. Leaving “yes” and “no” responses for now, as
+I think they’re a column shift issue.
+
+### Questions:
+
+99 - same question as number of times responses like “1”, “2” - no
+units.. so not sure. My guess would be those are the number of months?
+(left as is for now) “within the last 3 years” - can’t really take a
+guess at duration, besides saying it’s not more than 3 years? “six
+months to one year” “& months to one year” - what to do?
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(total_duration_homeless_recode = case_when(str_equal(total_duration_of_homelessness, "0") ~ "client was not homeless",
+                                                    
+                                                    TRUE ~ total_duration_of_homelessness))
+```
 
 Counts of `gender`
 
@@ -15744,6 +24082,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 14690    43
+    ## [1] 14690    47
 
 # Re-coding variables
