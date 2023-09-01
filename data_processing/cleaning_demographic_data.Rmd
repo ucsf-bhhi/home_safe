@@ -63,12 +63,36 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ aps_report_location))
 ```
 
-sanity check
+check
 ```{r}
 demo_dat %>% 
   count(aps_report_location, aps_location_recode) %>% 
   filter(str_starts(aps_report_location, "r"))
 ```
+Location of Participation:
+remove "'",", ca" and "ca" from the end of responses
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(location_of_participation_recode = str_replace(location_of_participation, "'", "")) %>% 
+  mutate(location_of_participation_recode = str_replace(location_of_participation, ", ca| ca|,ca", ""))
+```
+
+Check for removal of Ca
+```{r}
+demo_dat %>% 
+  filter(str_detect(location_of_participation, ",")) %>% 
+  count(location_of_participation, location_of_participation_recode)
+```
+
+remove special characters like ":" before laguna beach. Combine misspellings of bakersfield.Combine mispelling of barstow.
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, ":") ~ "laguna beach",
+                                                      str_detect(location_of_participation, "bakersf|bakerf") ~ "bakersfield",
+                                                      str_detect(location_of_participation, "bartso") ~ "barstow",
+                                                      TRUE ~ location_of_participation))
+```
+
 
 Race_1 - replace american indian/alaskan native with american indian/alaskan native/indigenous. Replace asian with asian/asian american. Replace black/african american with black/african american/african. Replace pacific islander/native hawaiian with native hawaiian/pacific islander. Replace whte with white. Change all unknowns, including data not collected and n/a to "unknown".
 ```{r}
@@ -84,7 +108,7 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ race_1))
 ```
 
-Sanity check
+check
 ```{r}
 demo_dat %>% 
   count(race_1, race_1_recode)
@@ -106,7 +130,7 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ race_2))
 ```
 
-Sanity check for race_2
+check for race_2
 ```{r}
 demo_dat %>% 
   count(race_2, race_2_recode)
@@ -130,7 +154,7 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ ethnicity))
 ```
 
-Sanity check 
+check for ethnicity 
 ```{r}
 demo_dat %>% 
   count(ethnicity, race_2, ethnicity_recode) 
@@ -147,7 +171,7 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ current_marital_status))
 ```
 
-Sanity check for marital status
+check for marital status
 ```{r}
 demo_dat %>% 
   count(current_marital_status, current_marital_recode)
@@ -165,7 +189,7 @@ demo_dat <- demo_dat %>%
                                          TRUE ~ sexual_orientation))
 ```
 
-Sanity check
+check for sexual orientation
 ```{r}
 demo_dat %>% 
   count(sexual_orientation, sexual_orientation_recode)
@@ -180,7 +204,7 @@ demo_dat <- demo_dat %>%
                                                TRUE ~ preferred_language))
 ```
 
-Sanity check
+check for preferred language
 ```{r}
 demo_dat %>% 
   count(preferred_language, preferred_language_recode)
@@ -196,7 +220,7 @@ demo_dat <- demo_dat %>%
                                            TRUE ~ veteran_status))
 ```
 
-Sanity check
+check for veteran status
 ```{r}
 demo_dat %>% 
   count(veteran_status, veteran_status_recode)
@@ -210,7 +234,7 @@ demo_dat <- demo_dat %>%
                                            TRUE ~ medi_cal))
 ```
 
-Sanity check 
+check medi-cal 
 ```{r}
 demo_dat %>% 
   count(medi_cal, medi_cal_recode)
@@ -225,7 +249,7 @@ demo_dat <- demo_dat %>%
                                            TRUE ~ medicare))
 ```
 
-Sanity check 
+check for medicare 
 ```{r}
 demo_dat %>% 
   count(medicare, medicare_recode)
@@ -264,7 +288,7 @@ demo_dat <- demo_dat %>%
 ```
 
 
-sanity check
+check for living situation upon entry
 ```{r}
 demo_dat %>% 
   count(living_situation_upon_entry, living_sit_entry_recode)
@@ -290,7 +314,7 @@ demo_dat <- demo_dat %>%
                                                   TRUE ~ client_homeless_within_the_last_three_years))
 ```
 
-Sanity check
+check for homeless in last 3 years
 ```{r}
 demo_dat %>% 
   count(client_homeless_within_the_last_three_years, client_homeless_last_three_years_recode)
@@ -315,27 +339,118 @@ demo_dat <- demo_dat %>%
                                                   TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
 ```
 
-sanity check
+check for number of times homeless in last 3 years
 ```{r}
 demo_dat %>% 
   count(number_of_times_homelessness_occurred_in_the_last_three_years, number_times_homeless_recode)
 ```
 
-Total duration of homelessness (in last 3 years) - Changing "0" to "client was not homeless". Leaving "yes" and "no" responses for now, as I think they're a column shift issue. 
+Total duration of homelessness (in last 3 years) - Changing "0" to "client was not homeless". Leaving "yes" and "no" responses for now, as I think they're a column shift issue. Combining unknown responses.Changing responses that are more than a year to all be "more than a year". changing "n" to "unknown".
 
 
 ### Questions:
-  99 - same question as number of times
-  responses like "1", "2" - no units.. so not sure. My guess would be those are the number of months? (left as is for now)
+  99 - same question as number of times homeless
+  responses like "1", "2" "24" - no units.. so not sure. My guess would be those are the number of months? (left as is for now)
   "within the last 3 years" - can't really take a guess at duration, besides saying it's not more than 3 years?
-  "six months to one year" "& months to one year" - what to do?
+  "six months to one year" "7 months to one year" "less than 12 months" "two to six months" - what to do?
+  "within the last year" "within the last 3 years" "currently homeless" - seems a response to the following question (last period of homelessness). Looking at what those records have for last period, both don't really make sense, so double check after column issue fix?
+  (Sara) - there must be a better way to code replacing numbers with the number written out? (i.e. 5 months --> five months)
   
 ```{r}
 demo_dat <- demo_dat %>% 
   mutate(total_duration_homeless_recode = case_when(str_equal(total_duration_of_homelessness, "0") ~ "client was not homeless",
+                                                    str_detect(total_duration_of_homelessness, "not homeless") ~ "client was not homeless",
+                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99") ~ "unknown",
+                                                    str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a year|years or longer") ~ "more than a year",
+                                                    str_detect(total_duration_of_homelessness, "1 day to one month") ~"one day to one month",
+                                                    str_detect(total_duration_of_homelessness, "5 mon") ~ "five months",
+                                                    str_detect(total_duration_of_homelessness, "6 mon") ~ "six months",
+                                                    str_detect(total_duration_of_homelessness, "to one year|less than 12 months|within the last|currently homeless") ~ "flag",
+                                                    str_equal(total_duration_of_homelessness, "n") ~ "unknown",
+                                                    is.na(total_duration_of_homelessness) ~ "unknown",
                                                     
                                                     TRUE ~ total_duration_of_homelessness))
 ```
+
+Check for total duration of homelessness in last 3 years
+```{r}
+demo_dat %>% 
+  count(total_duration_of_homelessness, total_duration_homeless_recode)
+```
+
+Current eviction or foreclosure - combining unknown responses, and making "none" "no". Leaving the rest for now. 
+
+### Question:
+  is 99 unknown here as well? (this one isn't a drop down menu, so wondering if I should treat the same)
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(current_eviction_recode = case_when(str_detect(current_eviction_or_foreclosures, "doesn't know|refused|data not|n/a") ~ "unknown",
+                                             str_detect(current_eviction_or_foreclosures, "none") ~ "no",
+                                             is.na(current_eviction_or_foreclosures) ~ "unknown",
+                                            TRUE ~ current_eviction_or_foreclosures ))
+```
+
+check for current eviction/foreclosure
+```{r}
+demo_dat %>% 
+  count(current_eviction_or_foreclosures, current_eviction_recode)
+```
+
+Previous Evictions or Foreclosures - this one is truly so messy I will hold off until we see the new data with column issue fix 
+```{r}
+demo_dat %>% 
+  count(previous_evictions_or_foreclosures)
+```
+
+Discharge from institution in the last 6 months - combining all unknown, leaving much of the rest for post column issue fix
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a") ~ "unknown",
+                                                  is.na(discharge_from_institution_in_the_last_six_months) ~ "unknown",
+                                                  TRUE ~ discharge_from_institution_in_the_last_six_months))
+```
+
+Check for discharge from institution
+```{r}
+demo_dat %>% 
+  count(discharge_from_institution_in_the_last_six_months, discharge_institution_recode)
+```
+
+APS report date - 
+
+### Question (for Sara): How do I code that we will want to check that the date is something between start of the program and the present? 
+
+Reporting Source - comining unknown responses into a "unknown" (including not applicable). Correcting spelling of "self", changing "client" to "self". Recoding "relative" and "family" as "family member".Changing "community professional" to "other community professional" to match their drop down. Changing "financial institution" and "financial" to "financial service provider". Combining mental health and mental health personnel.Changing "no relation" to "no relationship".
+
+### Question:
+  mandated reporter - ? (could be many, i.e. social worker, medical personnel, mh personnel)
+  paid caregiver - another where I am unsure, maybe professional service provider?
+  no APS referral, not applicable, no - (no might be column shift) but these, change to unknown? or is it interesting that some didn't get referred?
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable") ~ "unknown",
+                                             str_detect(reporting_source, "sel|client") ~"self",
+                                             str_detect(reporting_source, "relative|family") ~ "family member",
+                                             str_detect(reporting_source, "community pro") ~"other community professional",
+                                             str_detect(reporting_source, "financial") ~ "financial service provider",
+                                             str_detect(reporting_source, "mental health") ~ "mental health personnel",
+                                             str_detect(reporting_source, "no relatio") ~"no relationship",
+                                             str_detect(reporting_source, "workshop|mandated report") ~ "flag",
+                                             is.na(reporting_source) ~ "unknown",
+                                             
+                                             TRUE ~ reporting_source))
+```
+
+Check for reporting source
+```{r}
+demo_dat %>% 
+  count(reporting_source, reporting_source_recode)
+```
+
+### Question: for previous APS involvement - seeing some responses that appear to fit in intervention, will this affect processing (given these are now subsets of data?) Hopefully this is just a column issue, but want to flag. 
+
+### Question: anything we want to do with processing the income variables? (income fro benefits, work for pay, other income)
+
 
 
 
