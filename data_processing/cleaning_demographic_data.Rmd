@@ -30,68 +30,87 @@ demo_dat <- demo_dat %>%
 
 ```
 
-Clean APS Report Location indicator, remove "'",", ca" and " ca" from strings
 
+## Location of Participation:
+
+remove " ca" ", ca" and "california" from the end of responses. remove special characters like ":" before laguna beach. Combine and correct misspellings. Leaving combined cities or ones that seem similar (i.e. big bear and big bear valley) alone for now, also not verifying that all of these are in fact cities (I only verified for ones I suspected having misspellings). Remove Zip codes from the end of cities listed. Combining all unknown's into one (data not collected, refused, doesn't know etc). 
+
+### Questions:
+  ca - perhaps best to change this to unknown?
+  "cal city", "california city" - do we think these are the same? (Made the change in the recode for now)
+  responses i.e. "coulterville/la grange" (so combo of two cities) - leave as is?
+  "north side of parking lot" - ?
+  "sin city" - might be sun city? (there is no sin city in california it seems)
+  "ylp" - ?
+  what to do with zipcodes? (shall I go look up the cities for those codes?)
+  home, homeless, female, male - are in the data so double check after new data comes in
 ```{r}
 demo_dat <- demo_dat %>% 
-  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
-  mutate(aps_report_location = str_replace(aps_report_location, ", ca| ca|,ca", ""))
+  mutate(location_of_participation_recode = case_when(str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, "ca|, ca", ""),
+                                                      str_ends(location_of_participation, "california") ~ str_replace_all(location_of_participation, " california", ""),
+                                                      str_detect(location_of_participation, ":") ~ "laguna beach",
+                                                      str_detect(location_of_participation, "bakersf|bakerf") ~ "bakersfield",
+                                                      str_detect(location_of_participation, "bartso") ~ "barstow",
+                                                      str_detect(location_of_participation, "beam|beum") ~ "beaumont",
+                                                      str_detect(location_of_participation, "cal city") ~ "california city",
+                                                      str_detect(location_of_participation, "cailm") ~ "calimesa",
+                                                      str_detect(location_of_participation, "catherd") ~ "cathedral city",
+                                                      str_detect(location_of_participation, "cathey") ~ "catheys valley",
+                                                      str_detect(location_of_participation, "clairem") ~ "claremont",
+                                                      str_detect(location_of_participation, "cochell") ~ "coachella", 
+                                                      str_detect(location_of_participation, "desesrt|desrt") ~ "desert hot springs",
+                                                      str_detect(location_of_participation, "frasier") ~ "frazier park",
+                                                      str_detect(location_of_participation, "idlewild") ~ "idyllwild",
+                                                      str_detect(location_of_participation, "jurupa") ~"jurupa valley",
+                                                      str_detect(location_of_participation, "mills hospital in b") ~ "burlingame",
+                                                      str_detect(location_of_participation, "mountainview") ~"mountain view",
+                                                      str_detect(location_of_participation, "murreta") ~ "murrieta",
+                                                      str_detect(location_of_participation, "pachecc") ~ "pacheco",
+                                                      str_detect(location_of_participation, "palms sp|palm spr|palm dpr") ~ "palm springs",
+                                                      str_detect(location_of_participation, "ranch mira") ~ "rancho mirage",
+                                                      str_detect(location_of_participation, "rancho cucam") ~ "rancho cucamonga",
+                                                      str_detect(location_of_participation, "richomo") ~ "richmond",
+                                                      str_detect(location_of_participation, "ridegc") ~ "ridgecrest",
+                                                      str_detect(location_of_participation, "riverisd|riveside") ~ "riverside",
+                                                      str_detect(location_of_participation, "rough &|rough and re") ~ "rough and ready",
+                                                      str_detect(location_of_participation, "sacrment|sacarament|sarcamen") ~ "sacramento",
+                                                      str_detect(location_of_participation, "san berna|san bera|san bernr") ~ "san bernardino",
+                                                      str_detect(location_of_participation, "san dieg") ~ "san diego",
+                                                      str_detect(location_of_participation, "san fra|sf") ~ "san francisco",
+                                                      str_detect(location_of_participation, "sugar l") ~ "sugarloaf",
+                                                      str_detect(location_of_participation, "tehac") ~ "tehachapi",
+                                                      str_detect(location_of_participation, "twenty|29 pal") ~ "twentynine palms",
+                                                      str_detect(location_of_participation, "vict") ~ "victorville",
+                                                      str_detect(location_of_participation, "weaverv") ~ "weaverville",
+                                                      str_detect(location_of_participation, "wildom") ~ "wildomar", 
+                                                      str_detect(location_of_participation, "yucca") ~ "yucca valley",
+                                                      # the following had zipcodes at the end of the string
+                                                      str_detect(location_of_participation, "indio") ~ "indio",
+                                                      str_detect(location_of_participation, "inglewood") ~ "inglewood",
+                                                      str_detect(location_of_participation, "marysvil") ~ "marysville",
+                                                      str_detect(location_of_participation, "turlock") ~ "turlock",
+                                                      str_detect(location_of_participation, "yuba") ~ "yuba city",
+                                                      str_detect(location_of_participation, "yucaipa") ~ "yucaipa",
+                                                      
+                                                      str_detect(location_of_participation, "data not col|doesn't know|refused|missing|unk") ~ "unknown",
+                                                      is.na(location_of_participation) ~ "unknown",
+                                                      TRUE ~ location_of_participation))
 ```
 
-Examine APS Report Location
 
+Check on location of participation
 ```{r}
 demo_dat %>% 
-  count(aps_report_location)
-```
-
-## Question for Gina
-
-Should we drop everything from " -" (i.e. space and then dash)
-```{r}
-demo_dat %>%  
-  count(aps_report_location) %>% 
-  filter(str_detect(aps_report_location, "-")) %>% 
-  filter(str_detect(aps_report_location, "-"))
-```
-
-replace all locations that contain Roseville in the name to just Roseville as a new location variable 
-```{r}
-demo_dat <- demo_dat %>% 
-  mutate(aps_location_recode = case_when(str_detect(aps_report_location,"rosev") ~ "roseville",
-                                      
-                                         TRUE ~ aps_report_location))
-```
-
-check
-```{r}
-demo_dat %>% 
-  count(aps_report_location, aps_location_recode) %>% 
-  filter(str_starts(aps_report_location, "r"))
-```
-Location of Participation:
-remove "'",", ca" and "ca" from the end of responses
-```{r}
-demo_dat <- demo_dat %>% 
-  mutate(location_of_participation_recode = str_replace(location_of_participation, "'", "")) %>% 
-  mutate(location_of_participation_recode = str_replace(location_of_participation, ", ca| ca|,ca", ""))
-```
-
-Check for removal of Ca
-```{r}
-demo_dat %>% 
-  filter(str_detect(location_of_participation, ",")) %>% 
   count(location_of_participation, location_of_participation_recode)
 ```
 
-remove special characters like ":" before laguna beach. Combine misspellings of bakersfield.Combine mispelling of barstow.
+For just a check on cutting out ca:
 ```{r}
-demo_dat <- demo_dat %>% 
-  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, ":") ~ "laguna beach",
-                                                      str_detect(location_of_participation, "bakersf|bakerf") ~ "bakersfield",
-                                                      str_detect(location_of_participation, "bartso") ~ "barstow",
-                                                      TRUE ~ location_of_participation))
+demo_dat %>% 
+  filter(str_detect(location_of_participation, ", ca| ca|,|california")) %>% 
+  count(location_of_participation, location_of_participation_recode)
 ```
+
 
 
 Race_1 - replace american indian/alaskan native with american indian/alaskan native/indigenous. Replace asian with asian/asian american. Replace black/african american with black/african american/african. Replace pacific islander/native hawaiian with native hawaiian/pacific islander. Replace whte with white. Change all unknowns, including data not collected and n/a to "unknown".
@@ -455,6 +474,47 @@ demo_dat %>%
 
 
 
+## To come back to if needed:
+
+Clean APS Report Location indicator, remove "'",", ca" and " ca" from strings
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
+  mutate(aps_report_location = str_replace(aps_report_location, ", ca| ca|,ca", ""))
+```
+
+Examine APS Report Location
+
+```{r}
+demo_dat %>% 
+  count(aps_report_location)
+```
+
+## Question for Gina
+
+Should we drop everything from " -" (i.e. space and then dash)
+```{r}
+demo_dat %>%  
+  count(aps_report_location) %>% 
+  filter(str_detect(aps_report_location, "-")) %>% 
+  filter(str_detect(aps_report_location, "-"))
+```
+
+replace all locations that contain Roseville in the name to just Roseville as a new location variable 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_location_recode = case_when(str_detect(aps_report_location,"rosev") ~ "roseville",
+                                      
+                                         TRUE ~ aps_report_location))
+```
+
+check
+```{r}
+demo_dat %>% 
+  count(aps_report_location, aps_location_recode) %>% 
+  filter(str_starts(aps_report_location, "r"))
+```
 
 Counts of `gender`
 
