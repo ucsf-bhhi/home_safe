@@ -6,3 +6,245 @@ output:
   github_document:
     df_print: kable
 ---
+
+# Read libraries and data
+
+```{r, message = F}
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+path_to_proj <- Sys.getenv("HOME_SAFE")
+
+dat <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
+  janitor::clean_names()
+```
+
+
+# Random sample
+
+Group by agency and pull 15% of case numbers w/o replacement.
+
+```{r}
+dat %>% 
+  count(reporting_agency) %>% 
+  arrange(n) %>% 
+  head()
+```
+
+Some reporting agencies have less than 10 cases.
+
+Assign agency as a `small_agency` (10 cases or less) or `not_small` (more than 10 cases)
+
+```{r, message = FALSE}
+dat <- dat %>% 
+  add_count(reporting_agency) %>% 
+  mutate(`agency_size` = if_else(n <= 10, "small_agency", "not_small"))
+
+small_agencies <- dat %>% 
+  filter(agency_size == "small_agency") %>% 
+  droplevels()
+
+all_other_agencies <- dat %>% 
+  anti_join(small_agencies) %>% 
+  droplevels()
+```
+
+# Alternative I.
+
+If N < 10 capture `10%  across all SMALL agencies or just capture 1 per agency 
+Anything more we capture `10%`
+
+```{r}
+set.seed(123)
+
+random_sample_small_agencies_i <- small_agencies %>% 
+  group_by(reporting_agency) %>% 
+  sample_n(1)
+```
+
+
+# Alternative II
+
+We pool all those with 10 or less cases as one giant 'small agency' pool, and select 10%, then for those > 10 cases randomly pool 10%.
+
+```{r}
+sample_n <- nrow(small_agencies)*.1 %>% 
+  round(1)
+
+set.seed(123)
+
+random_sample_small_agencies_ii <- small_agencies %>% 
+  sample_n(sample_n)
+```
+
+
+# Sample all other agencies
+
+```{r}
+all_other_agencies <- all_other_agencies %>% 
+  mutate(sample_n = ceiling(n*0.1))
+
+set.seed(123)
+
+random_sample_other_agencies <- all_other_agencies %>% 
+  group_by(reporting_agency) %>% 
+  group_modify(~sample_n(.x, sample_n[1])) %>% 
+  ungroup()
+```
+
+
+# Distribution of samples
+
+The smaller agencies
+
+```{r}
+dist_small <- small_agencies %>% 
+  ungroup() %>% 
+  select(race_1, ethnicity, reporting_agency) %>% 
+  pivot_longer(everything(), names_to = "variable") %>% 
+  group_by(variable, value) %>% 
+  summarise(n = n()) %>% 
+  ungroup(value) %>% 
+  mutate(statistic = n/sum(n)) %>% 
+  bind_rows(
+    small_agencies %>% 
+    summarise(variable = "age",
+              sd = sd(age, na.rm = T),
+              statistic = mean(age, na.rm = T))
+  ) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
+  mutate(sample = "Full Sample") %>% 
+  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
+                               is.na(statistic) ~ NA,
+                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
+  select(variable, value, statistic, sample)
+  
+
+dist_small_i <- random_sample_small_agencies_i %>% 
+  select(race_1, ethnicity, reporting_agency) %>% 
+  pivot_longer(everything(), names_to = "variable") %>% 
+  group_by(variable, value) %>% 
+  summarise(n = n()) %>% 
+  ungroup(value) %>% 
+  mutate(statistic = n/sum(n)) %>% 
+  bind_rows(
+    small_agencies %>% 
+    summarise(variable = "age",
+              sd = sd(age, na.rm = T),
+              statistic = mean(age, na.rm = T))
+  ) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
+  mutate(sample = "Random Sample I") %>% 
+  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
+                               is.na(statistic) ~ NA,
+                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
+  select(variable, value, statistic, sample)
+
+
+dist_small_ii <- random_sample_small_agencies_ii %>% 
+  select(race_1, ethnicity, reporting_agency) %>% 
+  pivot_longer(everything(), names_to = "variable") %>% 
+  group_by(variable, value) %>% 
+  summarise(n = n()) %>% 
+  ungroup(value) %>% 
+  mutate(statistic = n/sum(n)) %>% 
+  bind_rows(
+    small_agencies %>% 
+    summarise(variable = "age",
+              sd = sd(age, na.rm = T),
+              statistic = mean(age, na.rm = T))
+  ) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
+  mutate(sample = "Random Sample II") %>% 
+  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
+                               is.na(statistic) ~ NA,
+                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
+  select(variable, value, statistic, sample)
+
+full_stats_small_agency <- dist_small %>% 
+  bind_rows(dist_small_i) %>% 
+  bind_rows(dist_small_ii) %>% 
+  pivot_wider(names_from = sample, values_from = statistic)
+
+full_stats_small_agency
+```
+
+All other agencies
+
+```{r}
+dist_other <- all_other_agencies %>% 
+  ungroup() %>% 
+  select(race_1, ethnicity, reporting_agency) %>% 
+  pivot_longer(everything(), names_to = "variable") %>% 
+  group_by(variable, value) %>% 
+  summarise(n = n()) %>% 
+  ungroup(value) %>% 
+  mutate(statistic = n/sum(n)) %>% 
+  bind_rows(
+    all_other_agencies %>% 
+    summarise(variable = "age",
+              sd = sd(age, na.rm = T),
+              statistic = mean(age, na.rm = T))
+  ) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
+  mutate(sample = "Full Sample") %>% 
+  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
+                               is.na(statistic) ~ NA,
+                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
+  select(variable, value, statistic, sample)
+  
+
+dist_other_sample <- random_sample_other_agencies %>% 
+  select(race_1, ethnicity, reporting_agency) %>% 
+  pivot_longer(everything(), names_to = "variable") %>% 
+  group_by(variable, value) %>% 
+  summarise(n = n()) %>% 
+  ungroup(value) %>% 
+  mutate(statistic = n/sum(n)) %>% 
+  bind_rows(
+    random_sample_other_agencies %>% 
+    summarise(variable = "age",
+              sd = sd(age, na.rm = T),
+              statistic = mean(age, na.rm = T))
+  ) %>% 
+  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
+  mutate(sample = "Random Sample I") %>% 
+  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
+                               is.na(statistic) ~ NA,
+                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
+  select(variable, value, statistic, sample)
+
+
+full_stats_other_agency <- dist_other %>% 
+  bind_rows(dist_other_sample) %>% 
+  pivot_wider(names_from = sample, values_from = statistic)
+
+full_stats_other_agency
+```
+
+# Total N sampled
+
+```{r}
+random_sample_other_agencies %>% 
+  nrow()
+
+random_sample_small_agencies_i %>% 
+  nrow()
+
+random_sample_small_agencies_ii %>% 
+  nrow()
+```
+
+
+# Export samples and stats
+
+```{r}
+output <- list(random_sample_small_agencies_i = random_sample_small_agencies_i, random_sample_small_agencies_ii = random_sample_small_agencies_ii,
+               random_sample_other_agencies = random_sample_other_agencies, stats_small_agency = full_stats_small_agency, stats_all_other_agency = full_stats_other_agency)
+
+writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/randomized_sample.xlsx", sep = ""))
+
+write.csv(dat, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
+```
+
