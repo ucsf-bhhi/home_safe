@@ -1,7 +1,7 @@
 # Create data subsets
 
 demo_dat <- full_dat %>%
-  select(id, reporting_agency, location_of_participation:other_income)
+  select(id, reporting_agency, age:other_income)
 
 int_dat <- full_dat %>%
   select(id, reporting_agency, intervention_1_type:intervention_6_amount)
