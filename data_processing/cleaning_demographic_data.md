@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-09-06
+2023-09-12
 
 # Read in data & libraries
 
@@ -10658,14 +10658,15 @@ unknown
 </div>
 
 current_martial_status - replace unknowns and data not collected with
-“unknown”.
+“unknown”. Combining domestic partnership with married.
 
-### Question: How would we like to recode domestic partnership? (Lump with married?) What to do with single? (100/103 records with single are from LA) ALSO, what to do with “no”? (both from Merced, might get fixed when column shift issue is solved)
+### Question: How would we like to recode domestic partnership? (Lump with married? did this for now) What to do with single? (100/103 records with single are from LA) What to do with gay/lesbian and straight/heterosexual (for both of these responses, they have this SO info in sexual_orientation), change to unknown?
 
 ``` r
 demo_dat <- demo_dat %>% 
   mutate(current_marital_recode = case_when(str_detect(current_marital_status, "unknown|#|applicable|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
-                                            str_detect(current_marital_status, "domestic|single") ~ "flag",
+                                            str_detect(current_marital_status, "single") ~ "flag",
+                                            str_detect(current_marital_status, "domestic p") ~ "married",
                                       is.na(current_marital_status) ~ "unknown",
                                          TRUE ~ current_marital_status))
 ```
@@ -10743,7 +10744,7 @@ divorced
 domestic partnership
 </td>
 <td style="text-align:left;">
-flag
+married
 </td>
 <td style="text-align:right;">
 4
@@ -10886,6 +10887,68 @@ unknown
 
 </div>
 
+Show what sexual_orientation is for current_marital status responses
+that are sexual orientation.
+
+``` r
+demo_dat %>% 
+  filter(str_detect(current_marital_status, "gay|straight")) %>% 
+  count(current_marital_status, sexual_orientation, reporting_agency)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+current_marital_status
+</th>
+<th style="text-align:left;">
+sexual_orientation
+</th>
+<th style="text-align:left;">
+reporting_agency
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:left;">
+gay/lesbian
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:left;">
+straight/heterosexual
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+92
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
 sexual_orientation - changed straight to “straight/heterosexual” to
 match CDSS variable. Changed all unknown or declined or missing
 responses to “unknown”
@@ -10895,7 +10958,7 @@ responses to “unknown”
 ``` r
 demo_dat <- demo_dat %>% 
   mutate(sexual_orientation_recode = case_when(str_detect(sexual_orientation, "strai") ~ "straight/heterosexual",
-                                               str_detect(sexual_orientation, "unknown|#|client|decline|data not") ~ "unknown",
+                                               str_detect(sexual_orientation, "unknown|#|client|decline|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                                str_detect(sexual_orientation, "other") ~ "flag",
                                       is.na(sexual_orientation) ~ "unknown",
                                          TRUE ~ sexual_orientation))
@@ -10930,7 +10993,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -11102,7 +11165,7 @@ unknowns and missings to “unknown”.
 ``` r
 demo_dat <- demo_dat %>% 
   mutate(preferred_language_recode = case_when(str_detect(preferred_language, "mandarin") ~ "mandarin/cantonese",
-                                               str_detect(preferred_language, "unknown|#|data not") ~ "unknown",
+                                               str_detect(preferred_language, "unknown|#|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                                is.na(preferred_language) ~ "unknown",
                                                TRUE ~ preferred_language))
 ```
@@ -11258,14 +11321,11 @@ unknown
 </div>
 
 veteran_status - combining client refused, unknown, missing, unable to
-verify, verified by staff, and “b” into “unknown”. Leaving the response
-“none” for now to see if it’s a column shift issue, will revisit.
-
-### Question: I’m guessing “none” should be lumped with “no”?
+verify, verified by staff, and “b” into “unknown”.
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(veteran_status_recode = case_when(str_detect(veteran_status, "client|unknown|#|verif|b|data not|n/a") ~ "unknown",
+  mutate(veteran_status_recode = case_when(str_detect(veteran_status, "client|unknown|#|verif|b|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                            is.na(veteran_status) ~ "unknown",
                                            TRUE ~ veteran_status))
 ```
@@ -11299,7 +11359,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 2
@@ -11413,7 +11473,7 @@ medi_cal - combining the unknowns into one “unknown”
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(medi_cal_recode = case_when(str_detect(medi_cal, "client|unknown|#|data not") ~ "unknown",
+  mutate(medi_cal_recode = case_when(str_detect(medi_cal, "client|unknown|#|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                            is.na(medi_cal) ~ "unknown",
                                            TRUE ~ medi_cal))
 ```
@@ -11447,7 +11507,7 @@ n
 1
 </td>
 <td style="text-align:left;">
-1
+unknown
 </td>
 <td style="text-align:right;">
 2
@@ -11535,11 +11595,13 @@ unknown
 
 </div>
 
-doing the same for medicare
+doing the same for medicare, flagging “rent leaseholder” (should we move
+that to living situation upon entry?)
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(medicare_recode = case_when(str_detect(medicare, "client|unknown|#|data not|n/a") ~ "unknown",
+  mutate(medicare_recode = case_when(str_detect(medicare, "client|unknown|#|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                     str_detect(medicare, "leaseholder") ~ "flag",
                                            is.na(medicare) ~ "unknown",
                                            TRUE ~ medicare))
 ```
@@ -11573,7 +11635,7 @@ n
 1
 </td>
 <td style="text-align:left;">
-1
+unknown
 </td>
 <td style="text-align:right;">
 2
@@ -11639,7 +11701,7 @@ no
 rent leaseholder
 </td>
 <td style="text-align:left;">
-rent leaseholder
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11683,13 +11745,22 @@ unknown
 
 </div>
 
-representative payee or conservator: data is real messy, seems to have
-many values that shouldn’t be in this column. Will hold off until new
-dataset comes in to assess how much is a column shift issue.
+representative payee or conservator: data is real messy, all numbers are
+from LA. Combining all unknowns.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(representative_payee_recode = case_when(str_detect(representative_payee_or_conservator, "data not|unknown|n/a|client ref") ~ "unknown",
+                                                 str_detect(representative_payee_or_conservator, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
+                                                 is.na(representative_payee_or_conservator) ~ "unknown",
+                                                 TRUE ~ representative_payee_or_conservator))
+```
+
+check on representative payee
 
 ``` r
 demo_dat %>% 
-  count(representative_payee_or_conservator)
+  count(representative_payee_or_conservator, representative_payee_recode)
 ```
 
 <div class="kable-table">
@@ -11699,6 +11770,9 @@ demo_dat %>%
 <tr>
 <th style="text-align:left;">
 representative_payee_or_conservator
+</th>
+<th style="text-align:left;">
+representative_payee_recode
 </th>
 <th style="text-align:right;">
 n
@@ -11710,6 +11784,9 @@ n
 <td style="text-align:left;">
 0
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 16
 </td>
@@ -11717,6 +11794,9 @@ n
 <tr>
 <td style="text-align:left;">
 22.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11726,6 +11806,9 @@ n
 <td style="text-align:left;">
 23.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11733,6 +11816,9 @@ n
 <tr>
 <td style="text-align:left;">
 24.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11742,6 +11828,9 @@ n
 <td style="text-align:left;">
 25.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11749,6 +11838,9 @@ n
 <tr>
 <td style="text-align:left;">
 26.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11758,6 +11850,9 @@ n
 <td style="text-align:left;">
 26.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11765,6 +11860,9 @@ n
 <tr>
 <td style="text-align:left;">
 26.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11774,6 +11872,9 @@ n
 <td style="text-align:left;">
 28
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11781,6 +11882,9 @@ n
 <tr>
 <td style="text-align:left;">
 28.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11790,6 +11894,9 @@ n
 <td style="text-align:left;">
 28.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11797,6 +11904,9 @@ n
 <tr>
 <td style="text-align:left;">
 29.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11806,6 +11916,9 @@ n
 <td style="text-align:left;">
 29.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11813,6 +11926,9 @@ n
 <tr>
 <td style="text-align:left;">
 29.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -11822,6 +11938,9 @@ n
 <td style="text-align:left;">
 2no5no
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11829,6 +11948,9 @@ n
 <tr>
 <td style="text-align:left;">
 30
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11838,6 +11960,9 @@ n
 <td style="text-align:left;">
 30.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11845,6 +11970,9 @@ n
 <tr>
 <td style="text-align:left;">
 32.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11854,6 +11982,9 @@ n
 <td style="text-align:left;">
 32.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11861,6 +11992,9 @@ n
 <tr>
 <td style="text-align:left;">
 32.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11870,6 +12004,9 @@ n
 <td style="text-align:left;">
 33.200000000000003
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -11877,6 +12014,9 @@ n
 <tr>
 <td style="text-align:left;">
 33.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11886,6 +12026,9 @@ n
 <td style="text-align:left;">
 33.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11893,6 +12036,9 @@ n
 <tr>
 <td style="text-align:left;">
 34
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11902,6 +12048,9 @@ n
 <td style="text-align:left;">
 34.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11909,6 +12058,9 @@ n
 <tr>
 <td style="text-align:left;">
 35
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11918,6 +12070,9 @@ n
 <td style="text-align:left;">
 35.1
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11925,6 +12080,9 @@ n
 <tr>
 <td style="text-align:left;">
 35.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11934,6 +12092,9 @@ n
 <td style="text-align:left;">
 36.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11941,6 +12102,9 @@ n
 <tr>
 <td style="text-align:left;">
 36.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11950,6 +12114,9 @@ n
 <td style="text-align:left;">
 36.700000000000003
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11957,6 +12124,9 @@ n
 <tr>
 <td style="text-align:left;">
 37.799999999999997
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11966,6 +12136,9 @@ n
 <td style="text-align:left;">
 38
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11973,6 +12146,9 @@ n
 <tr>
 <td style="text-align:left;">
 38.299999999999997
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11982,6 +12158,9 @@ n
 <td style="text-align:left;">
 38.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -11989,6 +12168,9 @@ n
 <tr>
 <td style="text-align:left;">
 39.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -11998,6 +12180,9 @@ n
 <td style="text-align:left;">
 39.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12005,6 +12190,9 @@ n
 <tr>
 <td style="text-align:left;">
 39.799999999999997
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12014,6 +12202,9 @@ n
 <td style="text-align:left;">
 39.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12021,6 +12212,9 @@ n
 <tr>
 <td style="text-align:left;">
 40
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12030,6 +12224,9 @@ n
 <td style="text-align:left;">
 40.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12037,6 +12234,9 @@ n
 <tr>
 <td style="text-align:left;">
 40.799999999999997
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12046,6 +12246,9 @@ n
 <td style="text-align:left;">
 40.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12053,6 +12256,9 @@ n
 <tr>
 <td style="text-align:left;">
 41
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12062,6 +12268,9 @@ n
 <td style="text-align:left;">
 41.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12069,6 +12278,9 @@ n
 <tr>
 <td style="text-align:left;">
 41.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12078,6 +12290,9 @@ n
 <td style="text-align:left;">
 41.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12085,6 +12300,9 @@ n
 <tr>
 <td style="text-align:left;">
 41.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12094,6 +12312,9 @@ n
 <td style="text-align:left;">
 41.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12101,6 +12322,9 @@ n
 <tr>
 <td style="text-align:left;">
 42.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12110,6 +12334,9 @@ n
 <td style="text-align:left;">
 42.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12117,6 +12344,9 @@ n
 <tr>
 <td style="text-align:left;">
 43.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12126,6 +12356,9 @@ n
 <td style="text-align:left;">
 43.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12133,6 +12366,9 @@ n
 <tr>
 <td style="text-align:left;">
 44.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12142,6 +12378,9 @@ n
 <td style="text-align:left;">
 46.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12149,6 +12388,9 @@ n
 <tr>
 <td style="text-align:left;">
 46.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12158,6 +12400,9 @@ n
 <td style="text-align:left;">
 46.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12165,6 +12410,9 @@ n
 <tr>
 <td style="text-align:left;">
 46.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12174,6 +12422,9 @@ n
 <td style="text-align:left;">
 46.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12181,6 +12432,9 @@ n
 <tr>
 <td style="text-align:left;">
 47.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12190,6 +12444,9 @@ n
 <td style="text-align:left;">
 47.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12197,6 +12454,9 @@ n
 <tr>
 <td style="text-align:left;">
 47.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12206,6 +12466,9 @@ n
 <td style="text-align:left;">
 48.1
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12213,6 +12476,9 @@ n
 <tr>
 <td style="text-align:left;">
 48.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12222,6 +12488,9 @@ n
 <td style="text-align:left;">
 48.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12229,6 +12498,9 @@ n
 <tr>
 <td style="text-align:left;">
 49.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12238,6 +12510,9 @@ n
 <td style="text-align:left;">
 49.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12245,6 +12520,9 @@ n
 <tr>
 <td style="text-align:left;">
 49.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12254,6 +12532,9 @@ n
 <td style="text-align:left;">
 49.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12261,6 +12542,9 @@ n
 <tr>
 <td style="text-align:left;">
 49.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12270,6 +12554,9 @@ n
 <td style="text-align:left;">
 50
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12277,6 +12564,9 @@ n
 <tr>
 <td style="text-align:left;">
 50.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12286,6 +12576,9 @@ n
 <td style="text-align:left;">
 51
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12293,6 +12586,9 @@ n
 <tr>
 <td style="text-align:left;">
 51.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12302,6 +12598,9 @@ n
 <td style="text-align:left;">
 51.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12309,6 +12608,9 @@ n
 <tr>
 <td style="text-align:left;">
 51.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -12318,6 +12620,9 @@ n
 <td style="text-align:left;">
 51.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12325,6 +12630,9 @@ n
 <tr>
 <td style="text-align:left;">
 52
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12334,6 +12642,9 @@ n
 <td style="text-align:left;">
 52.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12341,6 +12652,9 @@ n
 <tr>
 <td style="text-align:left;">
 52.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12350,6 +12664,9 @@ n
 <td style="text-align:left;">
 52.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12357,6 +12674,9 @@ n
 <tr>
 <td style="text-align:left;">
 52.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12366,6 +12686,9 @@ n
 <td style="text-align:left;">
 52.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12373,6 +12696,9 @@ n
 <tr>
 <td style="text-align:left;">
 52.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12382,6 +12708,9 @@ n
 <td style="text-align:left;">
 53
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12389,6 +12718,9 @@ n
 <tr>
 <td style="text-align:left;">
 53.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12398,6 +12730,9 @@ n
 <td style="text-align:left;">
 53.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12405,6 +12740,9 @@ n
 <tr>
 <td style="text-align:left;">
 53.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12414,6 +12752,9 @@ n
 <td style="text-align:left;">
 53.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12421,6 +12762,9 @@ n
 <tr>
 <td style="text-align:left;">
 53.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12430,6 +12774,9 @@ n
 <td style="text-align:left;">
 53.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12437,6 +12784,9 @@ n
 <tr>
 <td style="text-align:left;">
 54
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12446,6 +12796,9 @@ n
 <td style="text-align:left;">
 54.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12453,6 +12806,9 @@ n
 <tr>
 <td style="text-align:left;">
 54.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12462,6 +12818,9 @@ n
 <td style="text-align:left;">
 54.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12469,6 +12828,9 @@ n
 <tr>
 <td style="text-align:left;">
 54.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12478,6 +12840,9 @@ n
 <td style="text-align:left;">
 55
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12485,6 +12850,9 @@ n
 <tr>
 <td style="text-align:left;">
 55.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12494,6 +12862,9 @@ n
 <td style="text-align:left;">
 55.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12501,6 +12872,9 @@ n
 <tr>
 <td style="text-align:left;">
 55.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12510,6 +12884,9 @@ n
 <td style="text-align:left;">
 55.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12517,6 +12894,9 @@ n
 <tr>
 <td style="text-align:left;">
 55.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12526,6 +12906,9 @@ n
 <td style="text-align:left;">
 55.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12533,6 +12916,9 @@ n
 <tr>
 <td style="text-align:left;">
 56
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12542,6 +12928,9 @@ n
 <td style="text-align:left;">
 56.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12549,6 +12938,9 @@ n
 <tr>
 <td style="text-align:left;">
 56.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12558,6 +12950,9 @@ n
 <td style="text-align:left;">
 56.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12565,6 +12960,9 @@ n
 <tr>
 <td style="text-align:left;">
 56.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12574,6 +12972,9 @@ n
 <td style="text-align:left;">
 56.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12581,6 +12982,9 @@ n
 <tr>
 <td style="text-align:left;">
 57.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12590,6 +12994,9 @@ n
 <td style="text-align:left;">
 57.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12597,6 +13004,9 @@ n
 <tr>
 <td style="text-align:left;">
 57.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 5
@@ -12606,6 +13016,9 @@ n
 <td style="text-align:left;">
 57.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12613,6 +13026,9 @@ n
 <tr>
 <td style="text-align:left;">
 57.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12622,6 +13038,9 @@ n
 <td style="text-align:left;">
 57.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12629,6 +13048,9 @@ n
 <tr>
 <td style="text-align:left;">
 58
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 4
@@ -12638,6 +13060,9 @@ n
 <td style="text-align:left;">
 58.1
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12645,6 +13070,9 @@ n
 <tr>
 <td style="text-align:left;">
 58.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12654,6 +13082,9 @@ n
 <td style="text-align:left;">
 58.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12661,6 +13092,9 @@ n
 <tr>
 <td style="text-align:left;">
 58.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12670,6 +13104,9 @@ n
 <td style="text-align:left;">
 59.1
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12677,6 +13114,9 @@ n
 <tr>
 <td style="text-align:left;">
 59.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12686,6 +13126,9 @@ n
 <td style="text-align:left;">
 59.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12693,6 +13136,9 @@ n
 <tr>
 <td style="text-align:left;">
 59.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12702,6 +13148,9 @@ n
 <td style="text-align:left;">
 59.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12709,6 +13158,9 @@ n
 <tr>
 <td style="text-align:left;">
 59.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -12718,6 +13170,9 @@ n
 <td style="text-align:left;">
 59.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12725,6 +13180,9 @@ n
 <tr>
 <td style="text-align:left;">
 60
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12734,6 +13192,9 @@ n
 <td style="text-align:left;">
 60.1
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12741,6 +13202,9 @@ n
 <tr>
 <td style="text-align:left;">
 60.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12750,6 +13214,9 @@ n
 <td style="text-align:left;">
 60.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12757,6 +13224,9 @@ n
 <tr>
 <td style="text-align:left;">
 60.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -12766,6 +13236,9 @@ n
 <td style="text-align:left;">
 60.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12773,6 +13246,9 @@ n
 <tr>
 <td style="text-align:left;">
 61
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12782,6 +13258,9 @@ n
 <td style="text-align:left;">
 61.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12789,6 +13268,9 @@ n
 <tr>
 <td style="text-align:left;">
 61.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 4
@@ -12798,6 +13280,9 @@ n
 <td style="text-align:left;">
 61.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12805,6 +13290,9 @@ n
 <tr>
 <td style="text-align:left;">
 61.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12814,6 +13302,9 @@ n
 <td style="text-align:left;">
 61.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12821,6 +13312,9 @@ n
 <tr>
 <td style="text-align:left;">
 61.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12830,6 +13324,9 @@ n
 <td style="text-align:left;">
 62
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12837,6 +13334,9 @@ n
 <tr>
 <td style="text-align:left;">
 62.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12846,6 +13346,9 @@ n
 <td style="text-align:left;">
 62.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12853,6 +13356,9 @@ n
 <tr>
 <td style="text-align:left;">
 62.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12862,6 +13368,9 @@ n
 <td style="text-align:left;">
 62.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12869,6 +13378,9 @@ n
 <tr>
 <td style="text-align:left;">
 62.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -12878,6 +13390,9 @@ n
 <td style="text-align:left;">
 62.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12885,6 +13400,9 @@ n
 <tr>
 <td style="text-align:left;">
 62.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12894,6 +13412,9 @@ n
 <td style="text-align:left;">
 63
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12901,6 +13422,9 @@ n
 <tr>
 <td style="text-align:left;">
 63.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12910,6 +13434,9 @@ n
 <td style="text-align:left;">
 63.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12917,6 +13444,9 @@ n
 <tr>
 <td style="text-align:left;">
 63.4
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 6
@@ -12926,6 +13456,9 @@ n
 <td style="text-align:left;">
 63.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12933,6 +13466,9 @@ n
 <tr>
 <td style="text-align:left;">
 63.6
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12942,6 +13478,9 @@ n
 <td style="text-align:left;">
 63.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -12949,6 +13488,9 @@ n
 <tr>
 <td style="text-align:left;">
 63.9
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12958,6 +13500,9 @@ n
 <td style="text-align:left;">
 64
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12965,6 +13510,9 @@ n
 <tr>
 <td style="text-align:left;">
 64.099999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -12974,6 +13522,9 @@ n
 <td style="text-align:left;">
 64.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -12981,6 +13532,9 @@ n
 <tr>
 <td style="text-align:left;">
 64.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -12990,6 +13544,9 @@ n
 <td style="text-align:left;">
 64.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -12997,6 +13554,9 @@ n
 <tr>
 <td style="text-align:left;">
 64.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13006,6 +13566,9 @@ n
 <td style="text-align:left;">
 64.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13013,6 +13576,9 @@ n
 <tr>
 <td style="text-align:left;">
 64.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13022,6 +13588,9 @@ n
 <td style="text-align:left;">
 64.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13029,6 +13598,9 @@ n
 <tr>
 <td style="text-align:left;">
 64.900000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13038,6 +13610,9 @@ n
 <td style="text-align:left;">
 65
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13045,6 +13620,9 @@ n
 <tr>
 <td style="text-align:left;">
 65.099999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13054,6 +13632,9 @@ n
 <td style="text-align:left;">
 65.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13061,6 +13642,9 @@ n
 <tr>
 <td style="text-align:left;">
 65.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13070,6 +13654,9 @@ n
 <td style="text-align:left;">
 65.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13077,6 +13664,9 @@ n
 <tr>
 <td style="text-align:left;">
 65.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13086,6 +13676,9 @@ n
 <td style="text-align:left;">
 65.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 5
 </td>
@@ -13093,6 +13686,9 @@ n
 <tr>
 <td style="text-align:left;">
 65.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 5
@@ -13102,6 +13698,9 @@ n
 <td style="text-align:left;">
 65.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13109,6 +13708,9 @@ n
 <tr>
 <td style="text-align:left;">
 66.099999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13118,6 +13720,9 @@ n
 <td style="text-align:left;">
 66.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13125,6 +13730,9 @@ n
 <tr>
 <td style="text-align:left;">
 66.400000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13134,6 +13742,9 @@ n
 <td style="text-align:left;">
 66.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13141,6 +13752,9 @@ n
 <tr>
 <td style="text-align:left;">
 66.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13150,6 +13764,9 @@ n
 <td style="text-align:left;">
 66.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13157,6 +13774,9 @@ n
 <tr>
 <td style="text-align:left;">
 66.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13166,6 +13786,9 @@ n
 <td style="text-align:left;">
 66.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 4
 </td>
@@ -13173,6 +13796,9 @@ n
 <tr>
 <td style="text-align:left;">
 67
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13182,6 +13808,9 @@ n
 <td style="text-align:left;">
 67.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13189,6 +13818,9 @@ n
 <tr>
 <td style="text-align:left;">
 67.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13198,6 +13830,9 @@ n
 <td style="text-align:left;">
 67.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13205,6 +13840,9 @@ n
 <tr>
 <td style="text-align:left;">
 67.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13214,6 +13852,9 @@ n
 <td style="text-align:left;">
 67.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13221,6 +13862,9 @@ n
 <tr>
 <td style="text-align:left;">
 67.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13230,6 +13874,9 @@ n
 <td style="text-align:left;">
 67.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13237,6 +13884,9 @@ n
 <tr>
 <td style="text-align:left;">
 68
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13246,6 +13896,9 @@ n
 <td style="text-align:left;">
 68.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13253,6 +13906,9 @@ n
 <tr>
 <td style="text-align:left;">
 68.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13262,6 +13918,9 @@ n
 <td style="text-align:left;">
 68.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13269,6 +13928,9 @@ n
 <tr>
 <td style="text-align:left;">
 68.400000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13278,6 +13940,9 @@ n
 <td style="text-align:left;">
 68.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13285,6 +13950,9 @@ n
 <tr>
 <td style="text-align:left;">
 68.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13294,6 +13962,9 @@ n
 <td style="text-align:left;">
 68.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13301,6 +13972,9 @@ n
 <tr>
 <td style="text-align:left;">
 68.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13310,6 +13984,9 @@ n
 <td style="text-align:left;">
 69.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13317,6 +13994,9 @@ n
 <tr>
 <td style="text-align:left;">
 69.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13326,6 +14006,9 @@ n
 <td style="text-align:left;">
 69.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13333,6 +14016,9 @@ n
 <tr>
 <td style="text-align:left;">
 69.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13342,6 +14028,9 @@ n
 <td style="text-align:left;">
 69.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13349,6 +14038,9 @@ n
 <tr>
 <td style="text-align:left;">
 69.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13358,6 +14050,9 @@ n
 <td style="text-align:left;">
 69.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 5
 </td>
@@ -13365,6 +14060,9 @@ n
 <tr>
 <td style="text-align:left;">
 69.900000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13374,6 +14072,9 @@ n
 <td style="text-align:left;">
 70.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13381,6 +14082,9 @@ n
 <tr>
 <td style="text-align:left;">
 70.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 6
@@ -13390,6 +14094,9 @@ n
 <td style="text-align:left;">
 70.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13397,6 +14104,9 @@ n
 <tr>
 <td style="text-align:left;">
 70.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13406,6 +14116,9 @@ n
 <td style="text-align:left;">
 70.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13413,6 +14126,9 @@ n
 <tr>
 <td style="text-align:left;">
 70.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13422,6 +14138,9 @@ n
 <td style="text-align:left;">
 70.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13429,6 +14148,9 @@ n
 <tr>
 <td style="text-align:left;">
 71
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13438,6 +14160,9 @@ n
 <td style="text-align:left;">
 71.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13445,6 +14170,9 @@ n
 <tr>
 <td style="text-align:left;">
 71.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13454,6 +14182,9 @@ n
 <td style="text-align:left;">
 71.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13461,6 +14192,9 @@ n
 <tr>
 <td style="text-align:left;">
 71.400000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13470,6 +14204,9 @@ n
 <td style="text-align:left;">
 71.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13477,6 +14214,9 @@ n
 <tr>
 <td style="text-align:left;">
 71.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13486,6 +14226,9 @@ n
 <td style="text-align:left;">
 71.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13493,6 +14236,9 @@ n
 <tr>
 <td style="text-align:left;">
 71.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13502,6 +14248,9 @@ n
 <td style="text-align:left;">
 72.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13509,6 +14258,9 @@ n
 <tr>
 <td style="text-align:left;">
 72.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13518,6 +14270,9 @@ n
 <td style="text-align:left;">
 72.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13525,6 +14280,9 @@ n
 <tr>
 <td style="text-align:left;">
 72.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13534,6 +14292,9 @@ n
 <td style="text-align:left;">
 73.099999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13541,6 +14302,9 @@ n
 <tr>
 <td style="text-align:left;">
 73.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13550,6 +14314,9 @@ n
 <td style="text-align:left;">
 73.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13557,6 +14324,9 @@ n
 <tr>
 <td style="text-align:left;">
 73.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13566,6 +14336,9 @@ n
 <td style="text-align:left;">
 73.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 3
 </td>
@@ -13573,6 +14346,9 @@ n
 <tr>
 <td style="text-align:left;">
 74.099999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13582,6 +14358,9 @@ n
 <td style="text-align:left;">
 74.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13589,6 +14368,9 @@ n
 <tr>
 <td style="text-align:left;">
 74.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -13598,6 +14380,9 @@ n
 <td style="text-align:left;">
 75
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13605,6 +14390,9 @@ n
 <tr>
 <td style="text-align:left;">
 75.400000000000006
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13614,6 +14402,9 @@ n
 <td style="text-align:left;">
 75.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13621,6 +14412,9 @@ n
 <tr>
 <td style="text-align:left;">
 75.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13630,6 +14424,9 @@ n
 <td style="text-align:left;">
 75.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13637,6 +14434,9 @@ n
 <tr>
 <td style="text-align:left;">
 76.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13646,6 +14446,9 @@ n
 <td style="text-align:left;">
 76.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13653,6 +14456,9 @@ n
 <tr>
 <td style="text-align:left;">
 76.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13662,6 +14468,9 @@ n
 <td style="text-align:left;">
 76.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13669,6 +14478,9 @@ n
 <tr>
 <td style="text-align:left;">
 76.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13678,6 +14490,9 @@ n
 <td style="text-align:left;">
 77.2
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13685,6 +14500,9 @@ n
 <tr>
 <td style="text-align:left;">
 77.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13694,6 +14512,9 @@ n
 <td style="text-align:left;">
 78
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13701,6 +14522,9 @@ n
 <tr>
 <td style="text-align:left;">
 78.099999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13710,6 +14534,9 @@ n
 <td style="text-align:left;">
 78.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13717,6 +14544,9 @@ n
 <tr>
 <td style="text-align:left;">
 78.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13726,6 +14556,9 @@ n
 <td style="text-align:left;">
 78.900000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13733,6 +14566,9 @@ n
 <tr>
 <td style="text-align:left;">
 79
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13742,6 +14578,9 @@ n
 <td style="text-align:left;">
 79.599999999999994
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13749,6 +14588,9 @@ n
 <tr>
 <td style="text-align:left;">
 79.7
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13758,6 +14600,9 @@ n
 <td style="text-align:left;">
 80
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13765,6 +14610,9 @@ n
 <tr>
 <td style="text-align:left;">
 80.3
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13774,6 +14622,9 @@ n
 <td style="text-align:left;">
 80.400000000000006
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13781,6 +14632,9 @@ n
 <tr>
 <td style="text-align:left;">
 80.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 2
@@ -13790,6 +14644,9 @@ n
 <td style="text-align:left;">
 80.8
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13797,6 +14654,9 @@ n
 <tr>
 <td style="text-align:left;">
 81.599999999999994
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13806,6 +14666,9 @@ n
 <td style="text-align:left;">
 82
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13813,6 +14676,9 @@ n
 <tr>
 <td style="text-align:left;">
 82.2
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13822,6 +14688,9 @@ n
 <td style="text-align:left;">
 82.3
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13829,6 +14698,9 @@ n
 <tr>
 <td style="text-align:left;">
 82.5
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13838,6 +14710,9 @@ n
 <td style="text-align:left;">
 82.9
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13845,6 +14720,9 @@ n
 <tr>
 <td style="text-align:left;">
 83.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13854,6 +14732,9 @@ n
 <td style="text-align:left;">
 84.6
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 2
 </td>
@@ -13861,6 +14742,9 @@ n
 <tr>
 <td style="text-align:left;">
 85.1
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13870,6 +14754,9 @@ n
 <td style="text-align:left;">
 85.5
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13877,6 +14764,9 @@ n
 <tr>
 <td style="text-align:left;">
 85.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13886,6 +14776,9 @@ n
 <td style="text-align:left;">
 86.7
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13893,6 +14786,9 @@ n
 <tr>
 <td style="text-align:left;">
 86.8
+</td>
+<td style="text-align:left;">
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -13902,6 +14798,9 @@ n
 <td style="text-align:left;">
 87.4
 </td>
+<td style="text-align:left;">
+flag
+</td>
 <td style="text-align:right;">
 1
 </td>
@@ -13909,6 +14808,9 @@ n
 <tr>
 <td style="text-align:left;">
 client refused
+</td>
+<td style="text-align:left;">
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -13918,6 +14820,9 @@ client refused
 <td style="text-align:left;">
 data not collected
 </td>
+<td style="text-align:left;">
+unknown
+</td>
 <td style="text-align:right;">
 7316
 </td>
@@ -13926,11 +14831,17 @@ data not collected
 <td style="text-align:left;">
 n/a
 </td>
+<td style="text-align:left;">
+unknown
+</td>
 <td style="text-align:right;">
 1
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+no
+</td>
 <td style="text-align:left;">
 no
 </td>
@@ -13942,11 +14853,17 @@ no
 <td style="text-align:left;">
 unknown
 </td>
+<td style="text-align:left;">
+unknown
+</td>
 <td style="text-align:right;">
 835
 </td>
 </tr>
 <tr>
+<td style="text-align:left;">
+yes
+</td>
 <td style="text-align:left;">
 yes
 </td>
@@ -13957,6 +14874,9 @@ yes
 <tr>
 <td style="text-align:left;">
 NA
+</td>
+<td style="text-align:left;">
+unknown
 </td>
 <td style="text-align:right;">
 1010
@@ -13991,7 +14911,9 @@ house”/“living alone” - rent leaseholder? other permanent housing? Could
 also be owner I suppose? “living with family”/“living with relative” -
 this could be either temporary housing or other permanent housing..
 “with others rent” - my guess is this should go under “other permanent
-housing” which includes in () “renting a room without a lease?
+housing” which includes in () “renting a room without a lease?”fleeing
+dv” - ?? “permanent housing” - ?? other permanent housing? rent
+leaseholder?
 
 ``` r
 demo_dat <- demo_dat %>% 
@@ -14001,9 +14923,10 @@ demo_dat <- demo_dat %>%
                                              str_detect(living_situation_upon_entry, "rent by|rental by|lease holder") ~ "rent leaseholder",
                                              str_detect(living_situation_upon_entry, "owned|owner") ~ "owner",
                                              str_detect(living_situation_upon_entry, "programperm") ~ "permanent- residential program",
+                                            str_detect(living_situation_upon_entry, "temporary-") ~ "temporary- residential program",
                                              str_detect(living_situation_upon_entry, "hospital") ~ "other",
-                                            str_detect(living_situation_upon_entry, "hotel with rights|facility|shared hous|living with|live alone|with others") ~ "flag",
-                                             str_detect(living_situation_upon_entry, "data not|unknown") ~ "unknown",
+                                             str_detect(living_situation_upon_entry, "data not|unknown|not answer") ~ "unknown",
+                                            str_detect(living_situation_upon_entry, "hotel with rights|facility|shared hous|living with|live alone|with others|fleeing dv|permanent housing|yes|no") ~ "flag",
                                              is.na(living_situation_upon_entry) ~ "unknown",
                                           TRUE ~ living_situation_upon_entry))
 ```
@@ -14092,7 +15015,7 @@ unknown
 fleeing dv
 </td>
 <td style="text-align:left;">
-fleeing dv
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -14268,7 +15191,7 @@ flag
 no
 </td>
 <td style="text-align:left;">
-no
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -14279,7 +15202,7 @@ no
 not answered
 </td>
 <td style="text-align:left;">
-not answered
+unknown
 </td>
 <td style="text-align:right;">
 5
@@ -14301,7 +15224,7 @@ other
 other permanent housing
 </td>
 <td style="text-align:left;">
-other permanent housing
+flag
 </td>
 <td style="text-align:right;">
 151
@@ -14367,7 +15290,7 @@ owner
 permanent housing
 </td>
 <td style="text-align:left;">
-permanent housing
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -14521,7 +15444,7 @@ temporary- residential program
 temporary-residential program
 </td>
 <td style="text-align:left;">
-temporary-residential program
+temporary- residential program
 </td>
 <td style="text-align:right;">
 1
@@ -14565,7 +15488,7 @@ flag
 yes
 </td>
 <td style="text-align:left;">
-yes
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -14703,6 +15626,17 @@ yuba
 </tr>
 <tr>
 <td style="text-align:left;">
+fleeing dv
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 living in a shared house
 </td>
 <td style="text-align:left;">
@@ -14740,6 +15674,292 @@ living with relative
 </td>
 <td style="text-align:left;">
 los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other permanent housing
+</td>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent housing
+</td>
+<td style="text-align:left;">
+madera
 </td>
 <td style="text-align:right;">
 1
@@ -15537,16 +16757,326 @@ yuba
 2
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+And for just a list of counties:
+
+``` r
+demo_dat %>% 
+  filter(str_detect(living_sit_entry_recode, "flag")) %>% 
+  count(reporting_agency)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+reporting_agency
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+alameda
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+butte
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+contra costa
+</td>
+<td style="text-align:right;">
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fresno
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+glenn
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+kern
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+los angeles
+</td>
+<td style="text-align:right;">
+119
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+madera
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+marin
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mariposa
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mendocino
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mono
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+napa
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+nevada
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+placer
+</td>
+<td style="text-align:right;">
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sacramento
+</td>
+<td style="text-align:right;">
+102
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+san bernardino
+</td>
+<td style="text-align:right;">
+341
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+san diego
+</td>
+<td style="text-align:right;">
+109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+san francisco
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+san joaquin
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+san mateo
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+santa clara
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+santa cruz
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+shasta
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sonoma
+</td>
+<td style="text-align:right;">
+55
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tulare
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ventura
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yuba
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
 </tbody>
 </table>
 
 </div>
 
 client homeless within the last 3 years - answers should be yes or no.
-Leaving numbers alone for now. Changing 3 years or longer, within the
-last year, within the last 3 years, currently homeless to “yes”.
-Changing client was not homeless to “no”. Combining doesn’t know,
-refused, data not collected, unknown, blank as “unknown”.
+Changing 3 years or longer, within the last year, within the last 3
+years, currently homeless to “yes”. Changing client was not homeless to
+“no”. Combining doesn’t know, refused, data not collected, unknown,
+blank as “unknown”.
 
 Question: one response that is “n” - I’m guessing this might be no? But
 there is another response with n/a, which is what they might’ve been
@@ -15557,7 +17087,7 @@ demo_dat <- demo_dat %>%
   mutate(client_homeless_last_three_years_recode = case_when(str_detect(client_homeless_within_the_last_three_years, "three years or|within the last|currently homeles") ~ "yes",
                                                   str_detect(client_homeless_within_the_last_three_years, "client was not homeles") ~ "no",
                                                   str_equal(client_homeless_within_the_last_three_years, "n") ~ "no",
-                                                  str_detect(client_homeless_within_the_last_three_years, "doesn't know|refused|n/a|data not") ~ "unknown",
+                                                  str_detect(client_homeless_within_the_last_three_years, "doesn't know|refused|n/a|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                                   is.na(client_homeless_within_the_last_three_years) ~ "unknown",
                                                   TRUE ~ client_homeless_within_the_last_three_years))
 ```
@@ -15591,7 +17121,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 4
@@ -15714,6 +17244,7 @@ demo_dat <- demo_dat %>%
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
                                                   str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "currently") ~ "flag",
                                                   is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
                                                   TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
 ```
@@ -15967,7 +17498,7 @@ client was not homeless
 currently homeless
 </td>
 <td style="text-align:left;">
-currently homeless
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -16085,21 +17616,24 @@ question (last period of homelessness). Looking at what those records
 have for last period, both don’t really make sense, so double check
 after column issue fix? (Sara) - there must be a better way to code
 replacing numbers with the number written out? (i.e. 5 months –\> five
-months)
+months) “no” and “none” - change to client was not homeless?
 
 ``` r
 demo_dat <- demo_dat %>% 
   mutate(total_duration_homeless_recode = case_when(str_equal(total_duration_of_homelessness, "0") ~ "client was not homeless",
+                                                    str_equal(total_duration_of_homelessness, "none") ~ "flag",
+                                                    str_equal(total_duration_of_homelessness, "no") ~ "flag",
+                                                    str_ends(total_duration_of_homelessness, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
                                                     str_detect(total_duration_of_homelessness, "not homeless") ~ "client was not homeless",
                                                     str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99") ~ "unknown",
-                                                    str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a year|years or longer") ~ "more than a year",
+                                                    str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a |years or longer|more than 12 mo") ~ "more than a year",
                                                     str_detect(total_duration_of_homelessness, "1 day to one month") ~"one day to one month",
                                                     str_detect(total_duration_of_homelessness, "5 mon") ~ "five months",
                                                     str_detect(total_duration_of_homelessness, "6 mon") ~ "six months",
-                                                    str_detect(total_duration_of_homelessness, "to one year|less than 12 months|within the last|currently homeless") ~ "flag",
+                                                    str_detect(total_duration_of_homelessness, "one day to one m") ~ "one day to one month",
+                                                    str_detect(total_duration_of_homelessness, "less than 12 months|within the last|currently homeless|to ") ~ "flag",
                                                     str_equal(total_duration_of_homelessness, "n") ~ "unknown",
                                                     is.na(total_duration_of_homelessness) ~ "unknown",
-                                                    
                                                     TRUE ~ total_duration_of_homelessness))
 ```
 
@@ -16143,7 +17677,7 @@ client was not homeless
 2
 </td>
 <td style="text-align:left;">
-2
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -16341,7 +17875,7 @@ flag
 more than 12 months
 </td>
 <td style="text-align:left;">
-more than 12 months
+more than a year
 </td>
 <td style="text-align:right;">
 7
@@ -16352,7 +17886,7 @@ more than 12 months
 more than a a year
 </td>
 <td style="text-align:left;">
-more than a a year
+more than a year
 </td>
 <td style="text-align:right;">
 1
@@ -16408,7 +17942,7 @@ nine months
 no
 </td>
 <td style="text-align:left;">
-no
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -16419,7 +17953,7 @@ no
 none
 </td>
 <td style="text-align:left;">
-unknown
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -16540,7 +18074,7 @@ two months
 two to six months
 </td>
 <td style="text-align:left;">
-two to six months
+flag
 </td>
 <td style="text-align:right;">
 223
@@ -16583,8 +18117,8 @@ wondering if I should treat the same)
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(current_eviction_recode = case_when(str_detect(current_eviction_or_foreclosures, "doesn't know|refused|data not|n/a") ~ "unknown",
-                                             str_detect(current_eviction_or_foreclosures, "none") ~ "no",
+  mutate(current_eviction_recode = case_when(str_detect(current_eviction_or_foreclosures, "doesn't know|refused|data not|n/a|unknown|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                             str_detect(current_eviction_or_foreclosures, "none|n") ~ "no",
                                              is.na(current_eviction_or_foreclosures) ~ "unknown",
                                             TRUE ~ current_eviction_or_foreclosures ))
 ```
@@ -16618,7 +18152,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 4
@@ -16629,7 +18163,7 @@ n
 1
 </td>
 <td style="text-align:left;">
-1
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -16640,7 +18174,7 @@ n
 99
 </td>
 <td style="text-align:left;">
-99
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -16684,7 +18218,7 @@ unknown
 n
 </td>
 <td style="text-align:left;">
-n
+no
 </td>
 <td style="text-align:right;">
 1
@@ -16761,12 +18295,21 @@ unknown
 
 </div>
 
-Previous Evictions or Foreclosures - this one is truly so messy I will
-hold off until we see the new data with column issue fix
+Previous Evictions or Foreclosures - combining unknowns.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                               str_detect(previous_evictions_or_foreclosures, "none") ~ "no",
+                                               is.na(previous_evictions_or_foreclosures) ~ "unknown",
+                                               TRUE ~ previous_evictions_or_foreclosures))
+```
+
+check for previous evictions
 
 ``` r
 demo_dat %>% 
-  count(previous_evictions_or_foreclosures)
+  count()
 ```
 
 <div class="kable-table">
@@ -16774,9 +18317,6 @@ demo_dat %>%
 <table>
 <thead>
 <tr>
-<th style="text-align:left;">
-previous_evictions_or_foreclosures
-</th>
 <th style="text-align:right;">
 n
 </th>
@@ -16784,107 +18324,8 @@ n
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-0
-</td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-99
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:right;">
-37
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:right;">
-26
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client was not homeless
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-3727
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-n/a
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-6041
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1853
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-1291
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-91
+13087
 </td>
 </tr>
 </tbody>
@@ -25278,6 +26719,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 13087    53
+    ## [1] 13087    55
 
 # Re-coding variables
