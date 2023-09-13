@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-09-01
+2023-09-06
 
 # Read in data & libraries
 
@@ -14,41 +14,43 @@ demo_dat %>%
   glimpse()
 ```
 
-    ## Rows: 14,690
-    ## Columns: 33
-    ## $ id                                                            <dbl> 116726, …
-    ## $ reporting_agency                                              <chr> "San Ber…
-    ## $ location_of_participation                                     <chr> NA, NA, …
-    ## $ gender_identity                                               <chr> "29 Palm…
-    ## $ race_1                                                        <chr> "Female"…
-    ## $ race_2                                                        <chr> "Unknown…
-    ## $ ethnicity                                                     <chr> "Data No…
-    ## $ current_marital_status                                        <chr> "Unknown…
-    ## $ sexual_orientation                                            <chr> "English…
-    ## $ preferred_language                                            <chr> "No", "N…
-    ## $ veteran_status                                                <chr> "Yes", "…
-    ## $ medi_cal                                                      <chr> "No", "Y…
-    ## $ medicare                                                      <chr> "No", "N…
-    ## $ representative_payee_or_conservator                           <chr> "Homeles…
-    ## $ living_situation_upon_entry                                   <chr> "0", "0"…
-    ## $ monthly_rent_mortgage_contribution                            <dbl> NA, NA, …
-    ## $ client_homeless_within_the_last_three_years                   <chr> "Current…
-    ## $ number_of_times_homelessness_occurred_in_the_last_three_years <chr> "No", "Y…
-    ## $ total_duration_of_homelessness                                <chr> "Yes", "…
-    ## $ last_period_of_homelessness                                   <chr> "No", "N…
-    ## $ current_eviction_or_foreclosures                              <chr> "No", "N…
-    ## $ previous_evictions_or_foreclosures                            <chr> "44789.7…
+    ## Rows: 13,087
+    ## Columns: 35
+    ## $ id                                                            <chr> "113443"…
+    ## $ reporting_agency                                              <chr> "Alameda…
+    ## $ age                                                           <dbl> 54.76, 7…
+    ## $ case_start_date                                               <chr> "2022-10…
+    ## $ location_of_participation                                     <chr> "Castro …
+    ## $ gender_identity                                               <chr> "Female"…
+    ## $ race_1                                                        <chr> "Client …
+    ## $ race_2                                                        <chr> "Data No…
+    ## $ ethnicity                                                     <chr> "Hispani…
+    ## $ current_marital_status                                        <chr> "Widowed…
+    ## $ sexual_orientation                                            <chr> "Straigh…
+    ## $ preferred_language                                            <chr> "Spanish…
+    ## $ veteran_status                                                <chr> "Data No…
+    ## $ medi_cal                                                      <chr> "Data No…
+    ## $ medicare                                                      <chr> "Data No…
+    ## $ representative_payee_or_conservator                           <chr> "Data No…
+    ## $ living_situation_upon_entry                                   <chr> "Other P…
+    ## $ monthly_rent_mortgage_contribution                            <chr> NA, "130…
+    ## $ client_homeless_within_the_last_three_years                   <chr> "No", "N…
+    ## $ number_of_times_homelessness_occurred_in_the_last_three_years <chr> "Client …
+    ## $ total_duration_of_homelessness                                <chr> "Data No…
+    ## $ last_period_of_homelessness                                   <chr> "Client …
+    ## $ current_eviction_or_foreclosures                              <chr> "Client …
+    ## $ previous_evictions_or_foreclosures                            <chr> "No", "N…
     ## $ discharge_from_institution_in_the_last_six_months             <chr> "No", "N…
-    ## $ aps_report_date                                               <dttm> 1902-09…
-    ## $ aps_report_location                                           <chr> "Tempora…
-    ## $ abuse_by_other_financial                                      <chr> NA, NA, …
-    ## $ abuse_by_other_non_financial                                  <chr> NA, NA, …
-    ## $ self_neglect                                                  <chr> NA, NA, …
-    ## $ reporting_source                                              <chr> NA, NA, …
-    ## $ previous_aps_involvement                                      <chr> NA, NA, …
-    ## $ income_from_benefits                                          <dbl> NA, NA, …
-    ## $ work_for_pay                                                  <dbl> NA, NA, …
-    ## $ other_income                                                  <dbl> NA, NA, …
+    ## $ aps_report_date                                               <chr> "2022-09…
+    ## $ aps_report_location                                           <chr> "Castro …
+    ## $ abuse_by_other_financial                                      <chr> "No", "Y…
+    ## $ abuse_by_other_non_financial                                  <chr> "No", "N…
+    ## $ self_neglect                                                  <chr> "Yes", "…
+    ## $ reporting_source                                              <chr> "Unknown…
+    ## $ previous_aps_involvement                                      <chr> "No", "N…
+    ## $ income_from_benefits                                          <dbl> NA, 3000…
+    ## $ work_for_pay                                                  <chr> NA, "0",…
+    ## $ other_income                                                  <chr> NA, "0",…
 
 # Clean up demographic data
 
@@ -69,7 +71,9 @@ misspellings. Leaving combined cities or ones that seem similar
 that all of these are in fact cities (I only verified for ones I
 suspected having misspellings). Remove Zip codes from the end of cities
 listed. Combining all unknown’s into one (data not collected, refused,
-doesn’t know etc).
+doesn’t know etc). Changing responses “ca” to “unknown”. Flagging , “2
+houses from corner tx”, “north side of parking lot”, “home” and
+“homeless”, “outside california”, not sure what to do with these.
 
 ### Questions:
 
@@ -79,12 +83,13 @@ for now) responses i.e. “coulterville/la grange” (so combo of two
 cities) - leave as is? “north side of parking lot” - ? “sin city” -
 might be sun city? (there is no sin city in california it seems) “ylp” -
 ? what to do with zipcodes? (shall I go look up the cities for those
-codes?) home, homeless, female, male - are in the data so double check
-after new data comes in
+codes?) home, homeless - are in the data still outside california - ?
+exclude?
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(location_of_participation_recode = case_when(str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, "ca|, ca", ""),
+  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california") ~ "flag",
+                                                      str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, " ca|, ca", ""),
                                                       str_ends(location_of_participation, "california") ~ str_replace_all(location_of_participation, " california", ""),
                                                       str_detect(location_of_participation, ":") ~ "laguna beach",
                                                       str_detect(location_of_participation, "bakersf|bakerf") ~ "bakersfield",
@@ -97,14 +102,19 @@ demo_dat <- demo_dat %>%
                                                       str_detect(location_of_participation, "clairem") ~ "claremont",
                                                       str_detect(location_of_participation, "cochell") ~ "coachella", 
                                                       str_detect(location_of_participation, "desesrt|desrt") ~ "desert hot springs",
+                                                      str_detect(location_of_participation, "eurek") ~ "eureka",
                                                       str_detect(location_of_participation, "frasier") ~ "frazier park",
                                                       str_detect(location_of_participation, "idlewild") ~ "idyllwild",
                                                       str_detect(location_of_participation, "jurupa") ~"jurupa valley",
                                                       str_detect(location_of_participation, "mills hospital in b") ~ "burlingame",
-                                                      str_detect(location_of_participation, "mountainview") ~"mountain view",
+                                                      str_detect(location_of_participation, "monti r") ~ "monte rio",
+                                                      str_detect(location_of_participation, "moren") ~ "moreno valley",
+                                                      str_detect(location_of_participation, "mountianview|mountainview|moutain v") ~"mountain view",
                                                       str_detect(location_of_participation, "murreta") ~ "murrieta",
                                                       str_detect(location_of_participation, "pachecc") ~ "pacheco",
+                                                      str_detect(location_of_participation, "north palm sp") ~ "north palm springs",
                                                       str_detect(location_of_participation, "palms sp|palm spr|palm dpr") ~ "palm springs",
+                                                      str_detect(location_of_participation, "palo aal") ~ "palo alto",
                                                       str_detect(location_of_participation, "ranch mira") ~ "rancho mirage",
                                                       str_detect(location_of_participation, "rancho cucam") ~ "rancho cucamonga",
                                                       str_detect(location_of_participation, "richomo") ~ "richmond",
@@ -114,7 +124,9 @@ demo_dat <- demo_dat %>%
                                                       str_detect(location_of_participation, "sacrment|sacarament|sarcamen") ~ "sacramento",
                                                       str_detect(location_of_participation, "san berna|san bera|san bernr") ~ "san bernardino",
                                                       str_detect(location_of_participation, "san dieg") ~ "san diego",
+                                                      str_detect(location_of_participation, "south san fran") ~ "south san francisco",
                                                       str_detect(location_of_participation, "san fra|sf") ~ "san francisco",
+                                                      str_detect(location_of_participation, "slo") ~ "san luis obispo",
                                                       str_detect(location_of_participation, "sugar l") ~ "sugarloaf",
                                                       str_detect(location_of_participation, "tehac") ~ "tehachapi",
                                                       str_detect(location_of_participation, "twenty|29 pal") ~ "twentynine palms",
@@ -131,6 +143,10 @@ demo_dat <- demo_dat %>%
                                                       str_detect(location_of_participation, "yucaipa") ~ "yucaipa",
                                                       
                                                       str_detect(location_of_participation, "data not col|doesn't know|refused|missing|unk") ~ "unknown",
+                                                      str_equal(location_of_participation, "ca") ~ "unknown",
+                                                      str_equal(location_of_participation, "0") ~ "unknown",
+                                                      str_equal(location_of_participation, "home") ~ "flag",
+                                                      str_detect(location_of_participation, "homeless|north side of parking|2 houses") ~ "flag",
                                                       is.na(location_of_participation) ~ "unknown",
                                                       TRUE ~ location_of_participation))
 ```
@@ -175,10 +191,10 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
-8
+1
 </td>
 </tr>
 <tr>
@@ -186,7 +202,7 @@ n
 2 houses from corner tx
 </td>
 <td style="text-align:left;">
-2 houses from corner tx
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -200,18 +216,7 @@ n
 twentynine palms
 </td>
 <td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-4000 orange st
-</td>
-<td style="text-align:left;">
-4000 orange st
-</td>
-<td style="text-align:right;">
-1
+12
 </td>
 </tr>
 <tr>
@@ -227,24 +232,13 @@ twentynine palms
 </tr>
 <tr>
 <td style="text-align:left;">
-43990
+92509
 </td>
 <td style="text-align:left;">
-43990
+92509
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44763
-</td>
-<td style="text-align:left;">
-44763
-</td>
-<td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -253,17 +247,6 @@ twentynine palms
 </td>
 <td style="text-align:left;">
 92543
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-:laguna beach
-</td>
-<td style="text-align:left;">
-laguna beach
 </td>
 <td style="text-align:right;">
 1
@@ -282,24 +265,13 @@ acampo
 </tr>
 <tr>
 <td style="text-align:left;">
-acton
-</td>
-<td style="text-align:left;">
-acton
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 adelanto
 </td>
 <td style="text-align:left;">
 adelanto
 </td>
 <td style="text-align:right;">
-7
+10
 </td>
 </tr>
 <tr>
@@ -310,7 +282,7 @@ alameda
 alameda
 </td>
 <td style="text-align:right;">
-7
+9
 </td>
 </tr>
 <tr>
@@ -343,7 +315,7 @@ alhambra
 alhambra
 </td>
 <td style="text-align:right;">
-13
+7
 </td>
 </tr>
 <tr>
@@ -352,6 +324,39 @@ alpine
 </td>
 <td style="text-align:left;">
 alpine
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alta loma
+</td>
+<td style="text-align:left;">
+alta loma
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+altadena
+</td>
+<td style="text-align:left;">
+altadena
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alturas, ca
+</td>
+<td style="text-align:left;">
+alturas
 </td>
 <td style="text-align:right;">
 1
@@ -359,10 +364,43 @@ alpine
 </tr>
 <tr>
 <td style="text-align:left;">
-alta loma
+american canyon
 </td>
 <td style="text-align:left;">
-alta loma
+american canyon
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+anaheim
+</td>
+<td style="text-align:left;">
+anaheim
+</td>
+<td style="text-align:right;">
+57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+anderson
+</td>
+<td style="text-align:left;">
+anderson
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+antelope
+</td>
+<td style="text-align:left;">
+antelope
 </td>
 <td style="text-align:right;">
 6
@@ -370,68 +408,13 @@ alta loma
 </tr>
 <tr>
 <td style="text-align:left;">
-altadena
-</td>
-<td style="text-align:left;">
-altadena
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-american canyon
-</td>
-<td style="text-align:left;">
-american canyon
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-anaheim
-</td>
-<td style="text-align:left;">
-anaheim
-</td>
-<td style="text-align:right;">
-46
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-anderson
-</td>
-<td style="text-align:left;">
-anderson
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-antelope
-</td>
-<td style="text-align:left;">
-antelope
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 antioch
 </td>
 <td style="text-align:left;">
 antioch
 </td>
 <td style="text-align:right;">
-45
+43
 </td>
 </tr>
 <tr>
@@ -464,7 +447,7 @@ apple valley
 apple valley
 </td>
 <td style="text-align:right;">
-17
+26
 </td>
 </tr>
 <tr>
@@ -486,7 +469,7 @@ arcadia
 arcadia
 </td>
 <td style="text-align:right;">
-10
+6
 </td>
 </tr>
 <tr>
@@ -497,7 +480,7 @@ arcata
 arcata
 </td>
 <td style="text-align:right;">
-31
+34
 </td>
 </tr>
 <tr>
@@ -508,7 +491,18 @@ arleta
 arleta
 </td>
 <td style="text-align:right;">
-2
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+armona
+</td>
+<td style="text-align:left;">
+armona
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -519,7 +513,7 @@ arroyo grande
 arroyo grande
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -530,7 +524,7 @@ artesia
 artesia
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -563,7 +557,7 @@ atwater
 atwater
 </td>
 <td style="text-align:right;">
-9
+13
 </td>
 </tr>
 <tr>
@@ -574,7 +568,7 @@ auberry
 auberry
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -585,7 +579,7 @@ auburn
 auburn
 </td>
 <td style="text-align:right;">
-50
+47
 </td>
 </tr>
 <tr>
@@ -607,7 +601,7 @@ azusa
 azusa
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -651,7 +645,7 @@ bakersfield
 bakersfield
 </td>
 <td style="text-align:right;">
-708
+667
 </td>
 </tr>
 <tr>
@@ -673,7 +667,7 @@ bakersfield, ca
 bakersfield
 </td>
 <td style="text-align:right;">
-7
+5
 </td>
 </tr>
 <tr>
@@ -684,7 +678,7 @@ bakersfiled
 bakersfield
 </td>
 <td style="text-align:right;">
-2
+5
 </td>
 </tr>
 <tr>
@@ -695,7 +689,7 @@ baldwin park
 baldwin park
 </td>
 <td style="text-align:right;">
-13
+10
 </td>
 </tr>
 <tr>
@@ -706,7 +700,7 @@ ballico
 ballico
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -728,7 +722,7 @@ banning
 banning
 </td>
 <td style="text-align:right;">
-77
+71
 </td>
 </tr>
 <tr>
@@ -739,7 +733,7 @@ barstow
 barstow
 </td>
 <td style="text-align:right;">
-52
+64
 </td>
 </tr>
 <tr>
@@ -766,13 +760,24 @@ bass lake
 </tr>
 <tr>
 <td style="text-align:left;">
+bastow
+</td>
+<td style="text-align:left;">
+bastow
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 bay point
 </td>
 <td style="text-align:left;">
 bay point
 </td>
 <td style="text-align:right;">
-6
+5
 </td>
 </tr>
 <tr>
@@ -783,7 +788,7 @@ beamount
 beaumont
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -794,7 +799,7 @@ beaumont
 beaumont
 </td>
 <td style="text-align:right;">
-41
+39
 </td>
 </tr>
 <tr>
@@ -805,7 +810,7 @@ bell
 bell
 </td>
 <td style="text-align:right;">
-17
+6
 </td>
 </tr>
 <tr>
@@ -816,7 +821,7 @@ bell gardens
 bell gardens
 </td>
 <td style="text-align:right;">
-14
+7
 </td>
 </tr>
 <tr>
@@ -827,7 +832,18 @@ bellflower
 bellflower
 </td>
 <td style="text-align:right;">
-14
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+belmont
+</td>
+<td style="text-align:left;">
+belmont
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -871,7 +887,7 @@ berkeley
 berkeley
 </td>
 <td style="text-align:right;">
-16
+24
 </td>
 </tr>
 <tr>
@@ -882,7 +898,7 @@ bethel island
 bethel island
 </td>
 <td style="text-align:right;">
-9
+6
 </td>
 </tr>
 <tr>
@@ -893,7 +909,7 @@ beumont
 beaumont
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -904,7 +920,7 @@ beverly hills
 beverly hills
 </td>
 <td style="text-align:right;">
-10
+6
 </td>
 </tr>
 <tr>
@@ -992,7 +1008,7 @@ blythe
 blythe
 </td>
 <td style="text-align:right;">
-19
+18
 </td>
 </tr>
 <tr>
@@ -1036,7 +1052,7 @@ boron
 boron
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -1047,7 +1063,7 @@ boulder creek
 boulder creek
 </td>
 <td style="text-align:right;">
-10
+12
 </td>
 </tr>
 <tr>
@@ -1124,7 +1140,7 @@ brownsvalley
 brownsvalley
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -1146,7 +1162,7 @@ buena park
 buena park
 </td>
 <td style="text-align:right;">
-8
+9
 </td>
 </tr>
 <tr>
@@ -1157,7 +1173,7 @@ burbank
 burbank
 </td>
 <td style="text-align:right;">
-29
+12
 </td>
 </tr>
 <tr>
@@ -1179,7 +1195,7 @@ burney
 burney
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -1201,7 +1217,7 @@ byron
 byron
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -1209,7 +1225,18 @@ byron
 ca
 </td>
 <td style="text-align:left;">
-ca
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ca 91737
+</td>
+<td style="text-align:left;">
+ca 91737
 </td>
 <td style="text-align:right;">
 1
@@ -1234,7 +1261,7 @@ cabazon
 cabazon
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -1245,7 +1272,7 @@ cailmesa
 calimesa
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -1267,7 +1294,7 @@ calabasas
 calabasas
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -1278,7 +1305,7 @@ california city
 california city
 </td>
 <td style="text-align:right;">
-9
+7
 </td>
 </tr>
 <tr>
@@ -1289,7 +1316,7 @@ calimesa
 calimesa
 </td>
 <td style="text-align:right;">
-14
+13
 </td>
 </tr>
 <tr>
@@ -1300,7 +1327,7 @@ camarillo
 camarillo
 </td>
 <td style="text-align:right;">
-15
+16
 </td>
 </tr>
 <tr>
@@ -1309,6 +1336,17 @@ cambria
 </td>
 <td style="text-align:left;">
 cambria
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+camel valley
+</td>
+<td style="text-align:left;">
+camel valley
 </td>
 <td style="text-align:right;">
 1
@@ -1344,33 +1382,44 @@ canoga park
 canoga park
 </td>
 <td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cantua creek
+</td>
+<td style="text-align:left;">
+cantua creek
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+canyon country
+</td>
+<td style="text-align:left;">
+canyon country
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+canyon lake
+</td>
+<td style="text-align:left;">
+canyon lake
+</td>
+<td style="text-align:right;">
 5
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-canyon country
-</td>
-<td style="text-align:left;">
-canyon country
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-canyon lake
-</td>
-<td style="text-align:left;">
-canyon lake
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 capay
 </td>
 <td style="text-align:left;">
@@ -1388,7 +1437,7 @@ capitola
 capitola
 </td>
 <td style="text-align:right;">
-10
+11
 </td>
 </tr>
 <tr>
@@ -1410,7 +1459,7 @@ carlsbad
 carlsbad
 </td>
 <td style="text-align:right;">
-8
+9
 </td>
 </tr>
 <tr>
@@ -1443,7 +1492,18 @@ carson
 carson
 </td>
 <td style="text-align:right;">
-33
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+caruthers
+</td>
+<td style="text-align:left;">
+caruthers
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -1452,28 +1512,6 @@ castaic
 </td>
 <td style="text-align:left;">
 castaic
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-castella
-</td>
-<td style="text-align:left;">
-castella
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-castro valley
-</td>
-<td style="text-align:left;">
-castro valley
 </td>
 <td style="text-align:right;">
 3
@@ -1481,13 +1519,35 @@ castro valley
 </tr>
 <tr>
 <td style="text-align:left;">
+castella
+</td>
+<td style="text-align:left;">
+castella
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+castro valley
+</td>
+<td style="text-align:left;">
+castro valley
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 cathedral city
 </td>
 <td style="text-align:left;">
 cathedral city
 </td>
 <td style="text-align:right;">
-77
+80
 </td>
 </tr>
 <tr>
@@ -1496,17 +1556,6 @@ catherdal city
 </td>
 <td style="text-align:left;">
 cathedral city
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-cathey valley
-</td>
-<td style="text-align:left;">
-catheys valley
 </td>
 <td style="text-align:right;">
 1
@@ -1547,6 +1596,17 @@ cayucos
 </tr>
 <tr>
 <td style="text-align:left;">
+cedar pines park
+</td>
+<td style="text-align:left;">
+cedar pines park
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 cedar ridge
 </td>
 <td style="text-align:left;">
@@ -1564,7 +1624,7 @@ ceres
 ceres
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -1575,7 +1635,7 @@ cerritos
 cerritos
 </td>
 <td style="text-align:right;">
-4
+1
 </td>
 </tr>
 <tr>
@@ -1597,7 +1657,7 @@ chatsworth
 chatsworth
 </td>
 <td style="text-align:right;">
-18
+8
 </td>
 </tr>
 <tr>
@@ -1608,7 +1668,7 @@ cherry valley
 cherry valley
 </td>
 <td style="text-align:right;">
-9
+11
 </td>
 </tr>
 <tr>
@@ -1630,7 +1690,18 @@ chico
 chico
 </td>
 <td style="text-align:right;">
-59
+71
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chico ca
+</td>
+<td style="text-align:left;">
+chico
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -1641,7 +1712,7 @@ chino
 chino
 </td>
 <td style="text-align:right;">
-34
+37
 </td>
 </tr>
 <tr>
@@ -1663,7 +1734,7 @@ chowchilla
 chowchilla
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -1674,7 +1745,7 @@ chula vista
 chula vista
 </td>
 <td style="text-align:right;">
-22
+27
 </td>
 </tr>
 <tr>
@@ -1685,7 +1756,7 @@ citrus heights
 citrus heights
 </td>
 <td style="text-align:right;">
-23
+32
 </td>
 </tr>
 <tr>
@@ -1696,7 +1767,7 @@ city of commerce
 city of commerce
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -1729,7 +1800,7 @@ clayton
 clayton
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -1740,7 +1811,7 @@ clearlake
 clearlake
 </td>
 <td style="text-align:right;">
-6
+1
 </td>
 </tr>
 <tr>
@@ -1751,7 +1822,7 @@ cloverdale
 cloverdale
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -1762,7 +1833,7 @@ clovis
 clovis
 </td>
 <td style="text-align:right;">
-9
+12
 </td>
 </tr>
 <tr>
@@ -1773,7 +1844,7 @@ coachella
 coachella
 </td>
 <td style="text-align:right;">
-24
+26
 </td>
 </tr>
 <tr>
@@ -1850,7 +1921,7 @@ colfax
 colfax
 </td>
 <td style="text-align:right;">
-11
+9
 </td>
 </tr>
 <tr>
@@ -1861,7 +1932,7 @@ colton
 colton
 </td>
 <td style="text-align:right;">
-11
+15
 </td>
 </tr>
 <tr>
@@ -1872,7 +1943,7 @@ colusa
 colusa
 </td>
 <td style="text-align:right;">
-18
+20
 </td>
 </tr>
 <tr>
@@ -1883,7 +1954,7 @@ compton
 compton
 </td>
 <td style="text-align:right;">
-24
+10
 </td>
 </tr>
 <tr>
@@ -1894,7 +1965,7 @@ concord
 concord
 </td>
 <td style="text-align:right;">
-63
+61
 </td>
 </tr>
 <tr>
@@ -1905,7 +1976,7 @@ corcoran
 corcoran
 </td>
 <td style="text-align:right;">
-37
+36
 </td>
 </tr>
 <tr>
@@ -1916,7 +1987,7 @@ corning
 corning
 </td>
 <td style="text-align:right;">
-30
+31
 </td>
 </tr>
 <tr>
@@ -1927,7 +1998,7 @@ corona
 corona
 </td>
 <td style="text-align:right;">
-143
+141
 </td>
 </tr>
 <tr>
@@ -1943,6 +2014,17 @@ corona
 </tr>
 <tr>
 <td style="text-align:left;">
+coronado
+</td>
+<td style="text-align:left;">
+coronado
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 corte madera
 </td>
 <td style="text-align:left;">
@@ -1960,7 +2042,7 @@ costa mesa
 costa mesa
 </td>
 <td style="text-align:right;">
-22
+26
 </td>
 </tr>
 <tr>
@@ -1969,17 +2051,6 @@ cotati
 </td>
 <td style="text-align:left;">
 cotati
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-cottonwood
-</td>
-<td style="text-align:left;">
-cottonwood
 </td>
 <td style="text-align:right;">
 2
@@ -1987,43 +2058,10 @@ cottonwood
 </tr>
 <tr>
 <td style="text-align:left;">
-coulterville
+cottonwood
 </td>
 <td style="text-align:left;">
-coulterville
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-coulterville/la grange
-</td>
-<td style="text-align:left;">
-coulterville/la grange
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-covina
-</td>
-<td style="text-align:left;">
-covina
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-crescent city
-</td>
-<td style="text-align:left;">
-crescent city
+cottonwood
 </td>
 <td style="text-align:right;">
 3
@@ -2031,13 +2069,57 @@ crescent city
 </tr>
 <tr>
 <td style="text-align:left;">
+coulterville
+</td>
+<td style="text-align:left;">
+coulterville
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+coulterville/la grange
+</td>
+<td style="text-align:left;">
+coulterville/la grange
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+covina
+</td>
+<td style="text-align:left;">
+covina
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crescent city
+</td>
+<td style="text-align:left;">
+crescent city
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 crestline
 </td>
 <td style="text-align:left;">
 crestline
 </td>
 <td style="text-align:right;">
-5
+9
 </td>
 </tr>
 <tr>
@@ -2070,7 +2152,7 @@ cudahy
 cudahy
 </td>
 <td style="text-align:right;">
-7
+3
 </td>
 </tr>
 <tr>
@@ -2081,7 +2163,7 @@ culver city
 culver city
 </td>
 <td style="text-align:right;">
-11
+7
 </td>
 </tr>
 <tr>
@@ -2136,18 +2218,7 @@ dana point
 dana point
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -2213,7 +2284,7 @@ desert hot springs
 desert hot springs
 </td>
 <td style="text-align:right;">
-130
+133
 </td>
 </tr>
 <tr>
@@ -2268,18 +2339,7 @@ dos palos
 dos palos
 </td>
 <td style="text-align:right;">
-17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-douglas city
-</td>
-<td style="text-align:left;">
-douglas city
-</td>
-<td style="text-align:right;">
-1
+15
 </td>
 </tr>
 <tr>
@@ -2290,15 +2350,15 @@ downey
 downey
 </td>
 <td style="text-align:right;">
-30
+13
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-doyle
+duarte
 </td>
 <td style="text-align:left;">
-doyle
+duarte
 </td>
 <td style="text-align:right;">
 1
@@ -2306,13 +2366,13 @@ doyle
 </tr>
 <tr>
 <td style="text-align:left;">
-duarte
+dublin
 </td>
 <td style="text-align:left;">
-duarte
+dublin
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -2345,7 +2405,7 @@ east los angeles
 east los angeles
 </td>
 <td style="text-align:right;">
-5
+3
 </td>
 </tr>
 <tr>
@@ -2367,7 +2427,7 @@ eastvale
 eastvale
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -2378,7 +2438,7 @@ el cajon
 el cajon
 </td>
 <td style="text-align:right;">
-40
+45
 </td>
 </tr>
 <tr>
@@ -2387,204 +2447,6 @@ el cerrito
 </td>
 <td style="text-align:left;">
 el cerrito
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-el monte
-</td>
-<td style="text-align:left;">
-el monte
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-el nido
-</td>
-<td style="text-align:left;">
-el nido
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-el portal
-</td>
-<td style="text-align:left;">
-el portal
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-el segundo
-</td>
-<td style="text-align:left;">
-el segundo
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-el sobrante
-</td>
-<td style="text-align:left;">
-el sobrante
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-elk grove
-</td>
-<td style="text-align:left;">
-elk grove
-</td>
-<td style="text-align:right;">
-27
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-elverta
-</td>
-<td style="text-align:left;">
-elverta
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-emeryville
-</td>
-<td style="text-align:left;">
-emeryville
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-encinitas
-</td>
-<td style="text-align:left;">
-encinitas
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-encino
-</td>
-<td style="text-align:left;">
-encino
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-escondido
-</td>
-<td style="text-align:left;">
-escondido
-</td>
-<td style="text-align:right;">
-31
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-eureka
-</td>
-<td style="text-align:left;">
-eureka
-</td>
-<td style="text-align:right;">
-107
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-exeter
-</td>
-<td style="text-align:left;">
-exeter
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-exeter (tulle ville)
-</td>
-<td style="text-align:left;">
-exeter (tulle ville)
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fair oaks
-</td>
-<td style="text-align:left;">
-fair oaks
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fairfax
-</td>
-<td style="text-align:left;">
-fairfax
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fairfield
-</td>
-<td style="text-align:left;">
-fairfield
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fallbrook
-</td>
-<td style="text-align:left;">
-fallbrook
 </td>
 <td style="text-align:right;">
 7
@@ -2592,65 +2454,10 @@ fallbrook
 </tr>
 <tr>
 <td style="text-align:left;">
-farmersville
+el monte
 </td>
 <td style="text-align:left;">
-farmersville
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-felton
-</td>
-<td style="text-align:left;">
-felton
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-39
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ferndale
-</td>
-<td style="text-align:left;">
-ferndale
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fillmore
-</td>
-<td style="text-align:left;">
-fillmore
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-folsom
-</td>
-<td style="text-align:left;">
-folsom
+el monte
 </td>
 <td style="text-align:right;">
 9
@@ -2658,13 +2465,299 @@ folsom
 </tr>
 <tr>
 <td style="text-align:left;">
+el nido
+</td>
+<td style="text-align:left;">
+el nido
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+el portal
+</td>
+<td style="text-align:left;">
+el portal
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+el segundo
+</td>
+<td style="text-align:left;">
+el segundo
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+el sobrante
+</td>
+<td style="text-align:left;">
+el sobrante
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elk creek
+</td>
+<td style="text-align:left;">
+elk creek
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elk grove
+</td>
+<td style="text-align:left;">
+elk grove
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elverta
+</td>
+<td style="text-align:left;">
+elverta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+emeryville
+</td>
+<td style="text-align:left;">
+emeryville
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+empire
+</td>
+<td style="text-align:left;">
+empire
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+encinitas
+</td>
+<td style="text-align:left;">
+encinitas
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+encino
+</td>
+<td style="text-align:left;">
+encino
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+escondido
+</td>
+<td style="text-align:left;">
+escondido
+</td>
+<td style="text-align:right;">
+38
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eurek
+</td>
+<td style="text-align:left;">
+eureka
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eureka
+</td>
+<td style="text-align:left;">
+eureka
+</td>
+<td style="text-align:right;">
+106
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+exeter
+</td>
+<td style="text-align:left;">
+exeter
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+exeter (tulle ville)
+</td>
+<td style="text-align:left;">
+exeter (tulle ville)
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fair oaks
+</td>
+<td style="text-align:left;">
+fair oaks
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fairfax
+</td>
+<td style="text-align:left;">
+fairfax
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fairfield
+</td>
+<td style="text-align:left;">
+fairfield
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fallbrook
+</td>
+<td style="text-align:left;">
+fallbrook
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+farmersville
+</td>
+<td style="text-align:left;">
+farmersville
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+felton
+</td>
+<td style="text-align:left;">
+felton
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ferndale
+</td>
+<td style="text-align:left;">
+ferndale
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fillmore
+</td>
+<td style="text-align:left;">
+fillmore
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+firebaugh
+</td>
+<td style="text-align:left;">
+firebaugh
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+folsom
+</td>
+<td style="text-align:left;">
+folsom
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 fontana
 </td>
 <td style="text-align:left;">
 fontana
 </td>
 <td style="text-align:right;">
-62
+73
 </td>
 </tr>
 <tr>
@@ -2675,7 +2768,7 @@ foresthill
 foresthill
 </td>
 <td style="text-align:right;">
-8
+6
 </td>
 </tr>
 <tr>
@@ -2697,7 +2790,7 @@ fort bragg
 fort bragg
 </td>
 <td style="text-align:right;">
-35
+37
 </td>
 </tr>
 <tr>
@@ -2708,7 +2801,7 @@ fortuna
 fortuna
 </td>
 <td style="text-align:right;">
-15
+16
 </td>
 </tr>
 <tr>
@@ -2719,7 +2812,7 @@ fountain valley
 fountain valley
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -2741,7 +2834,7 @@ frazier park
 frazier park
 </td>
 <td style="text-align:right;">
-6
+5
 </td>
 </tr>
 <tr>
@@ -2752,7 +2845,7 @@ freedom
 freedom
 </td>
 <td style="text-align:right;">
-10
+9
 </td>
 </tr>
 <tr>
@@ -2763,7 +2856,7 @@ fremont
 fremont
 </td>
 <td style="text-align:right;">
-7
+18
 </td>
 </tr>
 <tr>
@@ -2785,7 +2878,7 @@ fresno
 fresno
 </td>
 <td style="text-align:right;">
-107
+121
 </td>
 </tr>
 <tr>
@@ -2796,7 +2889,7 @@ fullerton
 fullerton
 </td>
 <td style="text-align:right;">
-14
+16
 </td>
 </tr>
 <tr>
@@ -2829,7 +2922,7 @@ garden grove
 garden grove
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -2840,7 +2933,7 @@ gardena
 gardena
 </td>
 <td style="text-align:right;">
-51
+30
 </td>
 </tr>
 <tr>
@@ -2851,7 +2944,7 @@ gardena ca
 gardena
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -2895,7 +2988,7 @@ glendale
 glendale
 </td>
 <td style="text-align:right;">
-23
+7
 </td>
 </tr>
 <tr>
@@ -2906,7 +2999,7 @@ glendora
 glendora
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -2922,13 +3015,24 @@ goleta
 </tr>
 <tr>
 <td style="text-align:left;">
+goleta-isla vista
+</td>
+<td style="text-align:left;">
+goleta-isla vista
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 granada hills
 </td>
 <td style="text-align:left;">
 granada hills
 </td>
 <td style="text-align:right;">
-11
+7
 </td>
 </tr>
 <tr>
@@ -2950,62 +3054,62 @@ granite bay
 granite bay
 </td>
 <td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-grass valley
-</td>
-<td style="text-align:left;">
-grass valley
-</td>
-<td style="text-align:right;">
-185
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-gridley
-</td>
-<td style="text-align:left;">
-gridley
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-grover beach
-</td>
-<td style="text-align:left;">
-grover beach
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-gualala
-</td>
-<td style="text-align:left;">
-gualala
-</td>
-<td style="text-align:right;">
 2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
+grass valley
+</td>
+<td style="text-align:left;">
+grass valley
+</td>
+<td style="text-align:right;">
+121
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gridley
+</td>
+<td style="text-align:left;">
+gridley
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+grover beach
+</td>
+<td style="text-align:left;">
+grover beach
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gualala
+</td>
+<td style="text-align:left;">
+gualala
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 guerneville
 </td>
 <td style="text-align:left;">
 guerneville
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -3027,7 +3131,7 @@ hacienda heights
 hacienda heights
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -3060,7 +3164,7 @@ hanford
 hanford
 </td>
 <td style="text-align:right;">
-118
+122
 </td>
 </tr>
 <tr>
@@ -3071,7 +3175,7 @@ harbor city
 harbor city
 </td>
 <td style="text-align:right;">
-20
+15
 </td>
 </tr>
 <tr>
@@ -3082,7 +3186,7 @@ hawthorne
 hawthorne
 </td>
 <td style="text-align:right;">
-16
+14
 </td>
 </tr>
 <tr>
@@ -3104,7 +3208,7 @@ hayward
 hayward
 </td>
 <td style="text-align:right;">
-25
+41
 </td>
 </tr>
 <tr>
@@ -3115,7 +3219,7 @@ healdsburg
 healdsburg
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -3137,7 +3241,7 @@ hemet
 hemet
 </td>
 <td style="text-align:right;">
-491
+493
 </td>
 </tr>
 <tr>
@@ -3148,15 +3252,26 @@ hercules
 hercules
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-hermosa beach
+hesperia
 </td>
 <td style="text-align:left;">
-hermosa beach
+hesperia
+</td>
+<td style="text-align:right;">
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hidden valley lake
+</td>
+<td style="text-align:left;">
+hidden valley lake
 </td>
 <td style="text-align:right;">
 1
@@ -3164,24 +3279,13 @@ hermosa beach
 </tr>
 <tr>
 <td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 highland
 </td>
 <td style="text-align:left;">
 highland
 </td>
 <td style="text-align:right;">
-20
+26
 </td>
 </tr>
 <tr>
@@ -3203,7 +3307,7 @@ hollywood
 hollywood
 </td>
 <td style="text-align:right;">
-10
+4
 </td>
 </tr>
 <tr>
@@ -3222,7 +3326,7 @@ holmes
 home
 </td>
 <td style="text-align:left;">
-home
+flag
 </td>
 <td style="text-align:right;">
 3
@@ -3236,7 +3340,7 @@ homeland
 homeland
 </td>
 <td style="text-align:right;">
-11
+13
 </td>
 </tr>
 <tr>
@@ -3244,7 +3348,7 @@ homeland
 homeless
 </td>
 <td style="text-align:left;">
-homeless
+flag
 </td>
 <td style="text-align:right;">
 7
@@ -3269,7 +3373,7 @@ huntington beach
 huntington beach
 </td>
 <td style="text-align:right;">
-18
+22
 </td>
 </tr>
 <tr>
@@ -3280,7 +3384,7 @@ huntington park
 huntington park
 </td>
 <td style="text-align:right;">
-23
+9
 </td>
 </tr>
 <tr>
@@ -3291,7 +3395,7 @@ hyampom
 hyampom
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -3346,7 +3450,7 @@ indio
 indio
 </td>
 <td style="text-align:right;">
-170
+164
 </td>
 </tr>
 <tr>
@@ -3379,18 +3483,7 @@ inglewood
 inglewood
 </td>
 <td style="text-align:right;">
-61
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-inglewood 90305
-</td>
-<td style="text-align:left;">
-inglewood
-</td>
-<td style="text-align:right;">
-1
+37
 </td>
 </tr>
 <tr>
@@ -3412,7 +3505,7 @@ irvine
 irvine
 </td>
 <td style="text-align:right;">
-8
+12
 </td>
 </tr>
 <tr>
@@ -3445,7 +3538,7 @@ jackson
 jackson
 </td>
 <td style="text-align:right;">
-9
+12
 </td>
 </tr>
 <tr>
@@ -3456,7 +3549,7 @@ jamestown
 jamestown
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -3472,13 +3565,24 @@ jamul
 </tr>
 <tr>
 <td style="text-align:left;">
+johnson valley
+</td>
+<td style="text-align:left;">
+johnson valley
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 joshua tree
 </td>
 <td style="text-align:left;">
 joshua tree
 </td>
 <td style="text-align:right;">
-25
+32
 </td>
 </tr>
 <tr>
@@ -3522,7 +3626,7 @@ jurupa valley
 jurupa valley
 </td>
 <td style="text-align:right;">
-57
+53
 </td>
 </tr>
 <tr>
@@ -3538,35 +3642,24 @@ kelseyville
 </tr>
 <tr>
 <td style="text-align:left;">
-kensington
-</td>
-<td style="text-align:left;">
-kensington
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 kentfield
 </td>
 <td style="text-align:left;">
 kentfield
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-kerman
-</td>
-<td style="text-align:left;">
-kerman
 </td>
 <td style="text-align:right;">
 2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+kerman
+</td>
+<td style="text-align:left;">
+kerman
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -3599,40 +3692,40 @@ kingsburg
 kingsburg
 </td>
 <td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+klamath
+</td>
+<td style="text-align:left;">
+klamath
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+la crescenta
+</td>
+<td style="text-align:left;">
+la crescenta
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+la grange
+</td>
+<td style="text-align:left;">
+la grange
+</td>
+<td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-klamath
-</td>
-<td style="text-align:left;">
-klamath
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la crescenta
-</td>
-<td style="text-align:left;">
-la crescenta
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la grange
-</td>
-<td style="text-align:left;">
-la grange
-</td>
-<td style="text-align:right;">
-3
 </td>
 </tr>
 <tr>
@@ -3663,193 +3756,6 @@ la mesa
 </td>
 <td style="text-align:left;">
 la mesa
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la mirada
-</td>
-<td style="text-align:left;">
-la mirada
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la puente
-</td>
-<td style="text-align:left;">
-la puente
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la quinta
-</td>
-<td style="text-align:left;">
-la quinta
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-la verne
-</td>
-<td style="text-align:left;">
-la verne
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lafayette
-</td>
-<td style="text-align:left;">
-lafayette
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-laguna beach
-</td>
-<td style="text-align:left;">
-laguna beach
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-laguna hills
-</td>
-<td style="text-align:left;">
-laguna hills
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-laguna niguel
-</td>
-<td style="text-align:left;">
-laguna niguel
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-laguna woods
-</td>
-<td style="text-align:left;">
-laguna woods
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lake arrowhead
-</td>
-<td style="text-align:left;">
-lake arrowhead
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lake elsinore
-</td>
-<td style="text-align:left;">
-lake elsinore
-</td>
-<td style="text-align:right;">
-122
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lake forest
-</td>
-<td style="text-align:left;">
-lake forest
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lake isabella
-</td>
-<td style="text-align:left;">
-lake isabella
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lakeport
-</td>
-<td style="text-align:left;">
-lakeport
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lakeside
-</td>
-<td style="text-align:left;">
-lakeside
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lakeview
-</td>
-<td style="text-align:left;">
-lakeview
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lakewood
-</td>
-<td style="text-align:left;">
-lakewood
 </td>
 <td style="text-align:right;">
 14
@@ -3857,13 +3763,189 @@ lakewood
 </tr>
 <tr>
 <td style="text-align:left;">
+la mirada
+</td>
+<td style="text-align:left;">
+la mirada
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+la puente
+</td>
+<td style="text-align:left;">
+la puente
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+la quinta
+</td>
+<td style="text-align:left;">
+la quinta
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+la verne
+</td>
+<td style="text-align:left;">
+la verne
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lafayette
+</td>
+<td style="text-align:left;">
+lafayette
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+laguna beach
+</td>
+<td style="text-align:left;">
+laguna beach
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+laguna hills
+</td>
+<td style="text-align:left;">
+laguna hills
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+laguna niguel
+</td>
+<td style="text-align:left;">
+laguna niguel
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+laguna woods
+</td>
+<td style="text-align:left;">
+laguna woods
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lake arrowhead
+</td>
+<td style="text-align:left;">
+lake arrowhead
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lake elsinore
+</td>
+<td style="text-align:left;">
+lake elsinore
+</td>
+<td style="text-align:right;">
+123
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lake forest
+</td>
+<td style="text-align:left;">
+lake forest
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lake isabella
+</td>
+<td style="text-align:left;">
+lake isabella
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lakeside
+</td>
+<td style="text-align:left;">
+lakeside
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lakeview
+</td>
+<td style="text-align:left;">
+lakeview
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lakewood
+</td>
+<td style="text-align:left;">
+lakewood
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 lamont
 </td>
 <td style="text-align:left;">
 lamont
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -3874,7 +3956,7 @@ lancaster
 lancaster
 </td>
 <td style="text-align:right;">
-91
+41
 </td>
 </tr>
 <tr>
@@ -3885,7 +3967,7 @@ landers
 landers
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -3907,7 +3989,7 @@ lawndale
 lawndale
 </td>
 <td style="text-align:right;">
-11
+8
 </td>
 </tr>
 <tr>
@@ -3929,7 +4011,7 @@ lebec
 lebec
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -3962,7 +4044,7 @@ lemoore
 lemoore
 </td>
 <td style="text-align:right;">
-34
+37
 </td>
 </tr>
 <tr>
@@ -3971,6 +4053,28 @@ lewiston
 </td>
 <td style="text-align:left;">
 lewiston
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lincoln
+</td>
+<td style="text-align:left;">
+lincoln
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lincoln heights
+</td>
+<td style="text-align:left;">
+lincoln heights
 </td>
 <td style="text-align:right;">
 2
@@ -3978,35 +4082,13 @@ lewiston
 </tr>
 <tr>
 <td style="text-align:left;">
-lincoln
-</td>
-<td style="text-align:left;">
-lincoln
-</td>
-<td style="text-align:right;">
-17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lincoln heights
-</td>
-<td style="text-align:left;">
-lincoln heights
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 littlerock
 </td>
 <td style="text-align:left;">
 littlerock
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -4017,7 +4099,7 @@ livermore
 livermore
 </td>
 <td style="text-align:right;">
-6
+8
 </td>
 </tr>
 <tr>
@@ -4039,70 +4121,26 @@ loleta
 loleta
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lomita
-</td>
-<td style="text-align:left;">
-lomita
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lompoc
-</td>
-<td style="text-align:left;">
-lompoc
-</td>
-<td style="text-align:right;">
 2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-lone pine
+loma linda
 </td>
 <td style="text-align:left;">
-lone pine
+loma linda
 </td>
 <td style="text-align:right;">
-1
+11
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-long beach
+lomita
 </td>
 <td style="text-align:left;">
-long beach
-</td>
-<td style="text-align:right;">
-205
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-loomis
-</td>
-<td style="text-align:left;">
-loomis
+lomita
 </td>
 <td style="text-align:right;">
 4
@@ -4110,24 +4148,57 @@ loomis
 </tr>
 <tr>
 <td style="text-align:left;">
-los angeles
+lone pine
 </td>
 <td style="text-align:left;">
-los angeles
+lone pine
 </td>
 <td style="text-align:right;">
-851
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-los angeles ca
+long beach
+</td>
+<td style="text-align:left;">
+long beach
+</td>
+<td style="text-align:right;">
+127
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+loomis
+</td>
+<td style="text-align:left;">
+loomis
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+los alamitos
+</td>
+<td style="text-align:left;">
+los alamitos
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+los angeles
 </td>
 <td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-2
+456
 </td>
 </tr>
 <tr>
@@ -4138,7 +4209,7 @@ los angeles california
 los angeles
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -4149,7 +4220,7 @@ los banos
 los banos
 </td>
 <td style="text-align:right;">
-19
+24
 </td>
 </tr>
 <tr>
@@ -4160,7 +4231,7 @@ los gatos
 los gatos
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -4182,18 +4253,7 @@ los osos
 los osos
 </td>
 <td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lost hills
-</td>
-<td style="text-align:left;">
-lost hills
-</td>
-<td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -4215,7 +4275,7 @@ lucerne valley
 lucerne valley
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -4226,7 +4286,18 @@ lynwood
 lynwood
 </td>
 <td style="text-align:right;">
-20
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lytle creek
+</td>
+<td style="text-align:left;">
+lytle creek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -4237,7 +4308,7 @@ madera
 madera
 </td>
 <td style="text-align:right;">
-47
+49
 </td>
 </tr>
 <tr>
@@ -4259,29 +4330,7 @@ magalia
 magalia
 </td>
 <td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-35
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-malibu
-</td>
-<td style="text-align:left;">
-malibu
-</td>
-<td style="text-align:right;">
-1
+5
 </td>
 </tr>
 <tr>
@@ -4314,7 +4363,7 @@ maricopa
 maricopa
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -4325,7 +4374,7 @@ marina del rey
 marina del rey
 </td>
 <td style="text-align:right;">
-6
+3
 </td>
 </tr>
 <tr>
@@ -4336,7 +4385,7 @@ mariposa
 mariposa
 </td>
 <td style="text-align:right;">
-77
+56
 </td>
 </tr>
 <tr>
@@ -4347,7 +4396,7 @@ martell
 martell
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -4369,18 +4418,7 @@ marysville
 marysville
 </td>
 <td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-marysville, ca 95901
-</td>
-<td style="text-align:left;">
-marysville
-</td>
-<td style="text-align:right;">
-1
+29
 </td>
 </tr>
 <tr>
@@ -4402,7 +4440,18 @@ maywood
 maywood
 </td>
 <td style="text-align:right;">
-8
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mcclellan
+</td>
+<td style="text-align:left;">
+mcclellan
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -4446,40 +4495,73 @@ mecca
 mecca
 </td>
 <td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mendota
+</td>
+<td style="text-align:left;">
+mendota
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+menifee
+</td>
+<td style="text-align:left;">
+menifee
+</td>
+<td style="text-align:right;">
+65
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mentone
+</td>
+<td style="text-align:left;">
+mentone
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:left;">
+merced
+</td>
+<td style="text-align:right;">
+110
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mi wuk village
+</td>
+<td style="text-align:left;">
+mi wuk village
+</td>
+<td style="text-align:right;">
 1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-menifee
+middletown
 </td>
 <td style="text-align:left;">
-menifee
+middletown
 </td>
 <td style="text-align:right;">
-66
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mentone
-</td>
-<td style="text-align:left;">
-mentone
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-merced
-</td>
-<td style="text-align:left;">
-merced
-</td>
-<td style="text-align:right;">
-87
+1
 </td>
 </tr>
 <tr>
@@ -4490,7 +4572,18 @@ midpines
 midpines
 </td>
 <td style="text-align:right;">
-8
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+midway city
+</td>
+<td style="text-align:left;">
+midway city
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -4501,7 +4594,7 @@ mill valley
 mill valley
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -4534,7 +4627,7 @@ milpitas
 milpitas
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -4545,7 +4638,7 @@ mira loma
 mira loma
 </td>
 <td style="text-align:right;">
-8
+7
 </td>
 </tr>
 <tr>
@@ -4561,10 +4654,10 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-mission hills
+mission viejo
 </td>
 <td style="text-align:left;">
-mission hills
+mission viejo
 </td>
 <td style="text-align:right;">
 1
@@ -4578,7 +4671,7 @@ modesto
 modesto
 </td>
 <td style="text-align:right;">
-61
+62
 </td>
 </tr>
 <tr>
@@ -4589,7 +4682,7 @@ mojave
 mojave
 </td>
 <td style="text-align:right;">
-14
+10
 </td>
 </tr>
 <tr>
@@ -4600,7 +4693,7 @@ monrovia
 monrovia
 </td>
 <td style="text-align:right;">
-7
+6
 </td>
 </tr>
 <tr>
@@ -4633,7 +4726,7 @@ montebello
 montebello
 </td>
 <td style="text-align:right;">
-16
+10
 </td>
 </tr>
 <tr>
@@ -4655,7 +4748,7 @@ monterey park
 monterey park
 </td>
 <td style="text-align:right;">
-12
+9
 </td>
 </tr>
 <tr>
@@ -4663,7 +4756,7 @@ monterey park
 monti rio
 </td>
 <td style="text-align:left;">
-monti rio
+monte rio
 </td>
 <td style="text-align:right;">
 1
@@ -4685,7 +4778,7 @@ moorpark
 moren
 </td>
 <td style="text-align:left;">
-moren
+moreno valley
 </td>
 <td style="text-align:right;">
 1
@@ -4699,7 +4792,7 @@ moreno valley
 moreno valley
 </td>
 <td style="text-align:right;">
-200
+206
 </td>
 </tr>
 <tr>
@@ -4721,15 +4814,37 @@ morongo valley
 morongo valley
 </td>
 <td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+morro bay
+</td>
+<td style="text-align:left;">
+morro bay
+</td>
+<td style="text-align:right;">
 9
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-morro bay
+mountain center
 </td>
 <td style="text-align:left;">
-morro bay
+mountain center
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mountain view
+</td>
+<td style="text-align:left;">
+mountain view
 </td>
 <td style="text-align:right;">
 6
@@ -4737,46 +4852,24 @@ morro bay
 </tr>
 <tr>
 <td style="text-align:left;">
-mount mesa
+mountianview
 </td>
 <td style="text-align:left;">
-mount mesa
+mountain view
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+moutain view
+</td>
+<td style="text-align:left;">
+mountain view
 </td>
 <td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mountain center
-</td>
-<td style="text-align:left;">
-mountain center
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mountain view
-</td>
-<td style="text-align:left;">
-mountain view
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mountianview
-</td>
-<td style="text-align:left;">
-mountianview
-</td>
-<td style="text-align:right;">
-2
 </td>
 </tr>
 <tr>
@@ -4798,7 +4891,7 @@ murrieta
 murrieta
 </td>
 <td style="text-align:right;">
-67
+70
 </td>
 </tr>
 <tr>
@@ -4820,7 +4913,7 @@ napa
 napa
 </td>
 <td style="text-align:right;">
-16
+26
 </td>
 </tr>
 <tr>
@@ -4831,7 +4924,7 @@ national city
 national city
 </td>
 <td style="text-align:right;">
-8
+11
 </td>
 </tr>
 <tr>
@@ -4842,7 +4935,7 @@ needles
 needles
 </td>
 <td style="text-align:right;">
-29
+37
 </td>
 </tr>
 <tr>
@@ -4853,7 +4946,7 @@ nevada city
 nevada city
 </td>
 <td style="text-align:right;">
-56
+35
 </td>
 </tr>
 <tr>
@@ -4864,7 +4957,7 @@ newark
 newark
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -4884,17 +4977,6 @@ newbury park
 </td>
 <td style="text-align:left;">
 newbury park
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-newcastle
-</td>
-<td style="text-align:left;">
-newcastle
 </td>
 <td style="text-align:right;">
 7
@@ -4902,13 +4984,24 @@ newcastle
 </tr>
 <tr>
 <td style="text-align:left;">
+newcastle
+</td>
+<td style="text-align:left;">
+newcastle
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 newhall
 </td>
 <td style="text-align:left;">
 newhall
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -4985,7 +5078,7 @@ north hills
 north hills
 </td>
 <td style="text-align:right;">
-14
+8
 </td>
 </tr>
 <tr>
@@ -4996,7 +5089,7 @@ north hollywood
 north hollywood
 </td>
 <td style="text-align:right;">
-32
+14
 </td>
 </tr>
 <tr>
@@ -5004,7 +5097,7 @@ north hollywood
 north palm springs
 </td>
 <td style="text-align:left;">
-palm springs
+north palm springs
 </td>
 <td style="text-align:right;">
 4
@@ -5016,6 +5109,28 @@ north san juan
 </td>
 <td style="text-align:left;">
 north san juan
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+north side of parking lot
+</td>
+<td style="text-align:left;">
+flag
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+northridge
+</td>
+<td style="text-align:left;">
+northridge
 </td>
 <td style="text-align:right;">
 5
@@ -5023,21 +5138,21 @@ north san juan
 </tr>
 <tr>
 <td style="text-align:left;">
-north side of parking lot
+norwalk
 </td>
 <td style="text-align:left;">
-north side of parking lot
+norwalk
 </td>
 <td style="text-align:right;">
-1
+15
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-northridge
+novato
 </td>
 <td style="text-align:left;">
-northridge
+novato
 </td>
 <td style="text-align:right;">
 10
@@ -5045,28 +5160,6 @@ northridge
 </tr>
 <tr>
 <td style="text-align:left;">
-norwalk
-</td>
-<td style="text-align:left;">
-norwalk
-</td>
-<td style="text-align:right;">
-29
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-novato
-</td>
-<td style="text-align:left;">
-novato
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 nuevo
 </td>
 <td style="text-align:left;">
@@ -5084,7 +5177,7 @@ oak view
 oak view
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -5095,7 +5188,7 @@ oakdale
 oakdale
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -5117,7 +5210,7 @@ oakland
 oakland
 </td>
 <td style="text-align:right;">
-84
+148
 </td>
 </tr>
 <tr>
@@ -5126,138 +5219,6 @@ oakley
 </td>
 <td style="text-align:left;">
 oakley
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-oceanside
-</td>
-<td style="text-align:left;">
-oceanside
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ojai
-</td>
-<td style="text-align:left;">
-ojai
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-olema
-</td>
-<td style="text-align:left;">
-olema
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-olivehurst
-</td>
-<td style="text-align:left;">
-olivehurst
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:right;">
-74
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-onyx
-</td>
-<td style="text-align:left;">
-onyx
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-orange
-</td>
-<td style="text-align:left;">
-orange
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-orange cove
-</td>
-<td style="text-align:left;">
-orange cove
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-oregon house
-</td>
-<td style="text-align:left;">
-oregon house
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-orick
-</td>
-<td style="text-align:left;">
-orick
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-orinda
-</td>
-<td style="text-align:left;">
-orinda
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-orland
-</td>
-<td style="text-align:left;">
-orland
 </td>
 <td style="text-align:right;">
 12
@@ -5265,13 +5226,156 @@ orland
 </tr>
 <tr>
 <td style="text-align:left;">
+oceanside
+</td>
+<td style="text-align:left;">
+oceanside
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ojai
+</td>
+<td style="text-align:left;">
+ojai
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+olema
+</td>
+<td style="text-align:left;">
+olema
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+olivehurst
+</td>
+<td style="text-align:left;">
+olivehurst
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ontario
+</td>
+<td style="text-align:left;">
+ontario
+</td>
+<td style="text-align:right;">
+83
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+onyx
+</td>
+<td style="text-align:left;">
+onyx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:left;">
+orange
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orange cove
+</td>
+<td style="text-align:left;">
+orange cove
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+oregon house
+</td>
+<td style="text-align:left;">
+oregon house
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orick
+</td>
+<td style="text-align:left;">
+orick
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orinda
+</td>
+<td style="text-align:left;">
+orinda
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+orland
+</td>
+<td style="text-align:left;">
+orland
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 oroville
 </td>
 <td style="text-align:left;">
 oroville
 </td>
 <td style="text-align:right;">
-24
+37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+outside california
+</td>
+<td style="text-align:left;">
+flag
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -5282,7 +5386,7 @@ oxnard
 oxnard
 </td>
 <td style="text-align:right;">
-31
+32
 </td>
 </tr>
 <tr>
@@ -5304,7 +5408,7 @@ pacheco
 pacheco
 </td>
 <td style="text-align:right;">
-10
+8
 </td>
 </tr>
 <tr>
@@ -5315,7 +5419,7 @@ pacoima
 pacoima
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -5331,24 +5435,24 @@ pala
 </tr>
 <tr>
 <td style="text-align:left;">
-palm desert
+palermo
 </td>
 <td style="text-align:left;">
-palm desert
+palermo
 </td>
 <td style="text-align:right;">
-79
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-palm dprings
+palm desert
 </td>
 <td style="text-align:left;">
-palm springs
+palm desert
 </td>
 <td style="text-align:right;">
-1
+74
 </td>
 </tr>
 <tr>
@@ -5370,7 +5474,18 @@ palm springs
 palm springs
 </td>
 <td style="text-align:right;">
-380
+368
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+palm springs,
+</td>
+<td style="text-align:left;">
+palm springs
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -5381,7 +5496,7 @@ palmdale
 palmdale
 </td>
 <td style="text-align:right;">
-40
+23
 </td>
 </tr>
 <tr>
@@ -5390,6 +5505,17 @@ palms springs
 </td>
 <td style="text-align:left;">
 palm springs
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+palo aalto
+</td>
+<td style="text-align:left;">
+palo alto
 </td>
 <td style="text-align:right;">
 1
@@ -5414,7 +5540,7 @@ panorama city
 panorama city
 </td>
 <td style="text-align:right;">
-16
+5
 </td>
 </tr>
 <tr>
@@ -5436,18 +5562,7 @@ paramount
 paramount
 </td>
 <td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-parlier
-</td>
-<td style="text-align:left;">
-parlier
-</td>
-<td style="text-align:right;">
-1
+5
 </td>
 </tr>
 <tr>
@@ -5458,7 +5573,7 @@ pasadena
 pasadena
 </td>
 <td style="text-align:right;">
-19
+11
 </td>
 </tr>
 <tr>
@@ -5469,7 +5584,7 @@ paso robles
 paso robles
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -5496,13 +5611,24 @@ pauma valley
 </tr>
 <tr>
 <td style="text-align:left;">
+paynes creek
+</td>
+<td style="text-align:left;">
+paynes creek
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pearblossom
 </td>
 <td style="text-align:left;">
 pearblossom
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -5513,7 +5639,7 @@ penn valley
 penn valley
 </td>
 <td style="text-align:right;">
-16
+9
 </td>
 </tr>
 <tr>
@@ -5524,7 +5650,7 @@ perris
 perris
 </td>
 <td style="text-align:right;">
-108
+104
 </td>
 </tr>
 <tr>
@@ -5535,7 +5661,7 @@ petaluma
 petaluma
 </td>
 <td style="text-align:right;">
-28
+30
 </td>
 </tr>
 <tr>
@@ -5557,7 +5683,7 @@ pico rivera
 pico rivera
 </td>
 <td style="text-align:right;">
-6
+3
 </td>
 </tr>
 <tr>
@@ -5584,32 +5710,10 @@ pine grove
 </tr>
 <tr>
 <td style="text-align:left;">
-pinole
+pine mountain club
 </td>
 <td style="text-align:left;">
-pinole
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pinon hills
-</td>
-<td style="text-align:left;">
-pinon hills
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pioneer
-</td>
-<td style="text-align:left;">
-pioneer
+pine mountain club
 </td>
 <td style="text-align:right;">
 4
@@ -5617,6 +5721,50 @@ pioneer
 </tr>
 <tr>
 <td style="text-align:left;">
+pinole
+</td>
+<td style="text-align:left;">
+pinole
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pinon hills
+</td>
+<td style="text-align:left;">
+pinon hills
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pioneer
+</td>
+<td style="text-align:left;">
+pioneer
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+piru
+</td>
+<td style="text-align:left;">
+piru
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pismo beach
 </td>
 <td style="text-align:left;">
@@ -5634,7 +5782,7 @@ pittsburg
 pittsburg
 </td>
 <td style="text-align:right;">
-37
+31
 </td>
 </tr>
 <tr>
@@ -5661,10 +5809,10 @@ placentia
 </tr>
 <tr>
 <td style="text-align:left;">
-planada
+placerville
 </td>
 <td style="text-align:left;">
-planada
+placerville
 </td>
 <td style="text-align:right;">
 1
@@ -5672,13 +5820,24 @@ planada
 </tr>
 <tr>
 <td style="text-align:left;">
+planada
+</td>
+<td style="text-align:left;">
+planada
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 playa del rey
 </td>
 <td style="text-align:left;">
 playa del rey
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -5689,7 +5848,7 @@ playa vista
 playa vista
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -5700,7 +5859,7 @@ pleasant hill
 pleasant hill
 </td>
 <td style="text-align:right;">
-16
+12
 </td>
 </tr>
 <tr>
@@ -5711,7 +5870,7 @@ pleasanton
 pleasanton
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -5727,13 +5886,24 @@ point arena
 </tr>
 <tr>
 <td style="text-align:left;">
+pollock pines
+</td>
+<td style="text-align:left;">
+pollock pines
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pomona
 </td>
 <td style="text-align:left;">
 pomona
 </td>
 <td style="text-align:right;">
-44
+26
 </td>
 </tr>
 <tr>
@@ -5755,7 +5925,7 @@ porterville
 porterville
 </td>
 <td style="text-align:right;">
-4
+7
 </td>
 </tr>
 <tr>
@@ -5766,7 +5936,7 @@ portola, ca
 portola
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -5777,7 +5947,7 @@ poway
 poway
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -5799,7 +5969,7 @@ quincy, ca
 quincy
 </td>
 <td style="text-align:right;">
-4
+7
 </td>
 </tr>
 <tr>
@@ -5876,7 +6046,18 @@ rancho cucamonga
 rancho cucamonga
 </td>
 <td style="text-align:right;">
-52
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cucamongo
+</td>
+<td style="text-align:left;">
+rancho cucamonga
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -5887,7 +6068,7 @@ rancho mirage
 rancho mirage
 </td>
 <td style="text-align:right;">
-41
+38
 </td>
 </tr>
 <tr>
@@ -5898,7 +6079,7 @@ rancho palos verdes
 rancho palos verdes
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -5931,7 +6112,7 @@ red bluff
 red bluff
 </td>
 <td style="text-align:right;">
-71
+75
 </td>
 </tr>
 <tr>
@@ -5953,7 +6134,7 @@ redding
 redding
 </td>
 <td style="text-align:right;">
-40
+45
 </td>
 </tr>
 <tr>
@@ -5964,7 +6145,7 @@ redlands
 redlands
 </td>
 <td style="text-align:right;">
-27
+34
 </td>
 </tr>
 <tr>
@@ -5975,7 +6156,7 @@ redondo beach
 redondo beach
 </td>
 <td style="text-align:right;">
-27
+20
 </td>
 </tr>
 <tr>
@@ -5997,7 +6178,7 @@ redwood city
 redwood city
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -6019,7 +6200,7 @@ reedley
 reedley
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -6030,7 +6211,7 @@ reseda
 reseda
 </td>
 <td style="text-align:right;">
-9
+5
 </td>
 </tr>
 <tr>
@@ -6041,7 +6222,7 @@ rialto
 rialto
 </td>
 <td style="text-align:right;">
-58
+71
 </td>
 </tr>
 <tr>
@@ -6052,7 +6233,7 @@ richmond
 richmond
 </td>
 <td style="text-align:right;">
-56
+49
 </td>
 </tr>
 <tr>
@@ -6064,17 +6245,6 @@ richmond
 </td>
 <td style="text-align:right;">
 4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ridegcrest
-</td>
-<td style="text-align:left;">
-ridgecrest
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -6107,7 +6277,7 @@ rio linda
 rio linda
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -6140,7 +6310,7 @@ riverbank
 riverbank
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -6162,7 +6332,7 @@ riverisde
 riverside
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -6173,18 +6343,7 @@ riverside
 riverside
 </td>
 <td style="text-align:right;">
-797
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverside ca
-</td>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:right;">
-2
+795
 </td>
 </tr>
 <tr>
@@ -6206,7 +6365,7 @@ rocklin
 rocklin
 </td>
 <td style="text-align:right;">
-14
+16
 </td>
 </tr>
 <tr>
@@ -6228,18 +6387,7 @@ rohnert park
 rohnert park
 </td>
 <td style="text-align:right;">
-41
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-romoland
-</td>
-<td style="text-align:left;">
-romoland
-</td>
-<td style="text-align:right;">
-2
+40
 </td>
 </tr>
 <tr>
@@ -6250,7 +6398,7 @@ rosamond
 rosamond
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -6261,7 +6409,7 @@ rosemead
 rosemead
 </td>
 <td style="text-align:right;">
-8
+3
 </td>
 </tr>
 <tr>
@@ -6272,7 +6420,7 @@ roseville
 roseville
 </td>
 <td style="text-align:right;">
-86
+68
 </td>
 </tr>
 <tr>
@@ -6283,7 +6431,7 @@ rough & ready
 rough and ready
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -6294,7 +6442,7 @@ rough and ready
 rough and ready
 </td>
 <td style="text-align:right;">
-10
+6
 </td>
 </tr>
 <tr>
@@ -6360,7 +6508,7 @@ sacramento
 sacramento
 </td>
 <td style="text-align:right;">
-223
+260
 </td>
 </tr>
 <tr>
@@ -6420,17 +6568,6 @@ san anselmo
 </tr>
 <tr>
 <td style="text-align:left;">
-san berandino
-</td>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 san beranrdino
 </td>
 <td style="text-align:left;">
@@ -6448,7 +6585,7 @@ san bernadino
 san bernardino
 </td>
 <td style="text-align:right;">
-2
+5
 </td>
 </tr>
 <tr>
@@ -6459,7 +6596,7 @@ san bernardino
 san bernardino
 </td>
 <td style="text-align:right;">
-162
+188
 </td>
 </tr>
 <tr>
@@ -6514,7 +6651,7 @@ san diego
 san diego
 </td>
 <td style="text-align:right;">
-171
+192
 </td>
 </tr>
 <tr>
@@ -6536,7 +6673,7 @@ san dimas
 san dimas
 </td>
 <td style="text-align:right;">
-8
+4
 </td>
 </tr>
 <tr>
@@ -6547,7 +6684,7 @@ san fernando
 san fernando
 </td>
 <td style="text-align:right;">
-5
+3
 </td>
 </tr>
 <tr>
@@ -6569,7 +6706,7 @@ san francisco
 san francisco
 </td>
 <td style="text-align:right;">
-233
+278
 </td>
 </tr>
 <tr>
@@ -6580,7 +6717,7 @@ san francisco, ca
 san francisco
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -6596,17 +6733,6 @@ san francisco
 </tr>
 <tr>
 <td style="text-align:left;">
-san franicsco
-</td>
-<td style="text-align:left;">
-san francisco
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 san gabriel
 </td>
 <td style="text-align:left;">
@@ -6624,7 +6750,7 @@ san jacinto
 san jacinto
 </td>
 <td style="text-align:right;">
-104
+97
 </td>
 </tr>
 <tr>
@@ -6646,7 +6772,7 @@ san jose
 san jose
 </td>
 <td style="text-align:right;">
-114
+125
 </td>
 </tr>
 <tr>
@@ -6657,7 +6783,7 @@ san juan capistrano
 san juan capistrano
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -6668,7 +6794,7 @@ san leandro
 san leandro
 </td>
 <td style="text-align:right;">
-9
+21
 </td>
 </tr>
 <tr>
@@ -6679,7 +6805,7 @@ san lorenzo
 san lorenzo
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -6690,7 +6816,7 @@ san luis obispo
 san luis obispo
 </td>
 <td style="text-align:right;">
-14
+17
 </td>
 </tr>
 <tr>
@@ -6701,7 +6827,7 @@ san marcos
 san marcos
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -6745,7 +6871,7 @@ san pedro
 san pedro
 </td>
 <td style="text-align:right;">
-48
+34
 </td>
 </tr>
 <tr>
@@ -6756,7 +6882,7 @@ san rafael
 san rafael
 </td>
 <td style="text-align:right;">
-16
+13
 </td>
 </tr>
 <tr>
@@ -6767,7 +6893,7 @@ san ramon
 san ramon
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -6783,13 +6909,24 @@ san ysidro
 </tr>
 <tr>
 <td style="text-align:left;">
+sanger
+</td>
+<td style="text-align:left;">
+sanger
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 santa ana
 </td>
 <td style="text-align:left;">
 santa ana
 </td>
 <td style="text-align:right;">
-29
+36
 </td>
 </tr>
 <tr>
@@ -6800,7 +6937,7 @@ santa barbara
 santa barbara
 </td>
 <td style="text-align:right;">
-19
+25
 </td>
 </tr>
 <tr>
@@ -6822,7 +6959,7 @@ santa clarita
 santa clarita
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
@@ -6844,7 +6981,7 @@ santa fe springs
 santa fe springs
 </td>
 <td style="text-align:right;">
-12
+6
 </td>
 </tr>
 <tr>
@@ -6855,7 +6992,7 @@ santa maria
 santa maria
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -6866,7 +7003,7 @@ santa monica
 santa monica
 </td>
 <td style="text-align:right;">
-20
+9
 </td>
 </tr>
 <tr>
@@ -6899,7 +7036,18 @@ santa rosa
 santa rosa
 </td>
 <td style="text-align:right;">
-130
+133
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+santa rosa ca
+</td>
+<td style="text-align:left;">
+santa rosa
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -6910,7 +7058,7 @@ santee
 santee
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -6965,7 +7113,7 @@ scotts valley
 scotts valley
 </td>
 <td style="text-align:right;">
-14
+15
 </td>
 </tr>
 <tr>
@@ -6974,31 +7122,31 @@ seal beach
 </td>
 <td style="text-align:left;">
 seal beach
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-sebastopol
-</td>
-<td style="text-align:left;">
-sebastopol
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-selma
-</td>
-<td style="text-align:left;">
-selma
 </td>
 <td style="text-align:right;">
 2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sebastopol
+</td>
+<td style="text-align:left;">
+sebastopol
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+selma
+</td>
+<td style="text-align:left;">
+selma
+</td>
+<td style="text-align:right;">
+3
 </td>
 </tr>
 <tr>
@@ -7020,7 +7168,7 @@ shafter
 shafter
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -7053,7 +7201,18 @@ sherman oaks
 sherman oaks
 </td>
 <td style="text-align:right;">
-7
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+shingletown
+</td>
+<td style="text-align:left;">
+shingletown
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -7064,7 +7223,7 @@ signal hill
 signal hill
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -7102,13 +7261,24 @@ sin city
 </tr>
 <tr>
 <td style="text-align:left;">
+slo
+</td>
+<td style="text-align:left;">
+san luis obispo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 smartsville
 </td>
 <td style="text-align:left;">
 smartsville
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -7130,7 +7300,18 @@ sonoma
 sonoma
 </td>
 <td style="text-align:right;">
-22
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sonora
+</td>
+<td style="text-align:left;">
+sonora
+</td>
+<td style="text-align:right;">
+10
 </td>
 </tr>
 <tr>
@@ -7163,7 +7344,7 @@ south gate
 south gate
 </td>
 <td style="text-align:right;">
-24
+15
 </td>
 </tr>
 <tr>
@@ -7174,7 +7355,7 @@ south pasadena
 south pasadena
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
@@ -7182,7 +7363,7 @@ south pasadena
 south san francisco
 </td>
 <td style="text-align:left;">
-san francisco
+south san francisco
 </td>
 <td style="text-align:right;">
 2
@@ -7196,7 +7377,7 @@ spring valley
 spring valley
 </td>
 <td style="text-align:right;">
-17
+18
 </td>
 </tr>
 <tr>
@@ -7240,7 +7421,7 @@ stockton
 stockton
 </td>
 <td style="text-align:right;">
-23
+24
 </td>
 </tr>
 <tr>
@@ -7284,7 +7465,7 @@ studio city
 studio city
 </td>
 <td style="text-align:right;">
-11
+8
 </td>
 </tr>
 <tr>
@@ -7317,7 +7498,7 @@ suisun city
 suisun city
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -7328,7 +7509,7 @@ sun city
 sun city
 </td>
 <td style="text-align:right;">
-21
+23
 </td>
 </tr>
 <tr>
@@ -7339,7 +7520,7 @@ sun valley
 sun valley
 </td>
 <td style="text-align:right;">
-12
+6
 </td>
 </tr>
 <tr>
@@ -7348,28 +7529,6 @@ sunland
 </td>
 <td style="text-align:left;">
 sunland
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-sunnyvale
-</td>
-<td style="text-align:left;">
-sunnyvale
-</td>
-<td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-susanville
-</td>
-<td style="text-align:left;">
-susanville
 </td>
 <td style="text-align:right;">
 2
@@ -7377,21 +7536,21 @@ susanville
 </tr>
 <tr>
 <td style="text-align:left;">
-sylmar
+sunnyvale
 </td>
 <td style="text-align:left;">
-sylmar
+sunnyvale
 </td>
 <td style="text-align:right;">
-18
+30
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-taft
+sylmar
 </td>
 <td style="text-align:left;">
-taft
+sylmar
 </td>
 <td style="text-align:right;">
 11
@@ -7399,13 +7558,24 @@ taft
 </tr>
 <tr>
 <td style="text-align:left;">
+taft
+</td>
+<td style="text-align:left;">
+taft
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 tarzana
 </td>
 <td style="text-align:left;">
 tarzana
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -7427,7 +7597,7 @@ tehachapi
 tehachapi
 </td>
 <td style="text-align:right;">
-25
+24
 </td>
 </tr>
 <tr>
@@ -7460,7 +7630,7 @@ temecula
 temecula
 </td>
 <td style="text-align:right;">
-121
+114
 </td>
 </tr>
 <tr>
@@ -7482,7 +7652,18 @@ temple city
 temple city
 </td>
 <td style="text-align:right;">
-3
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+templeton
+</td>
+<td style="text-align:left;">
+templeton
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -7526,7 +7707,7 @@ thousand palms
 thousand palms
 </td>
 <td style="text-align:right;">
-13
+12
 </td>
 </tr>
 <tr>
@@ -7548,18 +7729,7 @@ tipton
 tipton
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-topanga
-</td>
-<td style="text-align:left;">
-topanga
-</td>
-<td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -7581,7 +7751,7 @@ torrance
 torrance
 </td>
 <td style="text-align:right;">
-82
+54
 </td>
 </tr>
 <tr>
@@ -7614,7 +7784,7 @@ truckee
 truckee
 </td>
 <td style="text-align:right;">
-13
+9
 </td>
 </tr>
 <tr>
@@ -7625,7 +7795,7 @@ truckee/tahoe
 truckee/tahoe
 </td>
 <td style="text-align:right;">
-7
+4
 </td>
 </tr>
 <tr>
@@ -7636,7 +7806,7 @@ tujunga
 tujunga
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -7647,7 +7817,7 @@ tulare
 tulare
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -7658,7 +7828,7 @@ turlock
 turlock
 </td>
 <td style="text-align:right;">
-18
+17
 </td>
 </tr>
 <tr>
@@ -7680,7 +7850,7 @@ tustin
 tustin
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -7702,7 +7872,7 @@ twenty-nine palms
 twentynine palms
 </td>
 <td style="text-align:right;">
-1
+4
 </td>
 </tr>
 <tr>
@@ -7713,7 +7883,7 @@ twentynine palms
 twentynine palms
 </td>
 <td style="text-align:right;">
-48
+63
 </td>
 </tr>
 <tr>
@@ -7724,7 +7894,7 @@ ukiah
 ukiah
 </td>
 <td style="text-align:right;">
-36
+38
 </td>
 </tr>
 <tr>
@@ -7735,7 +7905,7 @@ unincorporated placer county
 unincorporated placer county
 </td>
 <td style="text-align:right;">
-13
+10
 </td>
 </tr>
 <tr>
@@ -7746,7 +7916,7 @@ union city
 union city
 </td>
 <td style="text-align:right;">
-2
+4
 </td>
 </tr>
 <tr>
@@ -7779,7 +7949,7 @@ upland
 upland
 </td>
 <td style="text-align:right;">
-20
+25
 </td>
 </tr>
 <tr>
@@ -7790,7 +7960,18 @@ vacaville
 vacaville
 </td>
 <td style="text-align:right;">
-5
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vacaville ca
+</td>
+<td style="text-align:left;">
+vacaville
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -7799,20 +7980,20 @@ valencia
 </td>
 <td style="text-align:left;">
 valencia
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vallejo
+</td>
+<td style="text-align:left;">
+vallejo
 </td>
 <td style="text-align:right;">
 4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-vallejo
-</td>
-<td style="text-align:left;">
-vallejo
-</td>
-<td style="text-align:right;">
-6
 </td>
 </tr>
 <tr>
@@ -7834,7 +8015,7 @@ valley village
 valley village
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -7845,7 +8026,7 @@ van nuys
 van nuys
 </td>
 <td style="text-align:right;">
-38
+20
 </td>
 </tr>
 <tr>
@@ -7856,7 +8037,7 @@ venice
 venice
 </td>
 <td style="text-align:right;">
-9
+5
 </td>
 </tr>
 <tr>
@@ -7867,7 +8048,7 @@ ventura
 ventura
 </td>
 <td style="text-align:right;">
-61
+70
 </td>
 </tr>
 <tr>
@@ -7889,7 +8070,7 @@ victorville
 victorville
 </td>
 <td style="text-align:right;">
-72
+85
 </td>
 </tr>
 <tr>
@@ -7911,7 +8092,7 @@ visalia
 visalia
 </td>
 <td style="text-align:right;">
-11
+14
 </td>
 </tr>
 <tr>
@@ -7922,7 +8103,7 @@ vista
 vista
 </td>
 <td style="text-align:right;">
-11
+14
 </td>
 </tr>
 <tr>
@@ -7944,7 +8125,7 @@ walnut
 walnut
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -7955,7 +8136,7 @@ walnut creek
 walnut creek
 </td>
 <td style="text-align:right;">
-10
+8
 </td>
 </tr>
 <tr>
@@ -7977,7 +8158,7 @@ wasco
 wasco
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -7993,21 +8174,10 @@ wasco
 </tr>
 <tr>
 <td style="text-align:left;">
-watsonville
+washington
 </td>
 <td style="text-align:left;">
-watsonville
-</td>
-<td style="text-align:right;">
-53
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-weavervile
-</td>
-<td style="text-align:left;">
-weaverville
+washington
 </td>
 <td style="text-align:right;">
 1
@@ -8015,13 +8185,24 @@ weaverville
 </tr>
 <tr>
 <td style="text-align:left;">
+watsonville
+</td>
+<td style="text-align:left;">
+watsonville
+</td>
+<td style="text-align:right;">
+58
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 weaverville
 </td>
 <td style="text-align:left;">
 weaverville
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -8043,7 +8224,7 @@ weldon
 weldon
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -8054,7 +8235,7 @@ west covina
 west covina
 </td>
 <td style="text-align:right;">
-24
+13
 </td>
 </tr>
 <tr>
@@ -8063,17 +8244,6 @@ west hills
 </td>
 <td style="text-align:left;">
 west hills
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-west hollywood
-</td>
-<td style="text-align:left;">
-west hollywood
 </td>
 <td style="text-align:right;">
 4
@@ -8081,13 +8251,35 @@ west hollywood
 </tr>
 <tr>
 <td style="text-align:left;">
+west hollywood
+</td>
+<td style="text-align:left;">
+west hollywood
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 west sacramento
 </td>
 <td style="text-align:left;">
 west sacramento
 </td>
 <td style="text-align:right;">
-19
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+westlake village
+</td>
+<td style="text-align:left;">
+westlake village
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -8103,17 +8295,6 @@ westminster
 </tr>
 <tr>
 <td style="text-align:left;">
-westwood
-</td>
-<td style="text-align:left;">
-westwood
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 wheatland
 </td>
 <td style="text-align:left;">
@@ -8142,7 +8323,7 @@ whitewater
 whitewater
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -8153,7 +8334,7 @@ whittier
 whittier
 </td>
 <td style="text-align:right;">
-30
+17
 </td>
 </tr>
 <tr>
@@ -8164,7 +8345,7 @@ wildomar
 wildomar
 </td>
 <td style="text-align:right;">
-29
+36
 </td>
 </tr>
 <tr>
@@ -8197,7 +8378,7 @@ willits
 willits
 </td>
 <td style="text-align:right;">
-22
+23
 </td>
 </tr>
 <tr>
@@ -8219,7 +8400,7 @@ willowbrook
 willowbrook
 </td>
 <td style="text-align:right;">
-10
+3
 </td>
 </tr>
 <tr>
@@ -8230,7 +8411,7 @@ willows
 willows
 </td>
 <td style="text-align:right;">
-15
+19
 </td>
 </tr>
 <tr>
@@ -8241,7 +8422,7 @@ wilmington
 wilmington
 </td>
 <td style="text-align:right;">
-5
+3
 </td>
 </tr>
 <tr>
@@ -8263,7 +8444,7 @@ windsor
 windsor
 </td>
 <td style="text-align:right;">
-8
+7
 </td>
 </tr>
 <tr>
@@ -8274,7 +8455,7 @@ windsor hills
 windsor hills
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -8283,141 +8464,152 @@ winnetka
 </td>
 <td style="text-align:left;">
 winnetka
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-winters
-</td>
-<td style="text-align:left;">
-winters
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-winton
-</td>
-<td style="text-align:left;">
-winton
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-wofford heights
-</td>
-<td style="text-align:left;">
-wofford heights
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-wonder valley
-</td>
-<td style="text-align:left;">
-wonder valley
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-woodland
-</td>
-<td style="text-align:left;">
-woodland
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-woodland hills
-</td>
-<td style="text-align:left;">
-woodland hills
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yermo
-</td>
-<td style="text-align:left;">
-yermo
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ylp
-</td>
-<td style="text-align:left;">
-ylp
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yorba linda
-</td>
-<td style="text-align:left;">
-yorba linda
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yountville
-</td>
-<td style="text-align:left;">
-yountville
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yreka
-</td>
-<td style="text-align:left;">
-yreka
-</td>
-<td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yuba city
-</td>
-<td style="text-align:left;">
-yuba city
 </td>
 <td style="text-align:right;">
 7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+winters
+</td>
+<td style="text-align:left;">
+winters
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+winton
+</td>
+<td style="text-align:left;">
+winton
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wofford heights
+</td>
+<td style="text-align:left;">
+wofford heights
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wonder valley
+</td>
+<td style="text-align:left;">
+wonder valley
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+woodcrest
+</td>
+<td style="text-align:left;">
+woodcrest
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+woodland
+</td>
+<td style="text-align:left;">
+woodland
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+woodland hills
+</td>
+<td style="text-align:left;">
+woodland hills
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yermo
+</td>
+<td style="text-align:left;">
+yermo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ylp
+</td>
+<td style="text-align:left;">
+ylp
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yorba linda
+</td>
+<td style="text-align:left;">
+yorba linda
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yountville
+</td>
+<td style="text-align:left;">
+yountville
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yreka
+</td>
+<td style="text-align:left;">
+yreka
+</td>
+<td style="text-align:right;">
+20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yuba city
+</td>
+<td style="text-align:left;">
+yuba city
+</td>
+<td style="text-align:right;">
+8
 </td>
 </tr>
 <tr>
@@ -8439,7 +8631,7 @@ yucaipa
 yucaipa
 </td>
 <td style="text-align:right;">
-40
+48
 </td>
 </tr>
 <tr>
@@ -8472,7 +8664,7 @@ yucca valley
 yucca valley
 </td>
 <td style="text-align:right;">
-92
+120
 </td>
 </tr>
 <tr>
@@ -8483,7 +8675,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-1500
+595
 </td>
 </tr>
 </tbody>
@@ -8518,13 +8710,24 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
+alturas, ca
+</td>
+<td style="text-align:left;">
+alturas
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 american canyon
 </td>
 <td style="text-align:left;">
 american canyon
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -8557,7 +8760,7 @@ bakersfield, ca
 bakersfield
 </td>
 <td style="text-align:right;">
-7
+5
 </td>
 </tr>
 <tr>
@@ -8590,7 +8793,7 @@ california city
 california city
 </td>
 <td style="text-align:right;">
-9
+7
 </td>
 </tr>
 <tr>
@@ -8599,6 +8802,17 @@ chester, ca
 </td>
 <td style="text-align:left;">
 chester
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chico ca
+</td>
+<td style="text-align:left;">
+chico
 </td>
 <td style="text-align:right;">
 1
@@ -8645,7 +8859,7 @@ el cajon
 el cajon
 </td>
 <td style="text-align:right;">
-40
+45
 </td>
 </tr>
 <tr>
@@ -8667,7 +8881,7 @@ gardena ca
 gardena
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -8694,24 +8908,13 @@ indio
 </tr>
 <tr>
 <td style="text-align:left;">
-los angeles ca
-</td>
-<td style="text-align:left;">
-los angeles
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 los angeles california
 </td>
 <td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -8727,10 +8930,21 @@ mammoth lakes
 </tr>
 <tr>
 <td style="text-align:left;">
-marysville, ca 95901
+outside california
 </td>
 <td style="text-align:left;">
-marysville
+flag
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+palm springs,
+</td>
+<td style="text-align:left;">
+palm springs
 </td>
 <td style="text-align:right;">
 1
@@ -8755,7 +8969,7 @@ portola, ca
 portola
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -8766,18 +8980,7 @@ quincy, ca
 quincy
 </td>
 <td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverside ca
-</td>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:right;">
-2
+7
 </td>
 </tr>
 <tr>
@@ -8799,7 +9002,7 @@ san francisco, ca
 san francisco
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -8819,6 +9022,17 @@ san juan capistrano
 </td>
 <td style="text-align:left;">
 san juan capistrano
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+santa rosa ca
+</td>
+<td style="text-align:left;">
+santa rosa
 </td>
 <td style="text-align:right;">
 1
@@ -8852,6 +9066,17 @@ turlock, ca 95380
 </td>
 <td style="text-align:left;">
 turlock
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vacaville ca
+</td>
+<td style="text-align:left;">
+vacaville
 </td>
 <td style="text-align:right;">
 1
@@ -8909,7 +9134,7 @@ demo_dat <- demo_dat %>%
                                       str_starts(race_1, "bla") ~ "black/african american/african",
                                       str_starts(race_1, "pacific i") ~ "native hawaiian/pacific islander",
                                       str_starts(race_1, "wh") ~ "white",
-                                   str_detect(race_1, "unkn|#|client|collected") ~ "unknown",
+                                   str_detect(race_1, "unkn|#|client|collected|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                    is.na(race_1) ~ "unknown",
                                       
                                          TRUE ~ race_1))
@@ -8941,90 +9166,13 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
+0
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44252
-</td>
-<td style="text-align:left;">
-44252
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44376
-</td>
-<td style="text-align:left;">
-44376
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44515
-</td>
-<td style="text-align:left;">
-44515
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44519
-</td>
-<td style="text-align:left;">
-44519
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44600
-</td>
-<td style="text-align:left;">
-44600
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44769
-</td>
-<td style="text-align:left;">
-44769
-</td>
-<td style="text-align:right;">
 2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44774
-</td>
-<td style="text-align:left;">
-44774
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -9035,7 +9183,7 @@ american indian/alaskan native
 american indian/alaskan native/indigenous
 </td>
 <td style="text-align:right;">
-28
+33
 </td>
 </tr>
 <tr>
@@ -9046,7 +9194,7 @@ american indian/alaskan native/indigenous
 american indian/alaskan native/indigenous
 </td>
 <td style="text-align:right;">
-109
+110
 </td>
 </tr>
 <tr>
@@ -9057,7 +9205,7 @@ asian
 asian/asian american
 </td>
 <td style="text-align:right;">
-94
+82
 </td>
 </tr>
 <tr>
@@ -9068,7 +9216,7 @@ asian/asian american
 american indian/alaskan native/indigenous
 </td>
 <td style="text-align:right;">
-195
+217
 </td>
 </tr>
 <tr>
@@ -9079,7 +9227,7 @@ black/african american
 american indian/alaskan native/indigenous
 </td>
 <td style="text-align:right;">
-585
+531
 </td>
 </tr>
 <tr>
@@ -9090,7 +9238,7 @@ black/african american/african
 american indian/alaskan native/indigenous
 </td>
 <td style="text-align:right;">
-1109
+1232
 </td>
 </tr>
 <tr>
@@ -9112,7 +9260,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-34
+55
 </td>
 </tr>
 <tr>
@@ -9123,29 +9271,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-814
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-586
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-401
+713
 </td>
 </tr>
 <tr>
@@ -9156,7 +9282,7 @@ native hawaiian/pacific islander
 native hawaiian/pacific islander
 </td>
 <td style="text-align:right;">
-33
+43
 </td>
 </tr>
 <tr>
@@ -9167,7 +9293,7 @@ other
 other
 </td>
 <td style="text-align:right;">
-1292
+1112
 </td>
 </tr>
 <tr>
@@ -9178,18 +9304,7 @@ pacific islander/native hawaiian
 native hawaiian/pacific islander
 </td>
 <td style="text-align:right;">
-29
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-1
+36
 </td>
 </tr>
 <tr>
@@ -9200,7 +9315,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-1819
+1127
 </td>
 </tr>
 <tr>
@@ -9211,7 +9326,7 @@ white
 white
 </td>
 <td style="text-align:right;">
-7311
+7700
 </td>
 </tr>
 <tr>
@@ -9233,7 +9348,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-198
+51
 </td>
 </tr>
 </tbody>
@@ -9244,7 +9359,8 @@ unknown
 race_2 - doing the same as for race_1, and replacing no applicable with
 not applicable, updating “unknown”. For those who put an ethnicity
 response in race_2, replacing with “unknown” and updating those in the
-ethnicity variable.
+ethnicity variable. There was someone with race information in
+ethnicity, moving that to race_2\_recode.
 
 ``` r
 demo_dat <- demo_dat %>% 
@@ -9254,7 +9370,8 @@ demo_dat <- demo_dat %>%
                                       str_starts(race_2, "pacific i") ~ "native hawaiian/pacific islander",
                                       str_starts(race_2, "wh") ~ "white",
                                    str_detect(race_2, "hisp") ~ "unknown",
-                                   str_detect(race_2, "unknown|unable|refused|not collected|applicable|verified|#|client|mex") ~ "unknown",
+                                   str_detect(ethnicity, "american indian") ~ "american indian/alaskan native/indigenous",
+                                   str_detect(race_2, "unknown|unable|refused|not collected|applicable|verified|#|client|mex|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                    is.na(race_2) ~ "unknown",
                                       
                                          TRUE ~ race_2))
@@ -9286,194 +9403,7 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-american indian/alaskan native
-</td>
-<td style="text-align:left;">
-american indian/alaskan native/indigenous
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-american indian/alaskan native/indigenous
-</td>
-<td style="text-align:left;">
-american indian/alaskan native/indigenous
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian
-</td>
-<td style="text-align:left;">
-asian/asian american
-</td>
-<td style="text-align:right;">
-17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:right;">
-203
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-9780
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hispanic/latino/a/spanish origin
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mexican/chicano
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no applicable
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-not applicable
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-458
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-not hispanic/latino
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-98
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other hispanic/latino
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pacific islander/native hawaiian
-</td>
-<td style="text-align:left;">
-native hawaiian/pacific islander
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unable to verify
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-912
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-verified - program staff
+2
 </td>
 <td style="text-align:left;">
 unknown
@@ -9484,13 +9414,156 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+asian
+</td>
+<td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+10390
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+not applicable
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+382
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+545
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 white
 </td>
 <td style="text-align:left;">
 white
 </td>
 <td style="text-align:right;">
-773
+202
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -9501,7 +9574,61 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-2376
+1518
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Check that the race_2 variable was fixed for the one with response in
+ethnicity var
+
+``` r
+demo_dat %>% 
+  filter(str_starts(ethnicity, "american")) %>% 
+  count(ethnicity, race_1, race_2, race_2_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+ethnicity
+</th>
+<th style="text-align:left;">
+race_1
+</th>
+<th style="text-align:left;">
+race_2
+</th>
+<th style="text-align:left;">
+race_2\_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+american indian/alaskan native
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 </tbody>
@@ -9513,7 +9640,8 @@ Ethnicity - replace all instances of different spellings or orders of
 hispanic/latino/a/x to hispanic/latinx. Changing mexican/chicano, cuban,
 other hispanic/latino, and puerto rican to hispanic/latinx. Also,
 replace all instances of different spellings or orders of not
-hispanic/latino to non-hispanic/latinx
+hispanic/latino to non-hispanic/latinx. Moving “american indian/alaskan
+native” to race_2 from ethnicity.
 
 ``` r
 demo_dat <- demo_dat %>% 
@@ -9523,7 +9651,8 @@ demo_dat <- demo_dat %>%
                                       str_detect(race_2, "hispanic") ~ "hispanic/latinx",
                                       str_detect(race_2, "mex") ~ "hispanic/latinx",
                                       str_detect(ethnicity, "mex|puerto|cuban") ~ "hispanic/latinx",
-                                      str_detect(ethnicity, "unknown|#|applicable|data not|client|missing|rent") ~ "unknown",
+                                      str_detect(ethnicity, "american ind") ~ "unknown",
+                                      str_detect(ethnicity, "unknown|#|applicable|data not|client|missing|rent|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                       is.na(ethnicity) ~ "unknown",
                                       
                                       
@@ -9559,111 +9688,13 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:left;">
-\#
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-836
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
 2
 </td>
-</tr>
-<tr>
 <td style="text-align:left;">
-cuban
+2
 </td>
 <td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-cuban
-</td>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-hispanic/latinx
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -9671,49 +9702,77 @@ hispanic/latinx
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
+6
 </td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
 <td style="text-align:left;">
 american indian/alaskan native
 </td>
 <td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-asian
+NA
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-16
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
+client doesn’t know
 </td>
 <td style="text-align:left;">
-black/african american
+black/african american/african
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-194
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
+client doesn’t know
+</td>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
 </td>
 <td style="text-align:left;">
 data not collected
@@ -9722,46 +9781,18 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-1231
+894
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
+client doesn’t know
 </td>
 <td style="text-align:left;">
-not hispanic/latino
-</td>
-<td style="text-align:left;">
-non-hispanic/latinx
-</td>
-<td style="text-align:right;">
-54
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-other
+white
 </td>
 <td style="text-align:left;">
 unknown
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-other hispanic/latino
-</td>
-<td style="text-align:left;">
-hispanic/latinx
 </td>
 <td style="text-align:right;">
 2
@@ -9769,16 +9800,72 @@ hispanic/latinx
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
+client doesn’t know
 </td>
 <td style="text-align:left;">
-pacific islander/native hawaiian
+NA
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-5
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cuban
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cuban
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -9786,13 +9873,13 @@ unknown
 data not collected
 </td>
 <td style="text-align:left;">
-unknown/not provided
+data not collected
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-148
+1190
 </td>
 </tr>
 <tr>
@@ -9806,7 +9893,7 @@ white
 unknown
 </td>
 <td style="text-align:right;">
-597
+2
 </td>
 </tr>
 <tr>
@@ -9820,7 +9907,35 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-87
+70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+american indian/alaskan native/indigenous
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -9834,7 +9949,21 @@ data not collected
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-1332
+1408
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+7
 </td>
 </tr>
 <tr>
@@ -9848,21 +9977,7 @@ NA
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-70
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hispanic/latin(o)(a)(x)
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-3
+89
 </td>
 </tr>
 <tr>
@@ -9884,13 +9999,13 @@ hispanic/latinx
 hispanic/latino/a/spanish origin
 </td>
 <td style="text-align:left;">
-data not collected
+client refused
 </td>
 <td style="text-align:left;">
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -9898,13 +10013,13 @@ hispanic/latinx
 hispanic/latino/a/spanish origin
 </td>
 <td style="text-align:left;">
-unknown/not provided
+data not collected
 </td>
 <td style="text-align:left;">
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-1
+4
 </td>
 </tr>
 <tr>
@@ -9926,13 +10041,27 @@ hispanic/latinx
 mexican/chicano
 </td>
 <td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+hispanic/latinx
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mexican/chicano
+</td>
+<td style="text-align:left;">
 data not collected
 </td>
 <td style="text-align:left;">
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-63
+74
 </td>
 </tr>
 <tr>
@@ -9946,7 +10075,7 @@ not applicable
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-14
+13
 </td>
 </tr>
 <tr>
@@ -9988,21 +10117,21 @@ NA
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-14
+9
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-missing
+mexican/mexican american/chicano
 </td>
 <td style="text-align:left;">
-NA
+not applicable
 </td>
 <td style="text-align:left;">
-unknown
+hispanic/latinx
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -10016,7 +10145,49 @@ american indian/alaskan native/indigenous
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
 1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+non-hispanic/latin(a)(o)(x)
+</td>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+non-hispanic/latinx
+</td>
+<td style="text-align:right;">
+11
 </td>
 </tr>
 <tr>
@@ -10030,7 +10201,7 @@ data not collected
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-4454
+4700
 </td>
 </tr>
 <tr>
@@ -10044,7 +10215,7 @@ white
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-4
+99
 </td>
 </tr>
 <tr>
@@ -10058,7 +10229,7 @@ NA
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-305
+434
 </td>
 </tr>
 <tr>
@@ -10086,7 +10257,7 @@ asian
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -10100,7 +10271,7 @@ black/african american
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -10114,7 +10285,7 @@ data not collected
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-1208
+1388
 </td>
 </tr>
 <tr>
@@ -10128,7 +10299,7 @@ no applicable
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-6
+5
 </td>
 </tr>
 <tr>
@@ -10142,7 +10313,7 @@ not applicable
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-182
+217
 </td>
 </tr>
 <tr>
@@ -10156,7 +10327,7 @@ unknown/not provided
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-124
+109
 </td>
 </tr>
 <tr>
@@ -10170,7 +10341,7 @@ white
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-146
+75
 </td>
 </tr>
 <tr>
@@ -10184,12 +10355,12 @@ NA
 non-hispanic/latinx
 </td>
 <td style="text-align:right;">
-449
+264
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-other hispanci/latino
+other hispanic/latin
 </td>
 <td style="text-align:left;">
 not applicable
@@ -10212,7 +10383,7 @@ data not collected
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-299
+334
 </td>
 </tr>
 <tr>
@@ -10226,7 +10397,7 @@ no applicable
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -10248,27 +10419,13 @@ hispanic/latinx
 other hispanic/latino
 </td>
 <td style="text-align:left;">
-other
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other hispanic/latino
-</td>
-<td style="text-align:left;">
 unknown/not provided
 </td>
 <td style="text-align:left;">
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-10
+11
 </td>
 </tr>
 <tr>
@@ -10282,7 +10439,7 @@ white
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-18
+13
 </td>
 </tr>
 <tr>
@@ -10296,7 +10453,7 @@ NA
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-252
+126
 </td>
 </tr>
 <tr>
@@ -10310,7 +10467,7 @@ data not collected
 hispanic/latinx
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -10325,34 +10482,6 @@ hispanic/latinx
 </td>
 <td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:left;">
-verified - program staff
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:left;">
-unable to verify
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-6
 </td>
 </tr>
 <tr>
@@ -10374,27 +10503,13 @@ unknown
 unknown/not provided
 </td>
 <td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
 data not collected
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-329
+372
 </td>
 </tr>
 <tr>
@@ -10408,7 +10523,7 @@ not applicable
 unknown
 </td>
 <td style="text-align:right;">
-37
+40
 </td>
 </tr>
 <tr>
@@ -10436,7 +10551,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-385
+368
 </td>
 </tr>
 <tr>
@@ -10450,7 +10565,7 @@ white
 unknown
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -10464,7 +10579,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-989
+465
 </td>
 </tr>
 <tr>
@@ -10478,35 +10593,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-hispanic/latino/a/spanish origin
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-mexican/chicano
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-1
+11
 </td>
 </tr>
 <tr>
@@ -10520,7 +10607,7 @@ no applicable
 unknown
 </td>
 <td style="text-align:right;">
-4
+1
 </td>
 </tr>
 <tr>
@@ -10534,35 +10621,7 @@ not applicable
 unknown
 </td>
 <td style="text-align:right;">
-123
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-not hispanic/latino
-</td>
-<td style="text-align:left;">
-non-hispanic/latinx
-</td>
-<td style="text-align:right;">
-44
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-other hispanic/latino
-</td>
-<td style="text-align:left;">
-hispanic/latinx
-</td>
-<td style="text-align:right;">
-2
+7
 </td>
 </tr>
 <tr>
@@ -10576,21 +10635,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-210
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
+23
 </td>
 </tr>
 <tr>
@@ -10604,7 +10649,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-197
+50
 </td>
 </tr>
 </tbody>
@@ -10619,7 +10664,7 @@ current_martial_status - replace unknowns and data not collected with
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(current_marital_recode = case_when(str_detect(current_marital_status, "unknown|#|applicable|data not") ~ "unknown",
+  mutate(current_marital_recode = case_when(str_detect(current_marital_status, "unknown|#|applicable|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                             str_detect(current_marital_status, "domestic|single") ~ "flag",
                                       is.na(current_marital_status) ~ "unknown",
                                          TRUE ~ current_marital_status))
@@ -10651,7 +10696,7 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
+5
 </td>
 <td style="text-align:left;">
 unknown
@@ -10662,76 +10707,10 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-0
-</td>
-<td style="text-align:left;">
-0
-</td>
-<td style="text-align:right;">
-25
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:right;">
 6
 </td>
-</tr>
-<tr>
 <td style="text-align:left;">
-4
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-9
-</td>
-<td style="text-align:left;">
-9
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -10745,7 +10724,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-2759
+2223
 </td>
 </tr>
 <tr>
@@ -10756,7 +10735,7 @@ divorced
 divorced
 </td>
 <td style="text-align:right;">
-1909
+1894
 </td>
 </tr>
 <tr>
@@ -10767,7 +10746,7 @@ domestic partnership
 flag
 </td>
 <td style="text-align:right;">
-2
+4
 </td>
 </tr>
 <tr>
@@ -10789,7 +10768,7 @@ married
 married
 </td>
 <td style="text-align:right;">
-1395
+1280
 </td>
 </tr>
 <tr>
@@ -10800,18 +10779,7 @@ never married
 never married
 </td>
 <td style="text-align:right;">
-1802
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-2
+1729
 </td>
 </tr>
 <tr>
@@ -10822,7 +10790,7 @@ not married/living with partner
 not married/living with partner
 </td>
 <td style="text-align:right;">
-1557
+1494
 </td>
 </tr>
 <tr>
@@ -10833,7 +10801,7 @@ separated
 separated
 </td>
 <td style="text-align:right;">
-453
+451
 </td>
 </tr>
 <tr>
@@ -10844,7 +10812,7 @@ single
 flag
 </td>
 <td style="text-align:right;">
-104
+87
 </td>
 </tr>
 <tr>
@@ -10866,7 +10834,18 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-295
+814
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/no provided
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4
 </td>
 </tr>
 <tr>
@@ -10877,7 +10856,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-2337
+1286
 </td>
 </tr>
 <tr>
@@ -10888,7 +10867,7 @@ widowed
 widowed
 </td>
 <td style="text-align:right;">
-1612
+1521
 </td>
 </tr>
 <tr>
@@ -10899,7 +10878,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-312
+205
 </td>
 </tr>
 </tbody>
@@ -10948,90 +10927,13 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 0
 </td>
 <td style="text-align:left;">
 0
 </td>
 <td style="text-align:right;">
-30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:left;">
-5
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-99
-</td>
-<td style="text-align:left;">
-99
-</td>
-<td style="text-align:right;">
-21
 </td>
 </tr>
 <tr>
@@ -11053,7 +10955,7 @@ bisexual
 bisexual
 </td>
 <td style="text-align:right;">
-28
+33
 </td>
 </tr>
 <tr>
@@ -11064,7 +10966,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-1449
+1320
 </td>
 </tr>
 <tr>
@@ -11075,7 +10977,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-147
+178
 </td>
 </tr>
 <tr>
@@ -11086,7 +10988,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-1939
+1957
 </td>
 </tr>
 <tr>
@@ -11097,18 +10999,7 @@ decline to state
 unknown
 </td>
 <td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-english
-</td>
-<td style="text-align:left;">
-english
-</td>
-<td style="text-align:right;">
-971
+15
 </td>
 </tr>
 <tr>
@@ -11119,29 +11010,7 @@ gay/lesbian
 gay/lesbian
 </td>
 <td style="text-align:right;">
-166
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mandarin/cantonese
-</td>
-<td style="text-align:left;">
-mandarin/cantonese
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:left;">
-flag
-</td>
-<td style="text-align:right;">
-27
+169
 </td>
 </tr>
 <tr>
@@ -11152,18 +11021,7 @@ questioning
 questioning
 </td>
 <td style="text-align:right;">
-33
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-spanish
-</td>
-<td style="text-align:left;">
-spanish
-</td>
-<td style="text-align:right;">
-49
+37
 </td>
 </tr>
 <tr>
@@ -11174,7 +11032,7 @@ straight
 straight/heterosexual
 </td>
 <td style="text-align:right;">
-7
+25
 </td>
 </tr>
 <tr>
@@ -11185,7 +11043,7 @@ straight/heterosexual
 straight/heterosexual
 </td>
 <td style="text-align:right;">
-6407
+6844
 </td>
 </tr>
 <tr>
@@ -11196,7 +11054,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-253
+306
 </td>
 </tr>
 <tr>
@@ -11207,7 +11065,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-2902
+2137
 </td>
 </tr>
 <tr>
@@ -11229,7 +11087,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-211
+62
 </td>
 </tr>
 </tbody>
@@ -11275,90 +11133,13 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44252
-</td>
-<td style="text-align:left;">
-44252
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44376
-</td>
-<td style="text-align:left;">
-44376
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44519
-</td>
-<td style="text-align:left;">
-44519
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44600
-</td>
-<td style="text-align:left;">
-44600
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44769
-</td>
-<td style="text-align:left;">
-44769
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44774
-</td>
-<td style="text-align:left;">
-44774
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 data not collected
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-214
+141
 </td>
 </tr>
 <tr>
@@ -11369,18 +11150,7 @@ english
 english
 </td>
 <td style="text-align:right;">
-11996
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-gay/lesbian
-</td>
-<td style="text-align:left;">
-gay/lesbian
-</td>
-<td style="text-align:right;">
-1
+11855
 </td>
 </tr>
 <tr>
@@ -11391,7 +11161,7 @@ korean
 korean
 </td>
 <td style="text-align:right;">
-16
+12
 </td>
 </tr>
 <tr>
@@ -11413,18 +11183,7 @@ mandarin/cantonese
 mandarin/cantonese
 </td>
 <td style="text-align:right;">
-17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-944
+14
 </td>
 </tr>
 <tr>
@@ -11435,7 +11194,7 @@ other
 other
 </td>
 <td style="text-align:right;">
-193
+198
 </td>
 </tr>
 <tr>
@@ -11446,18 +11205,7 @@ spanish
 spanish
 </td>
 <td style="text-align:right;">
-892
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-straight/heterosexual
-</td>
-<td style="text-align:left;">
-straight/heterosexual
-</td>
-<td style="text-align:right;">
-41
+764
 </td>
 </tr>
 <tr>
@@ -11468,18 +11216,7 @@ tagalog
 tagalog
 </td>
 <td style="text-align:right;">
-17
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-30
+16
 </td>
 </tr>
 <tr>
@@ -11490,7 +11227,7 @@ unknown/not provided
 unknown
 </td>
 <td style="text-align:right;">
-18
+8
 </td>
 </tr>
 <tr>
@@ -11501,18 +11238,7 @@ vietnamese
 vietnamese
 </td>
 <td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-74
+15
 </td>
 </tr>
 <tr>
@@ -11523,7 +11249,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-215
+63
 </td>
 </tr>
 </tbody>
@@ -11570,6 +11296,17 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 b
 </td>
 <td style="text-align:left;">
@@ -11587,7 +11324,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-766
+331
 </td>
 </tr>
 <tr>
@@ -11598,7 +11335,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -11609,18 +11346,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-1803
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-english
-</td>
-<td style="text-align:left;">
-english
-</td>
-<td style="text-align:right;">
-70
+4619
 </td>
 </tr>
 <tr>
@@ -11631,40 +11357,18 @@ n/a
 unknown
 </td>
 <td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-8195
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:left;">
-none
-</td>
-<td style="text-align:right;">
 1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-unable to verify
+no
 </td>
 <td style="text-align:left;">
-unknown
+no
 </td>
 <td style="text-align:right;">
-6
+6389
 </td>
 </tr>
 <tr>
@@ -11675,18 +11379,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-1634
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-verified - program staff
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
+944
 </td>
 </tr>
 <tr>
@@ -11697,7 +11390,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-1452
+606
 </td>
 </tr>
 <tr>
@@ -11708,7 +11401,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-755
+193
 </td>
 </tr>
 </tbody>
@@ -11751,13 +11444,35 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 client doesn’t know
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-4
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -11768,7 +11483,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-5982
+6011
 </td>
 </tr>
 <tr>
@@ -11779,18 +11494,7 @@ no
 no
 </td>
 <td style="text-align:right;">
-1216
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:right;">
-2
+1019
 </td>
 </tr>
 <tr>
@@ -11801,7 +11505,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-1289
+1221
 </td>
 </tr>
 <tr>
@@ -11812,7 +11516,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-4084
+3840
 </td>
 </tr>
 <tr>
@@ -11823,7 +11527,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-2113
+988
 </td>
 </tr>
 </tbody>
@@ -11866,13 +11570,35 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 client doesn’t know
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-2
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -11883,7 +11609,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-6504
+6603
 </td>
 </tr>
 <tr>
@@ -11905,7 +11631,7 @@ no
 no
 </td>
 <td style="text-align:right;">
-1873
+986
 </td>
 </tr>
 <tr>
@@ -11927,7 +11653,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-1273
+1258
 </td>
 </tr>
 <tr>
@@ -11938,7 +11664,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-2900
+3223
 </td>
 </tr>
 <tr>
@@ -11949,7 +11675,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-2136
+1009
 </td>
 </tr>
 </tbody>
@@ -11985,15 +11711,7 @@ n
 0
 </td>
 <td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-0.0
-</td>
-<td style="text-align:right;">
-1
+16
 </td>
 </tr>
 <tr>
@@ -12054,7 +11772,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-28.0
+28
 </td>
 <td style="text-align:right;">
 1
@@ -12110,7 +11828,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-30.0
+30
 </td>
 <td style="text-align:right;">
 1
@@ -12150,7 +11868,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-33.2
+33.200000000000003
 </td>
 <td style="text-align:right;">
 2
@@ -12174,7 +11892,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-34.0
+34
 </td>
 <td style="text-align:right;">
 1
@@ -12190,7 +11908,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-35.0
+35
 </td>
 <td style="text-align:right;">
 1
@@ -12230,7 +11948,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-36.7
+36.700000000000003
 </td>
 <td style="text-align:right;">
 1
@@ -12238,7 +11956,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-37.8
+37.799999999999997
 </td>
 <td style="text-align:right;">
 1
@@ -12246,7 +11964,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-38.0
+38
 </td>
 <td style="text-align:right;">
 1
@@ -12254,7 +11972,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-38.3
+38.299999999999997
 </td>
 <td style="text-align:right;">
 1
@@ -12286,7 +12004,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-39.8
+39.799999999999997
 </td>
 <td style="text-align:right;">
 1
@@ -12302,7 +12020,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-40.0
+40
 </td>
 <td style="text-align:right;">
 1
@@ -12318,7 +12036,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-40.8
+40.799999999999997
 </td>
 <td style="text-align:right;">
 1
@@ -12334,7 +12052,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-41.0
+41
 </td>
 <td style="text-align:right;">
 1
@@ -12550,7 +12268,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-50.0
+50
 </td>
 <td style="text-align:right;">
 1
@@ -12566,7 +12284,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-51.0
+51
 </td>
 <td style="text-align:right;">
 3
@@ -12606,7 +12324,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-52.0
+52
 </td>
 <td style="text-align:right;">
 1
@@ -12662,7 +12380,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-53.0
+53
 </td>
 <td style="text-align:right;">
 1
@@ -12718,7 +12436,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-54.0
+54
 </td>
 <td style="text-align:right;">
 1
@@ -12758,7 +12476,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-55.0
+55
 </td>
 <td style="text-align:right;">
 3
@@ -12814,7 +12532,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-56.0
+56
 </td>
 <td style="text-align:right;">
 1
@@ -12910,7 +12628,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-58.0
+58
 </td>
 <td style="text-align:right;">
 4
@@ -13006,7 +12724,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-60.0
+60
 </td>
 <td style="text-align:right;">
 1
@@ -13054,7 +12772,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-61.0
+61
 </td>
 <td style="text-align:right;">
 1
@@ -13110,7 +12828,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-62.0
+62
 </td>
 <td style="text-align:right;">
 2
@@ -13174,7 +12892,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-63.0
+63
 </td>
 <td style="text-align:right;">
 2
@@ -13238,7 +12956,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-64.0
+64
 </td>
 <td style="text-align:right;">
 1
@@ -13246,7 +12964,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-64.1
+64.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13270,7 +12988,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-64.4
+64.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13286,7 +13004,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-64.6
+64.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13310,7 +13028,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-64.9
+64.900000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13318,7 +13036,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-65.0
+65
 </td>
 <td style="text-align:right;">
 1
@@ -13326,7 +13044,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-65.1
+65.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13350,7 +13068,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-65.4
+65.400000000000006
 </td>
 <td style="text-align:right;">
 2
@@ -13366,7 +13084,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-65.6
+65.599999999999994
 </td>
 <td style="text-align:right;">
 5
@@ -13382,7 +13100,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-65.9
+65.900000000000006
 </td>
 <td style="text-align:right;">
 3
@@ -13390,7 +13108,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-66.1
+66.099999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13406,7 +13124,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-66.4
+66.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13422,7 +13140,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-66.6
+66.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13446,7 +13164,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-66.9
+66.900000000000006
 </td>
 <td style="text-align:right;">
 4
@@ -13454,7 +13172,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-67.0
+67
 </td>
 <td style="text-align:right;">
 3
@@ -13462,7 +13180,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-67.1
+67.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13494,7 +13212,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-67.6
+67.599999999999994
 </td>
 <td style="text-align:right;">
 3
@@ -13510,7 +13228,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-67.9
+67.900000000000006
 </td>
 <td style="text-align:right;">
 2
@@ -13518,7 +13236,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-68.0
+68
 </td>
 <td style="text-align:right;">
 1
@@ -13526,7 +13244,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-68.1
+68.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13550,7 +13268,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-68.4
+68.400000000000006
 </td>
 <td style="text-align:right;">
 2
@@ -13566,7 +13284,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-68.6
+68.599999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13590,7 +13308,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-69.1
+69.099999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13622,7 +13340,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-69.6
+69.599999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13646,7 +13364,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-69.9
+69.900000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13654,7 +13372,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-70.1
+70.099999999999994
 </td>
 <td style="text-align:right;">
 3
@@ -13678,7 +13396,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-70.6
+70.599999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13702,7 +13420,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-70.9
+70.900000000000006
 </td>
 <td style="text-align:right;">
 2
@@ -13710,7 +13428,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-71.0
+71
 </td>
 <td style="text-align:right;">
 3
@@ -13718,7 +13436,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-71.1
+71.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13742,7 +13460,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-71.4
+71.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13758,7 +13476,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-71.6
+71.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13798,7 +13516,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-72.6
+72.599999999999994
 </td>
 <td style="text-align:right;">
 2
@@ -13814,7 +13532,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-73.1
+73.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13830,7 +13548,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-73.4
+73.400000000000006
 </td>
 <td style="text-align:right;">
 3
@@ -13846,7 +13564,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-73.9
+73.900000000000006
 </td>
 <td style="text-align:right;">
 3
@@ -13854,7 +13572,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-74.1
+74.099999999999994
 </td>
 <td style="text-align:right;">
 3
@@ -13862,7 +13580,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-74.4
+74.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13870,7 +13588,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-74.6
+74.599999999999994
 </td>
 <td style="text-align:right;">
 3
@@ -13878,7 +13596,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-75.0
+75
 </td>
 <td style="text-align:right;">
 1
@@ -13886,7 +13604,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-75.4
+75.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13894,7 +13612,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-75.6
+75.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13910,7 +13628,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-75.9
+75.900000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -13926,7 +13644,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-76.4
+76.400000000000006
 </td>
 <td style="text-align:right;">
 2
@@ -13942,7 +13660,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-76.6
+76.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13966,7 +13684,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-77.6
+77.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13974,7 +13692,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-78.0
+78
 </td>
 <td style="text-align:right;">
 2
@@ -13982,7 +13700,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-78.1
+78.099999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -13990,7 +13708,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-78.6
+78.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -14006,7 +13724,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-78.9
+78.900000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -14014,7 +13732,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-79.0
+79
 </td>
 <td style="text-align:right;">
 1
@@ -14022,7 +13740,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-79.6
+79.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -14038,7 +13756,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-80.0
+80
 </td>
 <td style="text-align:right;">
 1
@@ -14054,7 +13772,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-80.4
+80.400000000000006
 </td>
 <td style="text-align:right;">
 1
@@ -14078,7 +13796,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-81.6
+81.599999999999994
 </td>
 <td style="text-align:right;">
 1
@@ -14086,7 +13804,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-82.0
+82
 </td>
 <td style="text-align:right;">
 1
@@ -14190,63 +13908,7 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-7146
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-homeless sheltered
-</td>
-<td style="text-align:right;">
-129
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-homeless unsheltered
-</td>
-<td style="text-align:right;">
-157
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hotel no rights
-</td>
-<td style="text-align:right;">
-95
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hotel with rights
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-n/a
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-2850
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-none
+client refused
 </td>
 <td style="text-align:right;">
 1
@@ -14254,50 +13916,26 @@ none
 </tr>
 <tr>
 <td style="text-align:left;">
-owner lives alone
+data not collected
 </td>
 <td style="text-align:right;">
-112
+7316
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-owner with others no rent
+n/a
 </td>
 <td style="text-align:right;">
-51
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-owner with others rent
+no
 </td>
 <td style="text-align:right;">
-30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:right;">
-201
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-residential care facility
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-skilled nursing facility
-</td>
-<td style="text-align:right;">
-4
+3277
 </td>
 </tr>
 <tr>
@@ -14305,23 +13943,7 @@ skilled nursing facility
 unknown
 </td>
 <td style="text-align:right;">
-854
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:right;">
-63
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others rent
-</td>
-<td style="text-align:right;">
-186
+835
 </td>
 </tr>
 <tr>
@@ -14329,7 +13951,7 @@ with others rent
 yes
 </td>
 <td style="text-align:right;">
-195
+207
 </td>
 </tr>
 <tr>
@@ -14337,7 +13959,7 @@ yes
 NA
 </td>
 <td style="text-align:right;">
-2158
+1010
 </td>
 </tr>
 </tbody>
@@ -14418,815 +14040,12 @@ n
 unknown
 </td>
 <td style="text-align:right;">
-345
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1000
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1006
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1015
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1020
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1023
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1027
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1030
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1036
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1040
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1050
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1058
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1070
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1075
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1080
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1085
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1090
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1093
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1095
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1100
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
 7
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-1133
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1134
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1140
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1145
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1188
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1193
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1195
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1200
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1210
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1211
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1230
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1238
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1249
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1250
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1251.78
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1263
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1275
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1293
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1295
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1300
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1306
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1313
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1317
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1320
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1321
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1364
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1368
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1375
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1380
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1400
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1440
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1441
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1453
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1500
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1506
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1553
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-156
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1570
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1600
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1650
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1668
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1685
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1700
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-175
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1750
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1775
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1800
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1850
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1862
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1900
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1925
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1937
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1980
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1988
 </td>
 <td style="text-align:left;">
 unknown
@@ -15243,1679 +14062,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-200
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2000
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2066
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2100
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-215
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-216
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-224
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2300
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-234
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2346
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2359
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2400
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
 2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-247
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-250
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2500
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-254
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-255
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2550
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2600
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2700
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-280
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2800
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2835
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-289
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-290
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2900
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-298
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-300
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3000
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-305
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-308
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3140
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-342
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-350
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-360
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-368
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-371
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-375
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-377
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3776
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-384
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-390
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-400
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-408
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-42
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-420
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-423
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-429
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-438
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-440
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-448
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-45
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-450
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-451
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-459
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-460
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-462.5
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-470
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-473
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-475
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-482
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-485
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-490
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-495
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-496
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-50
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-500
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-66
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-532
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-543
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-550
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-560
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-561
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-567
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-568
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-572
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-575
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-577
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-580
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-581
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-590
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-596
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-598
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-600
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-607
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-610
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-614
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-616
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-618
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-621
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-625
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-635
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-637
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-639
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-650
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-652
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-654
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-657
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-658
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-660
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-668
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-675
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-680
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-682
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-685
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-687
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-689
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-690
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-694
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-695
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-696
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-700
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-51
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-705
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-712
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-723
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-725
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-750
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-31
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-756
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-757
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-760
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-765
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-768
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-775
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-776
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-780
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-786
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-788
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-791
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-795
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-798
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-800
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-47
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-817
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-823
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-825
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-830
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-841
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-844
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-850
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-875
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-880
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-896
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-900
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-909
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-919
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-925
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-935
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-940
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-950
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-954
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-955
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-975
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-978
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -16926,7 +14073,7 @@ board and care facility
 flag
 </td>
 <td style="text-align:right;">
-15
+14
 </td>
 </tr>
 <tr>
@@ -16937,15 +14084,15 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-3713
+3510
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-home owner- lives alone
+fleeing dv
 </td>
 <td style="text-align:left;">
-owner
+fleeing dv
 </td>
 <td style="text-align:right;">
 1
@@ -16959,7 +14106,7 @@ home owner- with others no rent
 owner
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -16970,7 +14117,7 @@ homeless
 homeless
 </td>
 <td style="text-align:right;">
-1933
+2246
 </td>
 </tr>
 <tr>
@@ -16981,7 +14128,7 @@ homeless sheltered
 homeless
 </td>
 <td style="text-align:right;">
-465
+355
 </td>
 </tr>
 <tr>
@@ -16992,7 +14139,29 @@ homeless unsheltered
 homeless
 </td>
 <td style="text-align:right;">
-1508
+711
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeless- sheltered
+</td>
+<td style="text-align:left;">
+homeless
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+homeowner- alone
+</td>
+<td style="text-align:left;">
+owner
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -17008,24 +14177,13 @@ homeless
 </tr>
 <tr>
 <td style="text-align:left;">
-hospital facility
-</td>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 hotel
 </td>
 <td style="text-align:left;">
 temporary housing
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -17036,7 +14194,7 @@ hotel no rights
 temporary housing
 </td>
 <td style="text-align:right;">
-202
+217
 </td>
 </tr>
 <tr>
@@ -17063,7 +14221,7 @@ rent leaseholder
 </tr>
 <tr>
 <td style="text-align:left;">
-live alone
+living in a shared house
 </td>
 <td style="text-align:left;">
 flag
@@ -17074,18 +14232,18 @@ flag
 </tr>
 <tr>
 <td style="text-align:left;">
-living in a shared house
+living with family
 </td>
 <td style="text-align:left;">
 flag
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-living with family
+living with others rent
 </td>
 <td style="text-align:left;">
 flag
@@ -17102,7 +14260,7 @@ living with relative
 flag
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -17118,13 +14276,24 @@ no
 </tr>
 <tr>
 <td style="text-align:left;">
+not answered
+</td>
+<td style="text-align:left;">
+not answered
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 other
 </td>
 <td style="text-align:left;">
 other
 </td>
 <td style="text-align:right;">
-69
+148
 </td>
 </tr>
 <tr>
@@ -17135,18 +14304,7 @@ other permanent housing
 other permanent housing
 </td>
 <td style="text-align:right;">
-108
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-owned by client
-</td>
-<td style="text-align:left;">
-owner
-</td>
-<td style="text-align:right;">
-1
+151
 </td>
 </tr>
 <tr>
@@ -17157,7 +14315,7 @@ owner
 owner
 </td>
 <td style="text-align:right;">
-450
+543
 </td>
 </tr>
 <tr>
@@ -17168,7 +14326,7 @@ owner lives alone
 owner
 </td>
 <td style="text-align:right;">
-226
+259
 </td>
 </tr>
 <tr>
@@ -17190,7 +14348,7 @@ owner with others no rent
 owner
 </td>
 <td style="text-align:right;">
-91
+105
 </td>
 </tr>
 <tr>
@@ -17201,7 +14359,18 @@ owner with others rent
 owner
 </td>
 <td style="text-align:right;">
-62
+70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+permanent housing
+</td>
+<td style="text-align:left;">
+permanent housing
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -17212,7 +14381,7 @@ permanent- residential program
 permanent- residential program
 </td>
 <td style="text-align:right;">
-18
+25
 </td>
 </tr>
 <tr>
@@ -17234,18 +14403,7 @@ rent by client
 rent leaseholder
 </td>
 <td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent by owner
-</td>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:right;">
-2
+4
 </td>
 </tr>
 <tr>
@@ -17256,7 +14414,7 @@ rent leaseholder
 rent leaseholder
 </td>
 <td style="text-align:right;">
-2217
+2439
 </td>
 </tr>
 <tr>
@@ -17267,12 +14425,34 @@ rental by client
 rent leaseholder
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 rental by client with ongoing subsidy
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rental housing lease holder
+</td>
+<td style="text-align:left;">
+rent leaseholder
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rental housing- lease holder
 </td>
 <td style="text-align:left;">
 rent leaseholder
@@ -17289,7 +14469,7 @@ residential care facility
 flag
 </td>
 <td style="text-align:right;">
-44
+46
 </td>
 </tr>
 <tr>
@@ -17300,7 +14480,7 @@ shared housing
 flag
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -17311,7 +14491,7 @@ skilled nursing facility
 flag
 </td>
 <td style="text-align:right;">
-19
+18
 </td>
 </tr>
 <tr>
@@ -17322,7 +14502,7 @@ temporary housing
 temporary housing
 </td>
 <td style="text-align:right;">
-529
+1045
 </td>
 </tr>
 <tr>
@@ -17333,18 +14513,18 @@ temporary- residential program
 temporary- residential program
 </td>
 <td style="text-align:right;">
-70
+79
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-unknown
+temporary-residential program
 </td>
 <td style="text-align:left;">
-unknown
+temporary-residential program
 </td>
 <td style="text-align:right;">
-71
+1
 </td>
 </tr>
 <tr>
@@ -17353,17 +14533,6 @@ unsheltered
 </td>
 <td style="text-align:left;">
 homeless
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others
-</td>
-<td style="text-align:left;">
-flag
 </td>
 <td style="text-align:right;">
 1
@@ -17377,7 +14546,7 @@ with others no rent
 flag
 </td>
 <td style="text-align:right;">
-408
+279
 </td>
 </tr>
 <tr>
@@ -17388,7 +14557,7 @@ with others rent
 flag
 </td>
 <td style="text-align:right;">
-816
+629
 </td>
 </tr>
 <tr>
@@ -17399,7 +14568,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-5
+1
 </td>
 </tr>
 <tr>
@@ -17410,7 +14579,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-554
+113
 </td>
 </tr>
 </tbody>
@@ -17449,21 +14618,10 @@ n
 board and care facility
 </td>
 <td style="text-align:left;">
-alameda
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-board and care facility
-</td>
-<td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -17474,7 +14632,7 @@ board and care facility
 placer
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -17483,6 +14641,17 @@ board and care facility
 </td>
 <td style="text-align:left;">
 sacramento
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+board and care facility
+</td>
+<td style="text-align:left;">
+san bernardino
 </td>
 <td style="text-align:right;">
 1
@@ -17515,17 +14684,6 @@ santa cruz
 board and care facility
 </td>
 <td style="text-align:left;">
-sonoma
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-board and care facility
-</td>
-<td style="text-align:left;">
 ventura
 </td>
 <td style="text-align:right;">
@@ -17545,24 +14703,13 @@ yuba
 </tr>
 <tr>
 <td style="text-align:left;">
-live alone
-</td>
-<td style="text-align:left;">
-los angeles
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 living in a shared house
 </td>
 <td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -17578,21 +14725,21 @@ los angeles
 </tr>
 <tr>
 <td style="text-align:left;">
-living with relative
+living with others rent
 </td>
 <td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-residential care facility
+living with relative
 </td>
 <td style="text-align:left;">
-fresno
+los angeles
 </td>
 <td style="text-align:right;">
 1
@@ -17617,7 +14764,7 @@ residential care facility
 los angeles
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -17628,7 +14775,7 @@ residential care facility
 mendocino
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -17637,6 +14784,17 @@ residential care facility
 </td>
 <td style="text-align:left;">
 merced
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+residential care facility
+</td>
+<td style="text-align:left;">
+placer
 </td>
 <td style="text-align:right;">
 1
@@ -17661,7 +14819,7 @@ residential care facility
 san bernardino
 </td>
 <td style="text-align:right;">
-3
+7
 </td>
 </tr>
 <tr>
@@ -17732,32 +14890,10 @@ ventura
 </tr>
 <tr>
 <td style="text-align:left;">
-residential care facility
-</td>
-<td style="text-align:left;">
-yuba
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 shared housing
 </td>
 <td style="text-align:left;">
 los angeles
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-skilled nursing facility
-</td>
-<td style="text-align:left;">
-alameda
 </td>
 <td style="text-align:right;">
 1
@@ -17793,7 +14929,7 @@ skilled nursing facility
 placer
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -17845,62 +14981,18 @@ santa cruz
 skilled nursing facility
 </td>
 <td style="text-align:left;">
+tehama
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+skilled nursing facility
+</td>
+<td style="text-align:left;">
 ventura
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others
-</td>
-<td style="text-align:left;">
-los angeles
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:left;">
-alameda
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:left;">
-contra costa
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:left;">
-fresno
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:left;">
-humboldt
 </td>
 <td style="text-align:right;">
 2
@@ -17911,10 +15003,10 @@ humboldt
 with others no rent
 </td>
 <td style="text-align:left;">
-kern
+contra costa
 </td>
 <td style="text-align:right;">
-20
+3
 </td>
 </tr>
 <tr>
@@ -17922,7 +15014,29 @@ kern
 with others no rent
 </td>
 <td style="text-align:left;">
-kings
+fresno
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+humboldt
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
+kern
 </td>
 <td style="text-align:right;">
 5
@@ -17933,10 +15047,21 @@ kings
 with others no rent
 </td>
 <td style="text-align:left;">
+kings
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+with others no rent
+</td>
+<td style="text-align:left;">
 los angeles
 </td>
 <td style="text-align:right;">
-108
+62
 </td>
 </tr>
 <tr>
@@ -17969,7 +15094,7 @@ with others no rent
 mendocino
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -17980,7 +15105,7 @@ with others no rent
 merced
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -17991,7 +15116,7 @@ with others no rent
 orange
 </td>
 <td style="text-align:right;">
-2
+5
 </td>
 </tr>
 <tr>
@@ -18002,7 +15127,7 @@ with others no rent
 placer
 </td>
 <td style="text-align:right;">
-6
+9
 </td>
 </tr>
 <tr>
@@ -18013,7 +15138,7 @@ with others no rent
 riverside
 </td>
 <td style="text-align:right;">
-60
+4
 </td>
 </tr>
 <tr>
@@ -18024,7 +15149,7 @@ with others no rent
 sacramento
 </td>
 <td style="text-align:right;">
-43
+33
 </td>
 </tr>
 <tr>
@@ -18035,7 +15160,7 @@ with others no rent
 san bernardino
 </td>
 <td style="text-align:right;">
-64
+78
 </td>
 </tr>
 <tr>
@@ -18046,18 +15171,7 @@ with others no rent
 san diego
 </td>
 <td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others no rent
-</td>
-<td style="text-align:left;">
-san francisco
-</td>
-<td style="text-align:right;">
-3
+22
 </td>
 </tr>
 <tr>
@@ -18079,7 +15193,7 @@ with others no rent
 santa cruz
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -18101,7 +15215,7 @@ with others no rent
 sonoma
 </td>
 <td style="text-align:right;">
-7
+10
 </td>
 </tr>
 <tr>
@@ -18145,7 +15259,7 @@ with others rent
 alameda
 </td>
 <td style="text-align:right;">
-17
+13
 </td>
 </tr>
 <tr>
@@ -18156,7 +15270,7 @@ with others rent
 contra costa
 </td>
 <td style="text-align:right;">
-35
+19
 </td>
 </tr>
 <tr>
@@ -18167,7 +15281,7 @@ with others rent
 fresno
 </td>
 <td style="text-align:right;">
-28
+1
 </td>
 </tr>
 <tr>
@@ -18178,7 +15292,7 @@ with others rent
 humboldt
 </td>
 <td style="text-align:right;">
-8
+11
 </td>
 </tr>
 <tr>
@@ -18189,7 +15303,7 @@ with others rent
 kern
 </td>
 <td style="text-align:right;">
-68
+15
 </td>
 </tr>
 <tr>
@@ -18200,7 +15314,7 @@ with others rent
 kings
 </td>
 <td style="text-align:right;">
-15
+9
 </td>
 </tr>
 <tr>
@@ -18211,7 +15325,7 @@ with others rent
 los angeles
 </td>
 <td style="text-align:right;">
-82
+42
 </td>
 </tr>
 <tr>
@@ -18244,17 +15358,6 @@ with others rent
 mendocino
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-with others rent
-</td>
-<td style="text-align:left;">
-merced
-</td>
-<td style="text-align:right;">
 4
 </td>
 </tr>
@@ -18266,7 +15369,7 @@ with others rent
 nevada
 </td>
 <td style="text-align:right;">
-6
+1
 </td>
 </tr>
 <tr>
@@ -18277,7 +15380,7 @@ with others rent
 orange
 </td>
 <td style="text-align:right;">
-2
+8
 </td>
 </tr>
 <tr>
@@ -18299,7 +15402,7 @@ with others rent
 riverside
 </td>
 <td style="text-align:right;">
-65
+3
 </td>
 </tr>
 <tr>
@@ -18310,7 +15413,7 @@ with others rent
 sacramento
 </td>
 <td style="text-align:right;">
-91
+66
 </td>
 </tr>
 <tr>
@@ -18321,7 +15424,7 @@ with others rent
 san bernardino
 </td>
 <td style="text-align:right;">
-206
+253
 </td>
 </tr>
 <tr>
@@ -18332,7 +15435,7 @@ with others rent
 san diego
 </td>
 <td style="text-align:right;">
-63
+62
 </td>
 </tr>
 <tr>
@@ -18343,7 +15446,7 @@ with others rent
 san francisco
 </td>
 <td style="text-align:right;">
-17
+6
 </td>
 </tr>
 <tr>
@@ -18365,7 +15468,7 @@ with others rent
 santa clara
 </td>
 <td style="text-align:right;">
-21
+22
 </td>
 </tr>
 <tr>
@@ -18398,7 +15501,7 @@ with others rent
 sonoma
 </td>
 <td style="text-align:right;">
-36
+43
 </td>
 </tr>
 <tr>
@@ -18491,425 +15594,7 @@ n
 0
 </td>
 <td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1000
-</td>
-<td style="text-align:left;">
-1000
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1001
-</td>
-<td style="text-align:left;">
-1001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1100
-</td>
-<td style="text-align:left;">
-1100
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1200
-</td>
-<td style="text-align:left;">
-1200
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1500
-</td>
-<td style="text-align:left;">
-1500
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1692
-</td>
-<td style="text-align:left;">
-1692
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-175
-</td>
-<td style="text-align:left;">
-175
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-186
-</td>
-<td style="text-align:left;">
-186
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-200
-</td>
-<td style="text-align:left;">
-200
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-225
-</td>
-<td style="text-align:left;">
-225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-275
-</td>
-<td style="text-align:left;">
-275
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-288
-</td>
-<td style="text-align:left;">
-288
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-300
-</td>
-<td style="text-align:left;">
-300
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-325
-</td>
-<td style="text-align:left;">
-325
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-350
-</td>
-<td style="text-align:left;">
-350
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-375
-</td>
-<td style="text-align:left;">
-375
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 4
-</td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-400
-</td>
-<td style="text-align:left;">
-400
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-447
-</td>
-<td style="text-align:left;">
-447
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-4495
-</td>
-<td style="text-align:left;">
-4495
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-450
-</td>
-<td style="text-align:left;">
-450
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-500
-</td>
-<td style="text-align:left;">
-500
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-540
-</td>
-<td style="text-align:left;">
-540
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-550
-</td>
-<td style="text-align:left;">
-550
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-556
-</td>
-<td style="text-align:left;">
-556
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-575
-</td>
-<td style="text-align:left;">
-575
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-60
-</td>
-<td style="text-align:left;">
-60
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-600
-</td>
-<td style="text-align:left;">
-600
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-650
-</td>
-<td style="text-align:left;">
-650
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-675
-</td>
-<td style="text-align:left;">
-675
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-725
-</td>
-<td style="text-align:left;">
-725
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-750
-</td>
-<td style="text-align:left;">
-750
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-800
-</td>
-<td style="text-align:left;">
-800
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-850
-</td>
-<td style="text-align:left;">
-850
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-930
-</td>
-<td style="text-align:left;">
-930
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-950
-</td>
-<td style="text-align:left;">
-950
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -18920,7 +15605,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-3
+6
 </td>
 </tr>
 <tr>
@@ -18931,29 +15616,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-59
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client was not homeless
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-546
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-currently homeless
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-276
+58
 </td>
 </tr>
 <tr>
@@ -18964,7 +15627,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-5115
+4925
 </td>
 </tr>
 <tr>
@@ -18980,35 +15643,13 @@ no
 </tr>
 <tr>
 <td style="text-align:left;">
-n/a
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 no
 </td>
 <td style="text-align:left;">
 no
 </td>
 <td style="text-align:right;">
-3842
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-three years or longer
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-15
+4277
 </td>
 </tr>
 <tr>
@@ -19019,40 +15660,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-685
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last month
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-48
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last three years
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last year
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-52
+752
 </td>
 </tr>
 <tr>
@@ -19063,7 +15671,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-3499
+2913
 </td>
 </tr>
 <tr>
@@ -19074,7 +15682,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-417
+151
 </td>
 </tr>
 </tbody>
@@ -19142,7 +15750,7 @@ n
 client was not homeless
 </td>
 <td style="text-align:right;">
-1303
+1023
 </td>
 </tr>
 <tr>
@@ -19164,7 +15772,7 @@ unknown
 one time
 </td>
 <td style="text-align:right;">
-631
+635
 </td>
 </tr>
 <tr>
@@ -19175,12 +15783,12 @@ one time
 four or more times
 </td>
 <td style="text-align:right;">
-9
+11
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-15
+100
 </td>
 <td style="text-align:left;">
 four or more times
@@ -19191,13 +15799,24 @@ four or more times
 </tr>
 <tr>
 <td style="text-align:left;">
+15
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 2
 </td>
 <td style="text-align:left;">
 two times
 </td>
 <td style="text-align:right;">
-116
+121
 </td>
 </tr>
 <tr>
@@ -19208,7 +15827,7 @@ two times
 four or more times
 </td>
 <td style="text-align:right;">
-2
+4
 </td>
 </tr>
 <tr>
@@ -19252,7 +15871,7 @@ four or more times
 four or more times
 </td>
 <td style="text-align:right;">
-42
+44
 </td>
 </tr>
 <tr>
@@ -19263,7 +15882,7 @@ four or more times
 four or more times
 </td>
 <td style="text-align:right;">
-29
+31
 </td>
 </tr>
 <tr>
@@ -19274,7 +15893,18 @@ four or more times
 four or more times
 </td>
 <td style="text-align:right;">
-6
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+730
+</td>
+<td style="text-align:left;">
+four or more times
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -19296,7 +15926,7 @@ four or more times
 unknown
 </td>
 <td style="text-align:right;">
-1366
+1063
 </td>
 </tr>
 <tr>
@@ -19307,7 +15937,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-25
+39
 </td>
 </tr>
 <tr>
@@ -19318,7 +15948,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-60
+55
 </td>
 </tr>
 <tr>
@@ -19329,7 +15959,7 @@ client was not homeless
 client was not homeless
 </td>
 <td style="text-align:right;">
-1717
+2129
 </td>
 </tr>
 <tr>
@@ -19351,7 +15981,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-5139
+4946
 </td>
 </tr>
 <tr>
@@ -19362,7 +15992,7 @@ four/more times
 four or more times
 </td>
 <td style="text-align:right;">
-246
+306
 </td>
 </tr>
 <tr>
@@ -19378,24 +16008,13 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-817
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 one time
 </td>
 <td style="text-align:left;">
 one time
 </td>
 <td style="text-align:right;">
-725
+900
 </td>
 </tr>
 <tr>
@@ -19406,7 +16025,7 @@ three times
 three times
 </td>
 <td style="text-align:right;">
-27
+35
 </td>
 </tr>
 <tr>
@@ -19417,7 +16036,7 @@ two times
 two times
 </td>
 <td style="text-align:right;">
-52
+81
 </td>
 </tr>
 <tr>
@@ -19433,24 +16052,13 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-yes
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-175
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 NA
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-2086
+1537
 </td>
 </tr>
 </tbody>
@@ -19527,29 +16135,7 @@ n
 client was not homeless
 </td>
 <td style="text-align:right;">
-172
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1 day to one month
-</td>
-<td style="text-align:left;">
-one day to one month
-</td>
-<td style="text-align:right;">
-1
+73
 </td>
 </tr>
 <tr>
@@ -19571,39 +16157,6 @@ one day to one month
 more than a year
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-24
-</td>
-<td style="text-align:left;">
-24
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3 years
-</td>
-<td style="text-align:left;">
-more than a year
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-5 months
-</td>
-<td style="text-align:left;">
-five months
-</td>
-<td style="text-align:right;">
 1
 </td>
 </tr>
@@ -19615,7 +16168,7 @@ five months
 six months
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -19631,35 +16184,13 @@ more than a year
 </tr>
 <tr>
 <td style="text-align:left;">
-99
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 a few years
 </td>
 <td style="text-align:left;">
 more than a year
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-blank
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -19670,7 +16201,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-8
+13
 </td>
 </tr>
 <tr>
@@ -19681,7 +16212,7 @@ client not homeless
 client was not homeless
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -19692,7 +16223,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -19703,7 +16234,7 @@ client was client was not homelesst homeless
 client was not homeless
 </td>
 <td style="text-align:right;">
-9
+7
 </td>
 </tr>
 <tr>
@@ -19714,7 +16245,7 @@ client was not homeless
 client was not homeless
 </td>
 <td style="text-align:right;">
-2939
+3189
 </td>
 </tr>
 <tr>
@@ -19725,7 +16256,7 @@ currently homeless
 flag
 </td>
 <td style="text-align:right;">
-18
+1
 </td>
 </tr>
 <tr>
@@ -19734,17 +16265,6 @@ data client was not homelesst collected
 </td>
 <td style="text-align:left;">
 client was not homeless
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data no collected
-</td>
-<td style="text-align:left;">
-unknown
 </td>
 <td style="text-align:right;">
 2
@@ -19758,7 +16278,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-6747
+6370
 </td>
 </tr>
 <tr>
@@ -19780,7 +16300,7 @@ eleven months
 eleven months
 </td>
 <td style="text-align:right;">
-19
+21
 </td>
 </tr>
 <tr>
@@ -19791,7 +16311,7 @@ five months
 five months
 </td>
 <td style="text-align:right;">
-9
+14
 </td>
 </tr>
 <tr>
@@ -19802,7 +16322,7 @@ four months
 four months
 </td>
 <td style="text-align:right;">
-13
+17
 </td>
 </tr>
 <tr>
@@ -19818,13 +16338,35 @@ flag
 </tr>
 <tr>
 <td style="text-align:left;">
+more than 12 months
+</td>
+<td style="text-align:left;">
+more than 12 months
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+more than a a year
+</td>
+<td style="text-align:left;">
+more than a a year
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 more than a year
 </td>
 <td style="text-align:left;">
 more than a year
 </td>
 <td style="text-align:right;">
-611
+730
 </td>
 </tr>
 <tr>
@@ -19852,35 +16394,24 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-n/a
+nine months
 </td>
 <td style="text-align:left;">
-unknown
+nine months
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
 </td>
 <td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-nine months
-</td>
-<td style="text-align:left;">
-nine months
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-758
 </td>
 </tr>
 <tr>
@@ -19896,13 +16427,24 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
+not homeless
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 one day to one month
 </td>
 <td style="text-align:left;">
 one day to one month
 </td>
 <td style="text-align:right;">
-547
+624
 </td>
 </tr>
 <tr>
@@ -19913,7 +16455,7 @@ one year
 one year
 </td>
 <td style="text-align:right;">
-36
+44
 </td>
 </tr>
 <tr>
@@ -19924,7 +16466,7 @@ seven months
 seven months
 </td>
 <td style="text-align:right;">
-58
+46
 </td>
 </tr>
 <tr>
@@ -19935,7 +16477,7 @@ seven months to one year
 flag
 </td>
 <td style="text-align:right;">
-142
+156
 </td>
 </tr>
 <tr>
@@ -19946,7 +16488,7 @@ six months
 six months
 </td>
 <td style="text-align:right;">
-42
+54
 </td>
 </tr>
 <tr>
@@ -19957,7 +16499,7 @@ six months to one year
 flag
 </td>
 <td style="text-align:right;">
-17
+19
 </td>
 </tr>
 <tr>
@@ -19968,7 +16510,7 @@ ten months
 ten months
 </td>
 <td style="text-align:right;">
-3
+7
 </td>
 </tr>
 <tr>
@@ -19979,18 +16521,7 @@ three months
 three months
 </td>
 <td style="text-align:right;">
-31
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-three years or longer
-</td>
-<td style="text-align:left;">
-more than a year
-</td>
-<td style="text-align:right;">
-2
+49
 </td>
 </tr>
 <tr>
@@ -20001,7 +16532,7 @@ two months
 two months
 </td>
 <td style="text-align:right;">
-123
+155
 </td>
 </tr>
 <tr>
@@ -20012,7 +16543,7 @@ two to six months
 two to six months
 </td>
 <td style="text-align:right;">
-214
+223
 </td>
 </tr>
 <tr>
@@ -20023,40 +16554,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-91
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last three years
-</td>
-<td style="text-align:left;">
-flag
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last year
-</td>
-<td style="text-align:left;">
-flag
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-151
+7
 </td>
 </tr>
 <tr>
@@ -20067,7 +16565,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-1853
+1213
 </td>
 </tr>
 </tbody>
@@ -20123,103 +16621,15 @@ n
 0
 </td>
 <td style="text-align:right;">
-43
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-100
-</td>
-<td style="text-align:left;">
-100
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-15
-</td>
-<td style="text-align:left;">
-15
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:left;">
-20
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 4
 </td>
-<td style="text-align:left;">
-4
-</td>
-<td style="text-align:right;">
-2
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-730
+1
 </td>
 <td style="text-align:left;">
-730
+1
 </td>
 <td style="text-align:right;">
 1
@@ -20233,7 +16643,7 @@ n
 99
 </td>
 <td style="text-align:right;">
-12
+1
 </td>
 </tr>
 <tr>
@@ -20244,7 +16654,7 @@ client doesn’t know
 unknown
 </td>
 <td style="text-align:right;">
-44
+72
 </td>
 </tr>
 <tr>
@@ -20255,7 +16665,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-24
+31
 </td>
 </tr>
 <tr>
@@ -20266,7 +16676,18 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-3921
+3603
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n
+</td>
+<td style="text-align:left;">
+n
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -20288,7 +16709,7 @@ no
 no
 </td>
 <td style="text-align:right;">
-7048
+6677
 </td>
 </tr>
 <tr>
@@ -20299,7 +16720,7 @@ none
 no
 </td>
 <td style="text-align:right;">
-17
+12
 </td>
 </tr>
 <tr>
@@ -20310,7 +16731,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-1513
+688
 </td>
 </tr>
 <tr>
@@ -20321,7 +16742,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-1722
+1852
 </td>
 </tr>
 <tr>
@@ -20332,7 +16753,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-325
+144
 </td>
 </tr>
 </tbody>
@@ -20367,7900 +16788,12 @@ n
 0
 </td>
 <td style="text-align:right;">
-49
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43585.447222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43635.388888888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43636.57708333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43647.558333333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43658.507638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43663.599305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43665.365277777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43665.489583333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43665.763194444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43682.470138888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43682.481249999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43683.523611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43685.658333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43685.723611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43697.348611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43700.531944444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43702.052083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43711.425000000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43712.35833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43714.407638888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43718.323611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43719.581250000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43720.838194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43720.848611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43724.432638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43727
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43727.535416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43728.416666666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43739
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43742.657638888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43743
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43746.435416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43747.317361111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43748
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43748.4375
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43751.536111111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43752.588194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43753.756944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43754.40902777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43754.648611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43755.622916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43755.629166666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43759.502083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43759.660416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43760.714583333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43760.719444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43762.371527777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43762.896527777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43763.56527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43764.385416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43766
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43766.637499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43766.679861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43767.668055555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43768.527777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43768.663194444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43769.417361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43770.42291666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43770.712500000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43773.257638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43776.552083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43776.570833333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43777.347222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43782.479166666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43783.490277777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43783.678472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43783.688888888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43784.381249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43787.505555555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43787.665972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43788.441666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43789.679166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43791.662499999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43794.722916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43795.432638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43801.431944444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43804.568055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43804.701388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43804.71875
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43805.619444444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43805.716666666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43808.550694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43809.795138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43811.645138888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43815.373611111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43816.603472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43819.395833333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43819.439583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43819.655555555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43822.347222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43825.342361111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43826.634722222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43826.680555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43832.675000000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43833.387499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43837.465277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43837.619444444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43837.675694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43838.423611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43838.738194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43839.34652777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43841.594444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43842.602083333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43843.625
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43844.511111111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43844.61041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43844.620833333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43846.705555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43847.613194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43851.529861111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43851.640277777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43852.432638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43852.436805555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43852.634722222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43852.657638888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43854.568055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43857.401388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43857.581250000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43858.441666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43858.713194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43858.71597222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43859.416666666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43859.543055555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43860.493055555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43860.581250000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43860.647222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43860.997916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43861.545138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43861.553472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43861.598611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43861.609027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43865.35833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43865.511111111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43866.494444444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43867.732638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43872.658333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43873.607638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43875.36041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43875.402083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43875.70208333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43877.671527777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43878.50277777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43880.324305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43880.699305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43881.456944444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43883.464583333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43883.469444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43885.491666666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43885.625694444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43886.477083333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43886.659722222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43886.87777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43886.95
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43887.638194444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43889.462500000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43892.45
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43895.425694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43895.693749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43896.522916666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43899
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43899.493750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43899.512499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43899.73333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43900.463194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43901.357638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43902.401388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43902.697916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43903.486805555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43906.55
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43906.667361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43907.337500000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43909.702777777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43910.510416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43910.652083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43910.667361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43920.624305555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43921.408333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43921.561111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43921.568749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43922.713888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43924.649305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43928.392361111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43928.724305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43929.578472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43935.668749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43937.287499999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43941.415972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43942.557638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43943.538888888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43943.563194444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43948.783333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43949
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43949.723611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43950.640277777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43951.340277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43951.406944444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43951.459722222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43955.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43957
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43957.665277777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43957.701388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43959
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43959.493055555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43962.469444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43963.297222222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43964
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43967.855555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43971.570138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43971.609027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43972
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43973.445833333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43977.5625
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43977.663888888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43979
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43979.480555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43984.327777777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43984.840277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43985.588194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43986.571527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43986.636805555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43987.578472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43989.580555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43989.898611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43990.506249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43990.618055555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43992.722916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43993.600694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43994
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43997.599305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43998.511805555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43998.709027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-43999.736111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44000.693749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44000.713888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44000.959027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44001.490277777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44006.477777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44012.364583333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44012.554166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44018.571527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44018.581944444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44018.695138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44019.536111111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44021.54791666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44023.568055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44023.59652777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44025.570138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44026
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44033.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44035.307638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44036.617361111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44041.428472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44041.579861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44042.394444444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44046.426388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44046.684027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44049.533333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44050.603472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44053.494444444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44054.425694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44054.586111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44054.728472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44055.504861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44061.445833333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44062.521527777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44063.522222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44069.465277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44069.709027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44071.702777777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44074.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44078.434027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44078.629861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44081.523611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44083.563194444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44086.579861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44089.329861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44089.404861111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44089.551388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44091.436111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44094.711111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44094.953472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44096.644444444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44105.677083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44106.420138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44107.48541666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44107.507638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44110.679166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44110.682638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44112.559027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44116.377083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44117.551388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44119.458333333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44125.4375
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44126.429166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44128.698611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44130.368750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44130.37777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44130.385416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44130.393055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44130.594444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44137.795138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44138.55
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44138.724999999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44145.344444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44145.599305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44146.480555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44146.486111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44147.839583333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44152.647222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44152.652777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44152.659722222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44152.660416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44152.663888888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44153.638888888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44154.410416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44167.67083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44167.675694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44167.679861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44167.683333333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44168.298611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44168.511805555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44168.561805555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44172.368750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44172.618750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44173.397222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44173.556944444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44173.566666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44175.6875
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44179.449305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44180.47152777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44180.649305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44183.461111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44203.459027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44203.493750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44208.363194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44210.556250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44216
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44217.671527777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44218.647222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44221.924305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44225.426388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44225.747916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44227.734027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44230.432638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44232.513888888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44235.658333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44235.697222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44236.698611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44236.701388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44237.398611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44239.413888888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44239.425000000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44239.502083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44243.543749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44243.643750000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44246.423611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44246.510416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44249.378472222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44249.447222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44249.521527777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44249.586111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44251.615972222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44251.671527777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44252.638888888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44253.634027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44254.765277777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44257.708333333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44258.543055555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44259.422222222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44260.43472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44260.644444444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44260.697222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44262.424305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44263.393055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44263.540972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44263.726388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44264.461805555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44265.376388888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44265.623611111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44265.804861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44266.013888888891
-</td>
-<td style="text-align:right;">
 2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-44266.393055555556
-</td>
-<td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44266.473611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44266.541666666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44266.698611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44267.393055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44268.080555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44270.458333333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44270.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44270.652083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44270.679861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44272.352083333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44272.416666666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44272.54583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44272.615277777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44274.216666666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44277.546527777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44277.582638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44278.496527777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44279.590277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44280.497916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44280.550694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44281.03125
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44284
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44284.595833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44284.618750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44285.606249999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44287.319444444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44287.368750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44289.461111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44291.941666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44292.363194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44293.488888888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44294.544444444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44294.75
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44299.531944444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44299.53402777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44299.561111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44300.060416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44300.57708333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44300.614583333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44303.509027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44305.493750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44305.580555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44305.675694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44306.371527777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44306.472916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44306.643750000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44306.661111111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44308.54791666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44309.409722222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44312.38958333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44313.497916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44313.543749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44315.697222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44316.702777777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44319.48333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44319.506944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44319.61041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44320
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44320.411805555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44321.414583333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44322.991666666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44323.440972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44323.57916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44326.777083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44327.456250000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44327.602777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44328.776388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44328.830555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44329.40347222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44330.55
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44334.302083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44334.355555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44334.387499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44335.322222222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44335.383333333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44335.685416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44335.693055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44336.424305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44336.44027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44336.504861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44337.611111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44340.560416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44340.599305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44340.684027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44340.811111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44341.679166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44342
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44342.832638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44343.54791666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44348.555555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44349.648611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44349.650694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44349.70208333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.588888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.654166666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.660416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.669444444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.675000000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.686805555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.727777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.736111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.748611111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.76458333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.782638888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.787499999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44350.793749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44351.470138888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44354.44027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44354.554861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44355.026388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44355.50277777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44355.719444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44356.448611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44356.465277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44356.540972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44356.673611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44357.509722222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44358.343055555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44358.477777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44364.370833333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44371.480555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44375.605555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44376.669444444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44378.055555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44379.540972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44384.601388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44385.446527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44386.690972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44389.473611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44389.564583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44390.364583333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44395.70208333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44397
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44398.402777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44398.626388888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44399.582638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44404.395833333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44404.720833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44405.629861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44410.522916666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44412.462500000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44412.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44414.45
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44414.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44418
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44419.448611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44419.488888888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44419.512499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44420.401388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44420.422222222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44420.518055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44420.583333333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44420.760416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44425.715277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44426.615972222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44426.754861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44428.443749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44431.425694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44433.55
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44446.34652777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44446.572916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44446.650694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44449.515972222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44454.47152777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44455
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44455.400694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44456
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44456.472222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44459.415972222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44459.61041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44462.465277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44466.423611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44467.377083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44467.505555555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44467.506249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44468.45416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44469.505555555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44475.435416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44475.489583333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44476.478472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44476.640972222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44476.645833333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44477.602777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44478.862500000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44481
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44481.484027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44482
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44482.238194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44482.649305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44483.347916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44483.40902777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44483.486111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44484.582638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44484.597916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44487.46875
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44488.530555555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44495.56527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44497
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44503.545138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44503.595138888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44504.441666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44508
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44509.370833333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44509.594444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44510.336111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44510.402083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44512.597222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44513.552083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44515.649305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44515.709027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44517.600694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44519.559027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44521.549305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44523.377083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44523.523611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44524.609027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44529.379166666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44529.470833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44530.570138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44530.615277777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44533
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44536.40347222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44538.486111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44539.424305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44543.502083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44544.564583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44545.335416666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44546.495138888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44551.697916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44552.555555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44559.523611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44566.507638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44566.527083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44566.683333333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44567.578472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44567.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44571.363194444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44572.402083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44572.457638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44573
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44573.383333333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44573.418055555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44573.446527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44573.699305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44574.793749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44576
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44578.8125
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44579.405555555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44579.544444444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44581.460416666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44581.600694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44585.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44586.440972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44588.378472222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44590
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44592.334722222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44593.565972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44593.626388888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44594.306250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44594.685416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44595.367361111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44601.40902777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44601.520138888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44602.567361111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44607.535416666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44608.356249999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44610.432638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44613
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44614.361805555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44614.600694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44614.680555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44615.586111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44616
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44616.394444444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44616.719444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44620.460416666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44621.609027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44622.629166666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44628
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44630.595833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.386111111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.388194444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.49722222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.51666666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.56527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44634.636111111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44636.473611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44637.408333333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44638.478472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44638.496527777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44638.518750000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44638.525000000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44642
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44642.522222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44644.340277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44645.385416666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44647.932638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44648.628472222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44650.558333333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44650.806250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44651.463194444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44651.582638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44651.727083333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44654.277777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44655.493055555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44656.353472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44656.556250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44659.693055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44660
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44661.462500000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44664.368055555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44666.557638888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44669.61041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44671.652777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44672.464583333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44676.4
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44677.673611111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44677.683333333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44679.45416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44680.40625
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44683.347222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44683.458333333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44684
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44684.650694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44684.665277777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44685.68472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44686.412499999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44686.487500000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44687.612500000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44687.65347222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44690.445138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44690.555555555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44691.554861111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44691.620833333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44694.506944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44694.752083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44698.330555555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44698.336111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44698.5625
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44699.4
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44699.509722222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44700.45416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44700.691666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44700.824999999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44701.690972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44701.691666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44704.35833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44707.414583333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44707.677083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44707.732638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44708.584027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44709.601388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44712.713888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44712.724305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44714.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44714.618750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44714.622916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44714.625
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44714.627083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44718.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44719.399305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44720.617361111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44720.622916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44721
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44721.396527777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44721.482638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44721.554166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44725.63958333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44727.476388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44727.521527777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44728.368750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44728.6
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44728.648611111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44733.399305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44733.425694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44734.353472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44739.399305555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44739.409722222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44739.431250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44739.449305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44739.7
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44740.395138888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44741.395138888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44742.526388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44742.666666666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44742.670138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44743
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44747.629861111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44748.56527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44749.463888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44749.476388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44750
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44750.584027777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44752.336805555555
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44754.472222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44754.572916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44756.549305555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44756.625
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44756.678472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44756.695833333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44757.600694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44760.474999999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44761.564583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44761.71875
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44763.626388888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44764.359027777777
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44764.688888888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44764.692361111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44767.545138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44767.656944444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44769.643750000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44771.404166666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44773
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44775.651388888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44776.543055555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44778.743750000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44781.395833333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44781.685416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44781.701388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44782.351388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44783.48541666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44783.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44783.668749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.353472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.361111111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.37222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.375
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.472222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.574305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.578472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44784.60833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44785.417361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44785.429166666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44785.704861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44785.793749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44788.695138888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44789.703472222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44790
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44790.581250000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44791
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44791.436111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44791.5
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44791.644444444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44792.584722222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.363888888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.384027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.491666666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.579861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.700694444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44795.707638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44796
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44796.36041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797.474999999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797.59375
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797.652777777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797.676388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44797.678472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44798.463888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44798.477777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44798.601388888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44798.668749999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44799.65902777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44799.663888888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44799.676388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44799.701388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44799.707638888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44802.650694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.32916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.378472222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.387499999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.581944444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.675694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44803.676388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44804.594444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44804.643055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44804.699305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44805.604861111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44805.616666666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44806.45416666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44810.497916666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44811.45208333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44811.511805555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44811.545138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.343055555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.348611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.353472222225
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.381944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.451388888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.503472222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44812.536805555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44813.428472222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44813.691666666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44816.492361111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44816.556944444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44817.463888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44817.657638888886
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44818.336111111108
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44818.594444444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44818.599305555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44821
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44823.4375
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44823.650694444441
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44823.677083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44824.545138888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44824.56527777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44824.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44824.643750000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44825.636805555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44826.388194444444
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44826.470833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.02847222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.348611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.409722222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.479861111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.51458333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.61041666667
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.715277777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44827.731249999997
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44830.486805555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44830.605555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44830.643055555556
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44830.710416666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44831.561805555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44831.607638888891
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44831.704861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44832.417361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44832.531944444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44832.537499999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44832.585416666669
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44832.713888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44833.693749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44834
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44836.350694444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.370833333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.506944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.568749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.573611111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.62222222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.627083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44838.697916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44839.505555555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44839.552777777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44839.987500000003
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44840.443055555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44840.443749999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44840.822916666664
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44846.324305555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44846.474999999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44847.377083333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44847.456944444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44848
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44851
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44851.584722222222
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44852.439583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44853.380555555559
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44854.527083333334
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44854.632638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44855.468055555553
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44859.411111111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44859.677777777775
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44859.684027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44862.488888888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44865.381944444445
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44866.564583333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44867.35833333333
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44868.684027777781
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44869.427083333336
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44872
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44872.477083333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44872.542361111111
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44874.588888888888
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44875.631249999999
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44875.676388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44877.473611111112
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44881.563888888886
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44883
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44883.498611111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44883.69027777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44886.445833333331
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44888.550694444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44893.722916666666
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44894
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44894.382638888892
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44894.681250000001
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44899.581944444442
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44900.415277777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44901.426388888889
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44901.605555555558
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44901.609722222223
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44901.688194444447
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44902.342361111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44903.704861111109
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44908.597222222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44914.62777777778
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44915.440972222219
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44917
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44917.436111111114
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44922.711111111108
 </td>
 <td style="text-align:right;">
 1
@@ -28271,15 +16804,7 @@ n
 99
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-blank
-</td>
-<td style="text-align:right;">
-3
+7
 </td>
 </tr>
 <tr>
@@ -28287,7 +16812,7 @@ blank
 client doesn’t know
 </td>
 <td style="text-align:right;">
-25
+37
 </td>
 </tr>
 <tr>
@@ -28295,7 +16820,7 @@ client doesn’t know
 client refused
 </td>
 <td style="text-align:right;">
-19
+26
 </td>
 </tr>
 <tr>
@@ -28303,7 +16828,7 @@ client refused
 client was not homeless
 </td>
 <td style="text-align:right;">
-43
+1
 </td>
 </tr>
 <tr>
@@ -28311,15 +16836,7 @@ client was not homeless
 data not collected
 </td>
 <td style="text-align:right;">
-4046
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-more than a year
-</td>
-<td style="text-align:right;">
-8
+3727
 </td>
 </tr>
 <tr>
@@ -28327,7 +16844,7 @@ more than a year
 n/a
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -28335,7 +16852,7 @@ n/a
 no
 </td>
 <td style="text-align:right;">
-5370
+6041
 </td>
 </tr>
 <tr>
@@ -28343,31 +16860,7 @@ no
 none
 </td>
 <td style="text-align:right;">
-13
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-one day to one month
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-seven months to one year
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-two to six months
-</td>
-<td style="text-align:right;">
-2
+9
 </td>
 </tr>
 <tr>
@@ -28375,7 +16868,7 @@ two to six months
 unknown
 </td>
 <td style="text-align:right;">
-2755
+1853
 </td>
 </tr>
 <tr>
@@ -28383,15 +16876,7 @@ unknown
 yes
 </td>
 <td style="text-align:right;">
-1126
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yese
-</td>
-<td style="text-align:right;">
-2
+1291
 </td>
 </tr>
 <tr>
@@ -28399,7 +16884,7 @@ yese
 NA
 </td>
 <td style="text-align:right;">
-218
+91
 </td>
 </tr>
 </tbody>
@@ -28443,13 +16928,35 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 client doesn’t know
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-8
+11
 </td>
 </tr>
 <tr>
@@ -28460,29 +16967,7 @@ client refused
 unknown
 </td>
 <td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client was not homeless
-</td>
-<td style="text-align:left;">
-client was not homeless
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-currently homeless
-</td>
-<td style="text-align:left;">
-currently homeless
-</td>
-<td style="text-align:right;">
-6
+28
 </td>
 </tr>
 <tr>
@@ -28493,7 +16978,7 @@ data not collected
 unknown
 </td>
 <td style="text-align:right;">
-4721
+4327
 </td>
 </tr>
 <tr>
@@ -28504,18 +16989,7 @@ n
 n
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-n/a
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -28526,7 +17000,7 @@ no
 no
 </td>
 <td style="text-align:right;">
-6503
+6415
 </td>
 </tr>
 <tr>
@@ -28548,40 +17022,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-2297
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last month
-</td>
-<td style="text-align:left;">
-within the last month
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last three years
-</td>
-<td style="text-align:left;">
-within the last three years
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-within the last year
-</td>
-<td style="text-align:left;">
-within the last year
-</td>
-<td style="text-align:right;">
-5
+1352
 </td>
 </tr>
 <tr>
@@ -28592,7 +17033,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-814
+791
 </td>
 </tr>
 <tr>
@@ -28603,7 +17044,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-271
+148
 </td>
 </tr>
 </tbody>
@@ -28672,10 +17113,10 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
+0
 </td>
 <td style="text-align:left;">
-unknown
+0
 </td>
 <td style="text-align:right;">
 1
@@ -28689,7 +17130,29 @@ anonymous
 anonymous
 </td>
 <td style="text-align:right;">
-167
+152
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+aps
+</td>
+<td style="text-align:left;">
+aps
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bhs
+</td>
+<td style="text-align:left;">
+bhs
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -28700,7 +17163,7 @@ clergy
 clergy
 </td>
 <td style="text-align:right;">
-13
+14
 </td>
 </tr>
 <tr>
@@ -28722,7 +17185,7 @@ community professional
 other community professional
 </td>
 <td style="text-align:right;">
-990
+950
 </td>
 </tr>
 <tr>
@@ -28733,7 +17196,18 @@ educator
 educator
 </td>
 <td style="text-align:right;">
-2
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eligibility worker
+</td>
+<td style="text-align:left;">
+eligibility worker
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -28755,7 +17229,7 @@ family member
 family member
 </td>
 <td style="text-align:right;">
-339
+354
 </td>
 </tr>
 <tr>
@@ -28766,7 +17240,7 @@ financial
 financial service provider
 </td>
 <td style="text-align:right;">
-16
+20
 </td>
 </tr>
 <tr>
@@ -28777,7 +17251,7 @@ financial institution
 financial service provider
 </td>
 <td style="text-align:right;">
-1
+6
 </td>
 </tr>
 <tr>
@@ -28788,7 +17262,7 @@ financial service provider
 financial service provider
 </td>
 <td style="text-align:right;">
-121
+130
 </td>
 </tr>
 <tr>
@@ -28799,7 +17273,7 @@ institutional employee
 institutional employee
 </td>
 <td style="text-align:right;">
-29
+33
 </td>
 </tr>
 <tr>
@@ -28810,7 +17284,7 @@ law enforcement
 law enforcement
 </td>
 <td style="text-align:right;">
-409
+435
 </td>
 </tr>
 <tr>
@@ -28821,7 +17295,7 @@ mandated reporter
 flag
 </td>
 <td style="text-align:right;">
-7
+9
 </td>
 </tr>
 <tr>
@@ -28832,7 +17306,7 @@ medical personnel
 medical personnel
 </td>
 <td style="text-align:right;">
-661
+648
 </td>
 </tr>
 <tr>
@@ -28843,7 +17317,7 @@ mental health
 mental health personnel
 </td>
 <td style="text-align:right;">
-321
+336
 </td>
 </tr>
 <tr>
@@ -28854,18 +17328,7 @@ mental health personnel
 mental health personnel
 </td>
 <td style="text-align:right;">
-33
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-76
+32
 </td>
 </tr>
 <tr>
@@ -28898,18 +17361,7 @@ no relationship
 no relationship
 </td>
 <td style="text-align:right;">
-897
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-not applicable
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-8
+884
 </td>
 </tr>
 <tr>
@@ -28920,7 +17372,18 @@ other community professional
 other community professional
 </td>
 <td style="text-align:right;">
-129
+156
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other public agency
+</td>
+<td style="text-align:left;">
+other public agency
+</td>
+<td style="text-align:right;">
+3
 </td>
 </tr>
 <tr>
@@ -28942,18 +17405,7 @@ professional service provider
 professional service provider
 </td>
 <td style="text-align:right;">
-689
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-regional center/sheltered workshop
-</td>
-<td style="text-align:left;">
-flag
-</td>
-<td style="text-align:right;">
-1
+710
 </td>
 </tr>
 <tr>
@@ -28975,7 +17427,7 @@ self
 self
 </td>
 <td style="text-align:right;">
-2131
+2070
 </td>
 </tr>
 <tr>
@@ -28997,7 +17449,7 @@ social worker
 social worker
 </td>
 <td style="text-align:right;">
-1959
+2078
 </td>
 </tr>
 <tr>
@@ -29008,7 +17460,7 @@ unknown
 unknown
 </td>
 <td style="text-align:right;">
-4340
+3842
 </td>
 </tr>
 <tr>
@@ -29019,7 +17471,7 @@ yes
 yes
 </td>
 <td style="text-align:right;">
-16
+1
 </td>
 </tr>
 <tr>
@@ -29030,7 +17482,7 @@ NA
 unknown
 </td>
 <td style="text-align:right;">
-1303
+185
 </td>
 </tr>
 </tbody>
@@ -29076,14 +17528,6 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 –please select–
 </td>
 <td style="text-align:right;">
@@ -29095,15 +17539,7 @@ n
 0
 </td>
 <td style="text-align:right;">
-42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:right;">
-11
+3
 </td>
 </tr>
 <tr>
@@ -29127,20 +17563,12 @@ n
 136 kaseberg lane roseville
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 136 kaseberg lane roseville
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-2
 </td>
 <td style="text-align:right;">
 1
@@ -29159,7 +17587,7 @@ n
 29 palms
 </td>
 <td style="text-align:right;">
-8
+12
 </td>
 </tr>
 <tr>
@@ -29180,18 +17608,18 @@ n
 </tr>
 <tr>
 <td style="text-align:left;">
-92543
+92509
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-99
+92543
 </td>
 <td style="text-align:right;">
-21
+1
 </td>
 </tr>
 <tr>
@@ -29207,7 +17635,7 @@ acampo
 adelanto
 </td>
 <td style="text-align:right;">
-7
+10
 </td>
 </tr>
 <tr>
@@ -29215,7 +17643,7 @@ adelanto
 alameda
 </td>
 <td style="text-align:right;">
-7
+9
 </td>
 </tr>
 <tr>
@@ -29239,7 +17667,7 @@ albany
 alhambra
 </td>
 <td style="text-align:right;">
-10
+6
 </td>
 </tr>
 <tr>
@@ -29247,7 +17675,7 @@ alhambra
 alpine
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -29255,7 +17683,7 @@ alpine
 alta loma
 </td>
 <td style="text-align:right;">
-6
+12
 </td>
 </tr>
 <tr>
@@ -29263,7 +17691,7 @@ alta loma
 alturas
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -29271,7 +17699,7 @@ alturas
 americannyon
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -29279,7 +17707,7 @@ americannyon
 anaheim
 </td>
 <td style="text-align:right;">
-44
+54
 </td>
 </tr>
 <tr>
@@ -29311,7 +17739,7 @@ antelope
 antioch
 </td>
 <td style="text-align:right;">
-48
+46
 </td>
 </tr>
 <tr>
@@ -29327,7 +17755,7 @@ anza
 apple valley
 </td>
 <td style="text-align:right;">
-17
+26
 </td>
 </tr>
 <tr>
@@ -29335,7 +17763,7 @@ apple valley
 applegate
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -29351,7 +17779,7 @@ aptos
 arcadia
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -29359,7 +17787,15 @@ arcadia
 arcata
 </td>
 <td style="text-align:right;">
-30
+33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+armona
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -29367,15 +17803,7 @@ arcata
 arroyo grande
 </td>
 <td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-artesia
-</td>
-<td style="text-align:right;">
-1
+4
 </td>
 </tr>
 <tr>
@@ -29399,7 +17827,7 @@ atascadero
 atwater
 </td>
 <td style="text-align:right;">
-10
+13
 </td>
 </tr>
 <tr>
@@ -29407,7 +17835,7 @@ atwater
 auberry
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -29415,7 +17843,7 @@ auberry
 auburn
 </td>
 <td style="text-align:right;">
-38
+42
 </td>
 </tr>
 <tr>
@@ -29439,7 +17867,7 @@ avila beach
 azusa
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -29471,7 +17899,7 @@ bakersfiel
 bakersfield
 </td>
 <td style="text-align:right;">
-705
+737
 </td>
 </tr>
 <tr>
@@ -29479,7 +17907,7 @@ bakersfield
 bakersfiled
 </td>
 <td style="text-align:right;">
-2
+5
 </td>
 </tr>
 <tr>
@@ -29487,7 +17915,7 @@ bakersfiled
 baldwin park
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -29495,7 +17923,7 @@ baldwin park
 ballico
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -29511,7 +17939,7 @@ bangor
 banning
 </td>
 <td style="text-align:right;">
-78
+74
 </td>
 </tr>
 <tr>
@@ -29519,7 +17947,7 @@ banning
 barstow
 </td>
 <td style="text-align:right;">
-52
+64
 </td>
 </tr>
 <tr>
@@ -29532,10 +17960,18 @@ bartsow
 </tr>
 <tr>
 <td style="text-align:left;">
+bastow
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 bay point
 </td>
 <td style="text-align:right;">
-6
+5
 </td>
 </tr>
 <tr>
@@ -29543,7 +17979,7 @@ bay point
 beamount
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -29551,7 +17987,7 @@ beamount
 beaumont
 </td>
 <td style="text-align:right;">
-43
+41
 </td>
 </tr>
 <tr>
@@ -29559,7 +17995,7 @@ beaumont
 bell
 </td>
 <td style="text-align:right;">
-16
+6
 </td>
 </tr>
 <tr>
@@ -29567,7 +18003,7 @@ bell
 bell gardens
 </td>
 <td style="text-align:right;">
-8
+4
 </td>
 </tr>
 <tr>
@@ -29575,7 +18011,7 @@ bell gardens
 bellflower
 </td>
 <td style="text-align:right;">
-12
+7
 </td>
 </tr>
 <tr>
@@ -29599,7 +18035,7 @@ benton
 berkeley
 </td>
 <td style="text-align:right;">
-17
+25
 </td>
 </tr>
 <tr>
@@ -29607,7 +18043,7 @@ berkeley
 bethel island
 </td>
 <td style="text-align:right;">
-9
+6
 </td>
 </tr>
 <tr>
@@ -29615,7 +18051,7 @@ bethel island
 beumont
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -29623,7 +18059,7 @@ beumont
 beverly hills
 </td>
 <td style="text-align:right;">
-8
+6
 </td>
 </tr>
 <tr>
@@ -29687,7 +18123,7 @@ blue lake
 blythe
 </td>
 <td style="text-align:right;">
-19
+18
 </td>
 </tr>
 <tr>
@@ -29727,7 +18163,7 @@ bonny doon
 boron
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -29735,7 +18171,7 @@ boron
 boulder creek
 </td>
 <td style="text-align:right;">
-8
+10
 </td>
 </tr>
 <tr>
@@ -29783,7 +18219,7 @@ bridgeville
 brownsvalley
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -29799,7 +18235,7 @@ brownsville
 buena park
 </td>
 <td style="text-align:right;">
-7
+9
 </td>
 </tr>
 <tr>
@@ -29807,7 +18243,7 @@ buena park
 burbank
 </td>
 <td style="text-align:right;">
-16
+6
 </td>
 </tr>
 <tr>
@@ -29839,12 +18275,20 @@ buttonwillow
 byron
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
 ca
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ca 91737
 </td>
 <td style="text-align:right;">
 1
@@ -29863,7 +18307,7 @@ ca 92284
 cabazon
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -29871,7 +18315,7 @@ cabazon
 cailmesa
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -29887,7 +18331,7 @@ cal city
 calabasas
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -29895,7 +18339,7 @@ calabasas
 california city
 </td>
 <td style="text-align:right;">
-9
+7
 </td>
 </tr>
 <tr>
@@ -29903,7 +18347,7 @@ california city
 calimesa
 </td>
 <td style="text-align:right;">
-14
+13
 </td>
 </tr>
 <tr>
@@ -29924,10 +18368,18 @@ cambria
 </tr>
 <tr>
 <td style="text-align:left;">
+camel valley
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 campbell
 </td>
 <td style="text-align:right;">
-17
+16
 </td>
 </tr>
 <tr>
@@ -29943,7 +18395,15 @@ campo
 canoga park
 </td>
 <td style="text-align:right;">
-3
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cantua creek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -29951,7 +18411,7 @@ canoga park
 canyon country
 </td>
 <td style="text-align:right;">
-6
+2
 </td>
 </tr>
 <tr>
@@ -29975,7 +18435,7 @@ capay
 capitola
 </td>
 <td style="text-align:right;">
-10
+11
 </td>
 </tr>
 <tr>
@@ -29991,7 +18451,7 @@ carlotta
 carlsbad
 </td>
 <td style="text-align:right;">
-8
+9
 </td>
 </tr>
 <tr>
@@ -29999,7 +18459,7 @@ carlsbad
 carmichael
 </td>
 <td style="text-align:right;">
-14
+15
 </td>
 </tr>
 <tr>
@@ -30015,44 +18475,12 @@ carpinteria
 carson
 </td>
 <td style="text-align:right;">
-20
+14
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-castaic
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-castella
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-castro valley
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-cathedral city
-</td>
-<td style="text-align:right;">
-74
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-catherdal city
+caruthers
 </td>
 <td style="text-align:right;">
 1
@@ -30060,7 +18488,39 @@ catherdal city
 </tr>
 <tr>
 <td style="text-align:left;">
-cathey valley
+castaic
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+castella
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+castro valley
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cathedral city
+</td>
+<td style="text-align:right;">
+78
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+catherdal city
 </td>
 <td style="text-align:right;">
 1
@@ -30084,6 +18544,14 @@ cayucos
 </tr>
 <tr>
 <td style="text-align:left;">
+cedar pines park
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 cedar ridge
 </td>
 <td style="text-align:right;">
@@ -30103,7 +18571,7 @@ cedarville
 ceres
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -30111,7 +18579,7 @@ ceres
 cerritos
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -30127,7 +18595,7 @@ chalfant
 chatsworth
 </td>
 <td style="text-align:right;">
-11
+6
 </td>
 </tr>
 <tr>
@@ -30135,7 +18603,7 @@ chatsworth
 cherry valley
 </td>
 <td style="text-align:right;">
-9
+11
 </td>
 </tr>
 <tr>
@@ -30151,7 +18619,7 @@ chester
 chico
 </td>
 <td style="text-align:right;">
-58
+70
 </td>
 </tr>
 <tr>
@@ -30159,7 +18627,7 @@ chico
 chino
 </td>
 <td style="text-align:right;">
-34
+37
 </td>
 </tr>
 <tr>
@@ -30183,7 +18651,15 @@ chowchilla
 chula vista
 </td>
 <td style="text-align:right;">
-22
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+citrus height
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30191,7 +18667,7 @@ chula vista
 citrus heights
 </td>
 <td style="text-align:right;">
-23
+31
 </td>
 </tr>
 <tr>
@@ -30199,7 +18675,7 @@ citrus heights
 city of commerce
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -30207,7 +18683,7 @@ city of commerce
 city of industry
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -30231,7 +18707,7 @@ claremont
 clayton
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -30239,7 +18715,7 @@ clayton
 clearlake
 </td>
 <td style="text-align:right;">
-6
+1
 </td>
 </tr>
 <tr>
@@ -30255,7 +18731,7 @@ clients home
 clients home 745 crothers dr meadow vista
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -30263,7 +18739,7 @@ clients home 745 crothers dr meadow vista
 cloverdale
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -30271,7 +18747,7 @@ cloverdale
 clovis
 </td>
 <td style="text-align:right;">
-9
+13
 </td>
 </tr>
 <tr>
@@ -30279,7 +18755,7 @@ clovis
 coachella
 </td>
 <td style="text-align:right;">
-23
+28
 </td>
 </tr>
 <tr>
@@ -30319,7 +18795,7 @@ coleville
 colfax
 </td>
 <td style="text-align:right;">
-9
+8
 </td>
 </tr>
 <tr>
@@ -30327,7 +18803,7 @@ colfax
 colton
 </td>
 <td style="text-align:right;">
-11
+15
 </td>
 </tr>
 <tr>
@@ -30335,15 +18811,7 @@ colton
 colusa
 </td>
 <td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-commerce
-</td>
-<td style="text-align:right;">
-1
+24
 </td>
 </tr>
 <tr>
@@ -30351,7 +18819,7 @@ commerce
 compton
 </td>
 <td style="text-align:right;">
-14
+7
 </td>
 </tr>
 <tr>
@@ -30359,7 +18827,7 @@ compton
 concord
 </td>
 <td style="text-align:right;">
-63
+61
 </td>
 </tr>
 <tr>
@@ -30367,7 +18835,7 @@ concord
 corcoran
 </td>
 <td style="text-align:right;">
-38
+37
 </td>
 </tr>
 <tr>
@@ -30375,7 +18843,7 @@ corcoran
 corning
 </td>
 <td style="text-align:right;">
-30
+33
 </td>
 </tr>
 <tr>
@@ -30383,7 +18851,15 @@ corning
 corona
 </td>
 <td style="text-align:right;">
-143
+146
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+coronado
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30399,7 +18875,7 @@ corte madera
 costa mesa
 </td>
 <td style="text-align:right;">
-23
+27
 </td>
 </tr>
 <tr>
@@ -30407,7 +18883,7 @@ costa mesa
 cotati
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -30439,7 +18915,7 @@ coulterville/la grange
 covina
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -30447,7 +18923,7 @@ covina
 crescent city
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -30455,7 +18931,7 @@ crescent city
 crestline
 </td>
 <td style="text-align:right;">
-5
+9
 </td>
 </tr>
 <tr>
@@ -30479,7 +18955,7 @@ crowslanding
 cudahy
 </td>
 <td style="text-align:right;">
-8
+4
 </td>
 </tr>
 <tr>
@@ -30487,7 +18963,7 @@ cudahy
 culver city
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -30511,7 +18987,7 @@ cutten
 cypress
 </td>
 <td style="text-align:right;">
-5
+6
 </td>
 </tr>
 <tr>
@@ -30527,7 +19003,7 @@ daly city
 dana point
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -30543,15 +19019,7 @@ davenport
 davis
 </td>
 <td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-deep cleaning
-</td>
-<td style="text-align:right;">
-2
+7
 </td>
 </tr>
 <tr>
@@ -30575,7 +19043,7 @@ delhi
 desert hot springs
 </td>
 <td style="text-align:right;">
-129
+137
 </td>
 </tr>
 <tr>
@@ -30615,15 +19083,7 @@ discovery bay
 dos palos
 </td>
 <td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-douglas city
-</td>
-<td style="text-align:right;">
-1
+16
 </td>
 </tr>
 <tr>
@@ -30631,15 +19091,7 @@ douglas city
 downey
 </td>
 <td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-doyle
-</td>
-<td style="text-align:right;">
-1
+6
 </td>
 </tr>
 <tr>
@@ -30647,7 +19099,15 @@ doyle
 duarte
 </td>
 <td style="text-align:right;">
-3
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+dublin
+</td>
+<td style="text-align:right;">
+2
 </td>
 </tr>
 <tr>
@@ -30671,7 +19131,7 @@ dunnigan
 east los angeles
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
@@ -30687,7 +19147,7 @@ east palo alto
 eastvale
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -30695,7 +19155,7 @@ eastvale
 el cerrito
 </td>
 <td style="text-align:right;">
-8
+7
 </td>
 </tr>
 <tr>
@@ -30703,7 +19163,7 @@ el cerrito
 el monte
 </td>
 <td style="text-align:right;">
-10
+7
 </td>
 </tr>
 <tr>
@@ -30735,7 +19195,7 @@ el salvador
 el segundo
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -30743,7 +19203,7 @@ el segundo
 el sobrante
 </td>
 <td style="text-align:right;">
-8
+6
 </td>
 </tr>
 <tr>
@@ -30759,7 +19219,15 @@ elcajon
 eljon
 </td>
 <td style="text-align:right;">
-38
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+elk creek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30767,7 +19235,7 @@ eljon
 elk grove
 </td>
 <td style="text-align:right;">
-27
+29
 </td>
 </tr>
 <tr>
@@ -30775,7 +19243,15 @@ elk grove
 emeryville
 </td>
 <td style="text-align:right;">
-4
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+empire
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30783,15 +19259,7 @@ emeryville
 encinitas
 </td>
 <td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-encino
-</td>
-<td style="text-align:right;">
-1
+7
 </td>
 </tr>
 <tr>
@@ -30799,7 +19267,15 @@ encino
 escondido
 </td>
 <td style="text-align:right;">
-28
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+eurek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30807,7 +19283,7 @@ escondido
 eureka
 </td>
 <td style="text-align:right;">
-107
+108
 </td>
 </tr>
 <tr>
@@ -30815,7 +19291,7 @@ eureka
 exeter
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -30828,10 +19304,18 @@ exeter (tulle ville)
 </tr>
 <tr>
 <td style="text-align:left;">
+fair oaks
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 fairfax
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -30884,10 +19368,18 @@ fillmore
 </tr>
 <tr>
 <td style="text-align:left;">
+firebaugh
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 folsom
 </td>
 <td style="text-align:right;">
-8
+10
 </td>
 </tr>
 <tr>
@@ -30895,7 +19387,15 @@ folsom
 fontana
 </td>
 <td style="text-align:right;">
-62
+73
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+forest hill
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -30903,7 +19403,7 @@ fontana
 foresthill
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -30919,7 +19419,7 @@ forestville
 fort bragg
 </td>
 <td style="text-align:right;">
-35
+37
 </td>
 </tr>
 <tr>
@@ -30927,7 +19427,7 @@ fort bragg
 fortuna
 </td>
 <td style="text-align:right;">
-15
+16
 </td>
 </tr>
 <tr>
@@ -30943,7 +19443,7 @@ foster city
 fountain valley
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -30975,7 +19475,7 @@ freedom
 fremont
 </td>
 <td style="text-align:right;">
-8
+19
 </td>
 </tr>
 <tr>
@@ -30991,7 +19491,7 @@ frenchmp
 fresno
 </td>
 <td style="text-align:right;">
-107
+127
 </td>
 </tr>
 <tr>
@@ -30999,7 +19499,7 @@ fresno
 fullerton
 </td>
 <td style="text-align:right;">
-15
+17
 </td>
 </tr>
 <tr>
@@ -31023,7 +19523,7 @@ garberville
 garden grove
 </td>
 <td style="text-align:right;">
-8
+9
 </td>
 </tr>
 <tr>
@@ -31031,7 +19531,7 @@ garden grove
 gardena
 </td>
 <td style="text-align:right;">
-34
+22
 </td>
 </tr>
 <tr>
@@ -31039,7 +19539,7 @@ gardena
 gazelle
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -31055,7 +19555,7 @@ gerber
 gilroy
 </td>
 <td style="text-align:right;">
-7
+5
 </td>
 </tr>
 <tr>
@@ -31071,7 +19571,7 @@ glen ellen
 glendale
 </td>
 <td style="text-align:right;">
-11
+3
 </td>
 </tr>
 <tr>
@@ -31079,7 +19579,7 @@ glendale
 glendora
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -31092,10 +19592,18 @@ goleta
 </tr>
 <tr>
 <td style="text-align:left;">
+goleta-isla vista
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 granada hills
 </td>
 <td style="text-align:right;">
-8
+6
 </td>
 </tr>
 <tr>
@@ -31111,7 +19619,7 @@ grand terrace
 granite bay
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -31119,7 +19627,7 @@ granite bay
 grass valley
 </td>
 <td style="text-align:right;">
-191
+143
 </td>
 </tr>
 <tr>
@@ -31127,7 +19635,7 @@ grass valley
 gridley
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -31143,7 +19651,7 @@ grover beach
 gualala
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -31151,7 +19659,7 @@ gualala
 guerneville
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -31167,7 +19675,7 @@ gustine
 hacienda heights
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -31191,7 +19699,7 @@ hammil valley
 hanford
 </td>
 <td style="text-align:right;">
-114
+119
 </td>
 </tr>
 <tr>
@@ -31199,7 +19707,15 @@ hanford
 harbor city
 </td>
 <td style="text-align:right;">
-16
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hawkins bar
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -31207,7 +19723,7 @@ harbor city
 hawthorne
 </td>
 <td style="text-align:right;">
-10
+9
 </td>
 </tr>
 <tr>
@@ -31223,7 +19739,15 @@ hayfork
 hayward
 </td>
 <td style="text-align:right;">
-25
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hayward 94541
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -31247,7 +19771,7 @@ helendale
 hemet
 </td>
 <td style="text-align:right;">
-490
+499
 </td>
 </tr>
 <tr>
@@ -31255,7 +19779,7 @@ hemet
 hercules
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -31263,7 +19787,15 @@ hercules
 hesperia
 </td>
 <td style="text-align:right;">
-28
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hidden valley lake
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -31271,7 +19803,7 @@ hesperia
 highland
 </td>
 <td style="text-align:right;">
-20
+26
 </td>
 </tr>
 <tr>
@@ -31287,7 +19819,7 @@ hilmar
 hollywood
 </td>
 <td style="text-align:right;">
-12
+6
 </td>
 </tr>
 <tr>
@@ -31303,15 +19835,7 @@ holmes
 home of client
 </td>
 <td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-home repair
-</td>
-<td style="text-align:right;">
-2
+9
 </td>
 </tr>
 <tr>
@@ -31319,7 +19843,7 @@ home repair
 homeland
 </td>
 <td style="text-align:right;">
-11
+13
 </td>
 </tr>
 <tr>
@@ -31327,7 +19851,7 @@ homeland
 homeless
 </td>
 <td style="text-align:right;">
-9
+11
 </td>
 </tr>
 <tr>
@@ -31343,7 +19867,7 @@ hoopa
 huntington beach
 </td>
 <td style="text-align:right;">
-19
+23
 </td>
 </tr>
 <tr>
@@ -31351,7 +19875,7 @@ huntington beach
 huntington park
 </td>
 <td style="text-align:right;">
-19
+8
 </td>
 </tr>
 <tr>
@@ -31359,7 +19883,7 @@ huntington park
 hyampom
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -31399,7 +19923,7 @@ indian wells
 indio
 </td>
 <td style="text-align:right;">
-175
+170
 </td>
 </tr>
 <tr>
@@ -31415,7 +19939,15 @@ indio92203
 inglewood
 </td>
 <td style="text-align:right;">
-55
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+inyokern
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -31439,7 +19971,7 @@ iraq
 irvine
 </td>
 <td style="text-align:right;">
-9
+14
 </td>
 </tr>
 <tr>
@@ -31447,7 +19979,7 @@ irvine
 isleton
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -31463,7 +19995,7 @@ ivanhoe
 jackson
 </td>
 <td style="text-align:right;">
-7
+10
 </td>
 </tr>
 <tr>
@@ -31476,10 +20008,18 @@ jamul
 </tr>
 <tr>
 <td style="text-align:left;">
+johnson valley
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 joshua tree
 </td>
 <td style="text-align:right;">
-25
+32
 </td>
 </tr>
 <tr>
@@ -31511,7 +20051,7 @@ jurupa
 jurupa valley
 </td>
 <td style="text-align:right;">
-57
+53
 </td>
 </tr>
 <tr>
@@ -31524,23 +20064,7 @@ kelseyville
 </tr>
 <tr>
 <td style="text-align:left;">
-kensington
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 kentfield
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-kerman
 </td>
 <td style="text-align:right;">
 2
@@ -31548,10 +20072,18 @@ kerman
 </tr>
 <tr>
 <td style="text-align:left;">
+kerman
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 kernville
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -31567,7 +20099,7 @@ kettleman city
 kingsburg
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -31583,7 +20115,7 @@ klamath
 la crescenta
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -31591,7 +20123,7 @@ la crescenta
 la grange
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -31615,7 +20147,7 @@ la jolla
 la mesa
 </td>
 <td style="text-align:right;">
-13
+15
 </td>
 </tr>
 <tr>
@@ -31623,7 +20155,7 @@ la mesa
 la mirada
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -31631,7 +20163,7 @@ la mirada
 la puente
 </td>
 <td style="text-align:right;">
-5
+3
 </td>
 </tr>
 <tr>
@@ -31639,7 +20171,7 @@ la puente
 la quinta
 </td>
 <td style="text-align:right;">
-9
+12
 </td>
 </tr>
 <tr>
@@ -31663,7 +20195,7 @@ laguna beach
 laguna hills
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -31703,7 +20235,7 @@ lake county
 lake elsinore
 </td>
 <td style="text-align:right;">
-121
+123
 </td>
 </tr>
 <tr>
@@ -31719,15 +20251,7 @@ lake forest
 lake isabella
 </td>
 <td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lakeport
-</td>
-<td style="text-align:right;">
-1
+18
 </td>
 </tr>
 <tr>
@@ -31735,7 +20259,7 @@ lakeport
 lakeside
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -31751,7 +20275,7 @@ lakeview
 lakewood
 </td>
 <td style="text-align:right;">
-14
+6
 </td>
 </tr>
 <tr>
@@ -31767,7 +20291,7 @@ lamont
 lancaster
 </td>
 <td style="text-align:right;">
-56
+23
 </td>
 </tr>
 <tr>
@@ -31775,7 +20299,7 @@ lancaster
 landers
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -31791,7 +20315,7 @@ larkspur
 lawndale
 </td>
 <td style="text-align:right;">
-8
+5
 </td>
 </tr>
 <tr>
@@ -31807,7 +20331,7 @@ le grand
 lebec
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -31831,7 +20355,7 @@ lemon grove
 lemoore
 </td>
 <td style="text-align:right;">
-33
+36
 </td>
 </tr>
 <tr>
@@ -31847,7 +20371,7 @@ lewiston
 lincoln
 </td>
 <td style="text-align:right;">
-7
+11
 </td>
 </tr>
 <tr>
@@ -31871,7 +20395,7 @@ lincoln 6/9/22- second home safe enrollment
 lincoln heights
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -31879,7 +20403,7 @@ lincoln heights
 lincoln- home- grave disability hold
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -31887,7 +20411,7 @@ lincoln- home- grave disability hold
 littlerock
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -31895,7 +20419,7 @@ littlerock
 livermore
 </td>
 <td style="text-align:right;">
-6
+8
 </td>
 </tr>
 <tr>
@@ -31911,7 +20435,7 @@ lodi
 loleta
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -31919,7 +20443,7 @@ loleta
 loma linda
 </td>
 <td style="text-align:right;">
-7
+11
 </td>
 </tr>
 <tr>
@@ -31927,15 +20451,7 @@ loma linda
 lomita
 </td>
 <td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lompoc
-</td>
-<td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -31951,7 +20467,7 @@ lone pine
 long beach
 </td>
 <td style="text-align:right;">
-122
+81
 </td>
 </tr>
 <tr>
@@ -31967,7 +20483,7 @@ loomis
 los altos
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -31975,7 +20491,7 @@ los altos
 los angeles
 </td>
 <td style="text-align:right;">
-567
+305
 </td>
 </tr>
 <tr>
@@ -31983,7 +20499,7 @@ los angeles
 los banos
 </td>
 <td style="text-align:right;">
-21
+25
 </td>
 </tr>
 <tr>
@@ -32007,7 +20523,7 @@ los molinos
 los osos
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -32015,7 +20531,7 @@ los osos
 lost hills
 </td>
 <td style="text-align:right;">
-3
+1
 </td>
 </tr>
 <tr>
@@ -32031,7 +20547,7 @@ lower lake
 lucerne valley
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -32039,7 +20555,15 @@ lucerne valley
 lynwood
 </td>
 <td style="text-align:right;">
-13
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+lytle creek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32047,7 +20571,7 @@ lynwood
 macdoel
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -32055,7 +20579,7 @@ macdoel
 madera
 </td>
 <td style="text-align:right;">
-52
+54
 </td>
 </tr>
 <tr>
@@ -32071,7 +20595,7 @@ madera ranchos
 magalia
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -32087,7 +20611,7 @@ mammoth lakes
 maricopa
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -32095,7 +20619,7 @@ maricopa
 marina del rey
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -32103,7 +20627,7 @@ marina del rey
 mariposa
 </td>
 <td style="text-align:right;">
-77
+59
 </td>
 </tr>
 <tr>
@@ -32111,7 +20635,7 @@ mariposa
 martell
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -32127,7 +20651,7 @@ martinez
 marysville
 </td>
 <td style="text-align:right;">
-15
+22
 </td>
 </tr>
 <tr>
@@ -32135,7 +20659,15 @@ marysville
 maywood
 </td>
 <td style="text-align:right;">
-7
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mcclellan
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32164,7 +20696,7 @@ mckinleyville
 </tr>
 <tr>
 <td style="text-align:left;">
-mecca
+meadow vista
 </td>
 <td style="text-align:right;">
 1
@@ -32172,10 +20704,26 @@ mecca
 </tr>
 <tr>
 <td style="text-align:left;">
+mecca
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mendota
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 menifee
 </td>
 <td style="text-align:right;">
-66
+65
 </td>
 </tr>
 <tr>
@@ -32183,7 +20731,7 @@ menifee
 mentone
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -32191,7 +20739,15 @@ mentone
 merced
 </td>
 <td style="text-align:right;">
-92
+111
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+middletown
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32199,7 +20755,15 @@ merced
 midpines
 </td>
 <td style="text-align:right;">
-8
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+midway city
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32207,7 +20771,7 @@ midpines
 mill valley
 </td>
 <td style="text-align:right;">
-2
+4
 </td>
 </tr>
 <tr>
@@ -32223,7 +20787,7 @@ millbrae
 milpitas
 </td>
 <td style="text-align:right;">
-3
+5
 </td>
 </tr>
 <tr>
@@ -32231,7 +20795,7 @@ milpitas
 mira loma
 </td>
 <td style="text-align:right;">
-8
+7
 </td>
 </tr>
 <tr>
@@ -32239,7 +20803,7 @@ mira loma
 missing
 </td>
 <td style="text-align:right;">
-110
+154
 </td>
 </tr>
 <tr>
@@ -32247,15 +20811,15 @@ missing
 mission hills
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-mission hlls
+mission viejo
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -32263,7 +20827,7 @@ mission hlls
 modesto
 </td>
 <td style="text-align:right;">
-60
+63
 </td>
 </tr>
 <tr>
@@ -32271,7 +20835,7 @@ modesto
 mojave
 </td>
 <td style="text-align:right;">
-14
+11
 </td>
 </tr>
 <tr>
@@ -32279,7 +20843,7 @@ mojave
 monrovia
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -32303,7 +20867,7 @@ monte rio
 montebello
 </td>
 <td style="text-align:right;">
-11
+7
 </td>
 </tr>
 <tr>
@@ -32319,7 +20883,7 @@ monterey
 monterey park
 </td>
 <td style="text-align:right;">
-10
+8
 </td>
 </tr>
 <tr>
@@ -32351,7 +20915,7 @@ moren
 moreno valley
 </td>
 <td style="text-align:right;">
-201
+213
 </td>
 </tr>
 <tr>
@@ -32367,7 +20931,7 @@ morgan hill
 morongo valley
 </td>
 <td style="text-align:right;">
-9
+11
 </td>
 </tr>
 <tr>
@@ -32375,7 +20939,7 @@ morongo valley
 morro bay
 </td>
 <td style="text-align:right;">
-6
+9
 </td>
 </tr>
 <tr>
@@ -32391,7 +20955,7 @@ mount mesa
 mount shasta
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -32420,6 +20984,30 @@ mountianview
 </tr>
 <tr>
 <td style="text-align:left;">
+moutain view
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mt shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mt. shasta
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 mt. view
 </td>
 <td style="text-align:right;">
@@ -32439,7 +21027,7 @@ murreta
 murrieta
 </td>
 <td style="text-align:right;">
-70
+77
 </td>
 </tr>
 <tr>
@@ -32455,7 +21043,7 @@ muscoy
 napa
 </td>
 <td style="text-align:right;">
-17
+26
 </td>
 </tr>
 <tr>
@@ -32463,7 +21051,7 @@ napa
 national city
 </td>
 <td style="text-align:right;">
-8
+11
 </td>
 </tr>
 <tr>
@@ -32471,7 +21059,7 @@ national city
 needles
 </td>
 <td style="text-align:right;">
-29
+37
 </td>
 </tr>
 <tr>
@@ -32479,7 +21067,15 @@ needles
 nevada city
 </td>
 <td style="text-align:right;">
-51
+34
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+newark
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32495,7 +21091,7 @@ newberry springs
 newbury park
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -32503,7 +21099,7 @@ newbury park
 newcastle
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -32511,7 +21107,7 @@ newcastle
 newhall
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -32548,22 +21144,6 @@ nipomo
 </tr>
 <tr>
 <td style="text-align:left;">
-no
-</td>
-<td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-no intervention
-</td>
-<td style="text-align:right;">
-929
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 none
 </td>
 <td style="text-align:right;">
@@ -32583,7 +21163,7 @@ norco
 north highlands
 </td>
 <td style="text-align:right;">
-29
+30
 </td>
 </tr>
 <tr>
@@ -32591,7 +21171,7 @@ north highlands
 north hills
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -32599,7 +21179,7 @@ north hills
 north hollywood
 </td>
 <td style="text-align:right;">
-20
+9
 </td>
 </tr>
 <tr>
@@ -32615,7 +21195,7 @@ north palm springs
 north san juan
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
@@ -32631,7 +21211,7 @@ north side of parking lot
 northridge
 </td>
 <td style="text-align:right;">
-9
+5
 </td>
 </tr>
 <tr>
@@ -32639,7 +21219,7 @@ northridge
 norwalk
 </td>
 <td style="text-align:right;">
-20
+9
 </td>
 </tr>
 <tr>
@@ -32647,7 +21227,7 @@ norwalk
 novato
 </td>
 <td style="text-align:right;">
-9
+10
 </td>
 </tr>
 <tr>
@@ -32655,7 +21235,7 @@ novato
 nuevo
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -32663,7 +21243,7 @@ nuevo
 oak view
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -32671,7 +21251,7 @@ oak view
 oakdale
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -32687,7 +21267,7 @@ oakhurst
 oakland
 </td>
 <td style="text-align:right;">
-84
+147
 </td>
 </tr>
 <tr>
@@ -32695,7 +21275,15 @@ oakland
 oakley
 </td>
 <td style="text-align:right;">
-12
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+oaklland
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32703,7 +21291,7 @@ oakley
 oceanside
 </td>
 <td style="text-align:right;">
-18
+22
 </td>
 </tr>
 <tr>
@@ -32727,7 +21315,7 @@ olema
 olivehurst
 </td>
 <td style="text-align:right;">
-4
+7
 </td>
 </tr>
 <tr>
@@ -32735,7 +21323,7 @@ olivehurst
 ontario
 </td>
 <td style="text-align:right;">
-74
+83
 </td>
 </tr>
 <tr>
@@ -32764,6 +21352,14 @@ orange cove
 </tr>
 <tr>
 <td style="text-align:left;">
+oregon house
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 orick
 </td>
 <td style="text-align:right;">
@@ -32775,7 +21371,7 @@ orick
 orinda
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -32783,7 +21379,7 @@ orinda
 orland
 </td>
 <td style="text-align:right;">
-10
+14
 </td>
 </tr>
 <tr>
@@ -32791,15 +21387,7 @@ orland
 oroville
 </td>
 <td style="text-align:right;">
-25
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:right;">
-36
+37
 </td>
 </tr>
 <tr>
@@ -32807,7 +21395,7 @@ other
 oxnard
 </td>
 <td style="text-align:right;">
-31
+32
 </td>
 </tr>
 <tr>
@@ -32823,7 +21411,7 @@ pachecco
 pacheco
 </td>
 <td style="text-align:right;">
-10
+8
 </td>
 </tr>
 <tr>
@@ -32831,7 +21419,7 @@ pacheco
 pacoima
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -32844,10 +21432,18 @@ pala
 </tr>
 <tr>
 <td style="text-align:left;">
+palermo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 palm desert
 </td>
 <td style="text-align:right;">
-79
+74
 </td>
 </tr>
 <tr>
@@ -32871,7 +21467,15 @@ palm spring
 palm springs
 </td>
 <td style="text-align:right;">
-379
+368
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+palm springs,
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -32879,7 +21483,7 @@ palm springs
 palmdale
 </td>
 <td style="text-align:right;">
-22
+12
 </td>
 </tr>
 <tr>
@@ -32903,7 +21507,7 @@ palo alto
 panorama city
 </td>
 <td style="text-align:right;">
-11
+3
 </td>
 </tr>
 <tr>
@@ -32919,15 +21523,7 @@ paradise
 paramount
 </td>
 <td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-parlier
-</td>
-<td style="text-align:right;">
-1
+5
 </td>
 </tr>
 <tr>
@@ -32935,7 +21531,7 @@ parlier
 pasadena
 </td>
 <td style="text-align:right;">
-6
+3
 </td>
 </tr>
 <tr>
@@ -32943,7 +21539,7 @@ pasadena
 paso robles
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -32964,10 +21560,18 @@ pauma valley
 </tr>
 <tr>
 <td style="text-align:left;">
+paynes creek
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 penn valley
 </td>
 <td style="text-align:right;">
-16
+10
 </td>
 </tr>
 <tr>
@@ -32975,7 +21579,7 @@ penn valley
 perris
 </td>
 <td style="text-align:right;">
-108
+109
 </td>
 </tr>
 <tr>
@@ -32983,7 +21587,7 @@ perris
 petaluma
 </td>
 <td style="text-align:right;">
-28
+31
 </td>
 </tr>
 <tr>
@@ -32999,7 +21603,7 @@ phillipsville
 pico rivera
 </td>
 <td style="text-align:right;">
-7
+4
 </td>
 </tr>
 <tr>
@@ -33020,10 +21624,18 @@ pine grove
 </tr>
 <tr>
 <td style="text-align:left;">
+pine mountain club
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pinole
 </td>
 <td style="text-align:right;">
-10
+9
 </td>
 </tr>
 <tr>
@@ -33044,6 +21656,14 @@ pioneer
 </tr>
 <tr>
 <td style="text-align:left;">
+piru
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pismo beach
 </td>
 <td style="text-align:right;">
@@ -33055,7 +21675,7 @@ pismo beach
 pittsburg
 </td>
 <td style="text-align:right;">
-36
+30
 </td>
 </tr>
 <tr>
@@ -33076,7 +21696,7 @@ placer county
 </tr>
 <tr>
 <td style="text-align:left;">
-planada
+placerville
 </td>
 <td style="text-align:right;">
 1
@@ -33084,10 +21704,18 @@ planada
 </tr>
 <tr>
 <td style="text-align:left;">
+planada
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 playa del rey
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -33095,7 +21723,7 @@ playa del rey
 playa vista
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -33103,7 +21731,7 @@ playa vista
 pleasant hill
 </td>
 <td style="text-align:right;">
-16
+12
 </td>
 </tr>
 <tr>
@@ -33111,7 +21739,7 @@ pleasant hill
 pleasanton
 </td>
 <td style="text-align:right;">
-7
+9
 </td>
 </tr>
 <tr>
@@ -33124,10 +21752,18 @@ point arena
 </tr>
 <tr>
 <td style="text-align:left;">
+pollock pines
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pomona
 </td>
 <td style="text-align:right;">
-34
+20
 </td>
 </tr>
 <tr>
@@ -33143,7 +21779,7 @@ port hueneme
 porterville
 </td>
 <td style="text-align:right;">
-4
+7
 </td>
 </tr>
 <tr>
@@ -33151,7 +21787,7 @@ porterville
 portola
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -33159,7 +21795,7 @@ portola
 poway
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -33175,7 +21811,7 @@ pt. reyes
 quincy
 </td>
 <td style="text-align:right;">
-5
+8
 </td>
 </tr>
 <tr>
@@ -33231,7 +21867,15 @@ rancho cucamong
 rancho cucamonga
 </td>
 <td style="text-align:right;">
-52
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cucamongo
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -33239,7 +21883,7 @@ rancho cucamonga
 rancho mirage
 </td>
 <td style="text-align:right;">
-42
+40
 </td>
 </tr>
 <tr>
@@ -33247,7 +21891,7 @@ rancho mirage
 rancho palos verdes
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -33271,7 +21915,7 @@ rancho santa margarita
 red bluff
 </td>
 <td style="text-align:right;">
-71
+72
 </td>
 </tr>
 <tr>
@@ -33295,7 +21939,7 @@ redding
 redlands
 </td>
 <td style="text-align:right;">
-27
+34
 </td>
 </tr>
 <tr>
@@ -33303,7 +21947,7 @@ redlands
 redondo beach
 </td>
 <td style="text-align:right;">
-11
+8
 </td>
 </tr>
 <tr>
@@ -33319,7 +21963,7 @@ redway
 redwood city
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -33335,15 +21979,7 @@ redwood valley
 reedley
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent payment
-</td>
-<td style="text-align:right;">
-8
+1
 </td>
 </tr>
 <tr>
@@ -33351,7 +21987,7 @@ rent payment
 renting a room at: 1437 stone hearth ,lincoln
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -33359,7 +21995,7 @@ renting a room at: 1437 stone hearth ,lincoln
 reseda
 </td>
 <td style="text-align:right;">
-7
+3
 </td>
 </tr>
 <tr>
@@ -33367,7 +22003,7 @@ reseda
 rialto
 </td>
 <td style="text-align:right;">
-58
+71
 </td>
 </tr>
 <tr>
@@ -33375,7 +22011,7 @@ rialto
 richmond
 </td>
 <td style="text-align:right;">
-56
+50
 </td>
 </tr>
 <tr>
@@ -33399,7 +22035,7 @@ ridegcrest
 ridgecrest
 </td>
 <td style="text-align:right;">
-18
+17
 </td>
 </tr>
 <tr>
@@ -33407,7 +22043,7 @@ ridgecrest
 rio dell
 </td>
 <td style="text-align:right;">
-8
+9
 </td>
 </tr>
 <tr>
@@ -33415,7 +22051,7 @@ rio dell
 rio linda
 </td>
 <td style="text-align:right;">
-6
+7
 </td>
 </tr>
 <tr>
@@ -33439,7 +22075,7 @@ river pines
 riverbank
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -33455,7 +22091,7 @@ riverdale
 riverisde
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -33463,7 +22099,7 @@ riverisde
 riverside
 </td>
 <td style="text-align:right;">
-795
+810
 </td>
 </tr>
 <tr>
@@ -33479,7 +22115,7 @@ riveside
 rocklin
 </td>
 <td style="text-align:right;">
-9
+12
 </td>
 </tr>
 <tr>
@@ -33487,7 +22123,7 @@ rocklin
 rocklin 95677
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -33511,7 +22147,7 @@ rodeo
 rohnert park
 </td>
 <td style="text-align:right;">
-41
+43
 </td>
 </tr>
 <tr>
@@ -33532,18 +22168,10 @@ rosamond
 </tr>
 <tr>
 <td style="text-align:left;">
-rosemead
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 rosevile snf oakridgere center
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -33551,15 +22179,7 @@ rosevile snf oakridgere center
 roseville
 </td>
 <td style="text-align:right;">
-44
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-roseville 95661
-</td>
-<td style="text-align:right;">
-1
+51
 </td>
 </tr>
 <tr>
@@ -33583,7 +22203,7 @@ roseville 95678
 rough & ready
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -33591,7 +22211,7 @@ rough & ready
 rough and ready
 </td>
 <td style="text-align:right;">
-10
+7
 </td>
 </tr>
 <tr>
@@ -33607,7 +22227,7 @@ rough and ready 95975
 rowland heights
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -33639,7 +22259,7 @@ ruth
 sacramento
 </td>
 <td style="text-align:right;">
-225
+271
 </td>
 </tr>
 <tr>
@@ -33703,7 +22323,7 @@ san beranrdino
 san bernadino
 </td>
 <td style="text-align:right;">
-2
+5
 </td>
 </tr>
 <tr>
@@ -33711,7 +22331,7 @@ san bernadino
 san bernardino
 </td>
 <td style="text-align:right;">
-162
+188
 </td>
 </tr>
 <tr>
@@ -33751,7 +22371,7 @@ san clemente
 san diego
 </td>
 <td style="text-align:right;">
-175
+198
 </td>
 </tr>
 <tr>
@@ -33759,7 +22379,7 @@ san diego
 san dimas
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -33767,7 +22387,7 @@ san dimas
 san fernando
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -33775,7 +22395,7 @@ san fernando
 san francisco
 </td>
 <td style="text-align:right;">
-245
+290
 </td>
 </tr>
 <tr>
@@ -33799,7 +22419,7 @@ san gabriel
 san jacinto
 </td>
 <td style="text-align:right;">
-103
+104
 </td>
 </tr>
 <tr>
@@ -33807,7 +22427,7 @@ san jacinto
 san jose
 </td>
 <td style="text-align:right;">
-108
+117
 </td>
 </tr>
 <tr>
@@ -33815,7 +22435,7 @@ san jose
 san juanpistrano
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -33823,7 +22443,7 @@ san juanpistrano
 san leandro
 </td>
 <td style="text-align:right;">
-8
+18
 </td>
 </tr>
 <tr>
@@ -33831,7 +22451,7 @@ san leandro
 san lorenzo
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -33839,7 +22459,7 @@ san lorenzo
 san luis obispo
 </td>
 <td style="text-align:right;">
-14
+17
 </td>
 </tr>
 <tr>
@@ -33847,7 +22467,7 @@ san luis obispo
 san marcos
 </td>
 <td style="text-align:right;">
-4
+5
 </td>
 </tr>
 <tr>
@@ -33863,7 +22483,7 @@ san martin
 san mateo
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -33879,7 +22499,7 @@ san pablo
 san pedro
 </td>
 <td style="text-align:right;">
-37
+28
 </td>
 </tr>
 <tr>
@@ -33887,7 +22507,7 @@ san pedro
 san rafael
 </td>
 <td style="text-align:right;">
-16
+13
 </td>
 </tr>
 <tr>
@@ -33895,7 +22515,7 @@ san rafael
 san ramon
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -33904,6 +22524,14 @@ san ysidro
 </td>
 <td style="text-align:right;">
 2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sanger
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -33919,7 +22547,7 @@ sanjose
 santa ana
 </td>
 <td style="text-align:right;">
-30
+36
 </td>
 </tr>
 <tr>
@@ -33927,7 +22555,7 @@ santa ana
 santa barbara
 </td>
 <td style="text-align:right;">
-19
+26
 </td>
 </tr>
 <tr>
@@ -33943,7 +22571,7 @@ santa clara
 santa clarita
 </td>
 <td style="text-align:right;">
-6
+3
 </td>
 </tr>
 <tr>
@@ -33951,7 +22579,7 @@ santa clarita
 santa cruz
 </td>
 <td style="text-align:right;">
-120
+121
 </td>
 </tr>
 <tr>
@@ -33959,7 +22587,7 @@ santa cruz
 santa fe springs
 </td>
 <td style="text-align:right;">
-10
+5
 </td>
 </tr>
 <tr>
@@ -33967,7 +22595,7 @@ santa fe springs
 santa maria
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -33975,7 +22603,7 @@ santa maria
 santa monica
 </td>
 <td style="text-align:right;">
-14
+5
 </td>
 </tr>
 <tr>
@@ -33999,7 +22627,7 @@ santa paula
 santa rosa
 </td>
 <td style="text-align:right;">
-129
+139
 </td>
 </tr>
 <tr>
@@ -34007,7 +22635,7 @@ santa rosa
 santee
 </td>
 <td style="text-align:right;">
-4
+6
 </td>
 </tr>
 <tr>
@@ -34047,7 +22675,7 @@ scotia
 scotts valley
 </td>
 <td style="text-align:right;">
-13
+14
 </td>
 </tr>
 <tr>
@@ -34055,7 +22683,7 @@ scotts valley
 seal beach
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -34068,18 +22696,10 @@ sebastopol
 </tr>
 <tr>
 <td style="text-align:left;">
-security deposit
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 selma
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -34095,7 +22715,7 @@ sf
 shafter
 </td>
 <td style="text-align:right;">
-3
+5
 </td>
 </tr>
 <tr>
@@ -34119,7 +22739,7 @@ sheridan
 sherman oaks
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -34127,15 +22747,7 @@ sherman oaks
 signal hill
 </td>
 <td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-silver lake
-</td>
-<td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -34164,10 +22776,18 @@ sin city
 </tr>
 <tr>
 <td style="text-align:left;">
+slo
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 smartsville
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -34184,6 +22804,14 @@ sonoma
 </td>
 <td style="text-align:right;">
 21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sonora
+</td>
+<td style="text-align:right;">
+14
 </td>
 </tr>
 <tr>
@@ -34207,7 +22835,7 @@ south dos palos
 south el montelifornia
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -34215,7 +22843,7 @@ south el montelifornia
 south gate
 </td>
 <td style="text-align:right;">
-18
+10
 </td>
 </tr>
 <tr>
@@ -34223,7 +22851,7 @@ south gate
 south pasadena
 </td>
 <td style="text-align:right;">
-7
+3
 </td>
 </tr>
 <tr>
@@ -34239,7 +22867,7 @@ south san francisco
 spring valley
 </td>
 <td style="text-align:right;">
-18
+19
 </td>
 </tr>
 <tr>
@@ -34263,7 +22891,7 @@ stevinson
 stockton
 </td>
 <td style="text-align:right;">
-23
+24
 </td>
 </tr>
 <tr>
@@ -34287,7 +22915,7 @@ strathmore
 studio city
 </td>
 <td style="text-align:right;">
-11
+8
 </td>
 </tr>
 <tr>
@@ -34311,7 +22939,7 @@ sugarloaf
 suisun city
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -34319,7 +22947,7 @@ suisun city
 sun city
 </td>
 <td style="text-align:right;">
-22
+25
 </td>
 </tr>
 <tr>
@@ -34327,7 +22955,7 @@ sun city
 sun valley
 </td>
 <td style="text-align:right;">
-11
+5
 </td>
 </tr>
 <tr>
@@ -34335,7 +22963,7 @@ sun valley
 sunland
 </td>
 <td style="text-align:right;">
-5
+2
 </td>
 </tr>
 <tr>
@@ -34343,15 +22971,23 @@ sunland
 sunnyvale
 </td>
 <td style="text-align:right;">
-31
+33
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-susanville
+sutter creek
 </td>
 <td style="text-align:right;">
-2
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+suttercreek
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -34359,7 +22995,7 @@ susanville
 sylmar
 </td>
 <td style="text-align:right;">
-7
+4
 </td>
 </tr>
 <tr>
@@ -34367,7 +23003,7 @@ sylmar
 taft
 </td>
 <td style="text-align:right;">
-11
+14
 </td>
 </tr>
 <tr>
@@ -34375,7 +23011,7 @@ taft
 tahoe
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -34391,7 +23027,7 @@ tahoe city
 tarzana
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -34431,7 +23067,7 @@ tehama
 temecula
 </td>
 <td style="text-align:right;">
-122
+118
 </td>
 </tr>
 <tr>
@@ -34439,7 +23075,15 @@ temecula
 temple city
 </td>
 <td style="text-align:right;">
-2
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+templeton
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -34447,7 +23091,7 @@ temple city
 temporary housing
 </td>
 <td style="text-align:right;">
-12
+1
 </td>
 </tr>
 <tr>
@@ -34471,7 +23115,7 @@ thermal
 thousand oaks
 </td>
 <td style="text-align:right;">
-13
+14
 </td>
 </tr>
 <tr>
@@ -34495,15 +23139,7 @@ tiburon
 tipton
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-topanga
-</td>
-<td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -34519,7 +23155,7 @@ topaz
 torrance
 </td>
 <td style="text-align:right;">
-51
+31
 </td>
 </tr>
 <tr>
@@ -34543,7 +23179,7 @@ trona
 truckee
 </td>
 <td style="text-align:right;">
-12
+10
 </td>
 </tr>
 <tr>
@@ -34551,7 +23187,7 @@ truckee
 tujunga
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -34559,7 +23195,7 @@ tujunga
 tulare
 </td>
 <td style="text-align:right;">
-3
+4
 </td>
 </tr>
 <tr>
@@ -34567,7 +23203,7 @@ tulare
 turlock
 </td>
 <td style="text-align:right;">
-18
+17
 </td>
 </tr>
 <tr>
@@ -34599,7 +23235,7 @@ twenty nine palms
 twenty-nine palms
 </td>
 <td style="text-align:right;">
-1
+4
 </td>
 </tr>
 <tr>
@@ -34607,7 +23243,7 @@ twenty-nine palms
 twentynine palms
 </td>
 <td style="text-align:right;">
-48
+63
 </td>
 </tr>
 <tr>
@@ -34615,7 +23251,7 @@ twentynine palms
 ukiah
 </td>
 <td style="text-align:right;">
-36
+38
 </td>
 </tr>
 <tr>
@@ -34623,7 +23259,7 @@ ukiah
 union city
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -34639,7 +23275,7 @@ unk
 unknown
 </td>
 <td style="text-align:right;">
-554
+134
 </td>
 </tr>
 <tr>
@@ -34647,15 +23283,7 @@ unknown
 upland
 </td>
 <td style="text-align:right;">
-20
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-utilities
-</td>
-<td style="text-align:right;">
-3
+25
 </td>
 </tr>
 <tr>
@@ -34663,7 +23291,7 @@ utilities
 vacaville
 </td>
 <td style="text-align:right;">
-5
+8
 </td>
 </tr>
 <tr>
@@ -34671,7 +23299,7 @@ vacaville
 valencia
 </td>
 <td style="text-align:right;">
-4
+2
 </td>
 </tr>
 <tr>
@@ -34679,7 +23307,7 @@ valencia
 vallejo
 </td>
 <td style="text-align:right;">
-6
+4
 </td>
 </tr>
 <tr>
@@ -34695,7 +23323,7 @@ valley center
 van nuys
 </td>
 <td style="text-align:right;">
-26
+12
 </td>
 </tr>
 <tr>
@@ -34703,7 +23331,7 @@ van nuys
 venice
 </td>
 <td style="text-align:right;">
-9
+6
 </td>
 </tr>
 <tr>
@@ -34711,7 +23339,7 @@ venice
 ventura
 </td>
 <td style="text-align:right;">
-60
+69
 </td>
 </tr>
 <tr>
@@ -34727,7 +23355,7 @@ victirville
 victorville
 </td>
 <td style="text-align:right;">
-72
+85
 </td>
 </tr>
 <tr>
@@ -34743,7 +23371,7 @@ vina
 visalia
 </td>
 <td style="text-align:right;">
-11
+14
 </td>
 </tr>
 <tr>
@@ -34751,7 +23379,7 @@ visalia
 vista
 </td>
 <td style="text-align:right;">
-10
+13
 </td>
 </tr>
 <tr>
@@ -34767,7 +23395,7 @@ volcano
 walnut
 </td>
 <td style="text-align:right;">
-2
+1
 </td>
 </tr>
 <tr>
@@ -34775,7 +23403,7 @@ walnut
 walnut creek
 </td>
 <td style="text-align:right;">
-10
+8
 </td>
 </tr>
 <tr>
@@ -34791,20 +23419,12 @@ walnut park
 wasco
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-watsonville
-</td>
-<td style="text-align:right;">
-53
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-weavervile
+washington
 </td>
 <td style="text-align:right;">
 1
@@ -34812,39 +23432,15 @@ weavervile
 </tr>
 <tr>
 <td style="text-align:left;">
+watsonville
+</td>
+<td style="text-align:right;">
+58
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 weaverville
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-weldon
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-west covina
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-west hills
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-west hollywood
 </td>
 <td style="text-align:right;">
 3
@@ -34852,10 +23448,50 @@ west hollywood
 </tr>
 <tr>
 <td style="text-align:left;">
+weldon
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+west covina
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+west hills
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+west hollywood
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 west sacramento
 </td>
 <td style="text-align:right;">
-19
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+westlake village
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -34864,14 +23500,6 @@ westminster
 </td>
 <td style="text-align:right;">
 8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-westwood
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -34895,7 +23523,7 @@ whitethorn
 whitewater
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -34903,7 +23531,7 @@ whitewater
 whittier
 </td>
 <td style="text-align:right;">
-13
+7
 </td>
 </tr>
 <tr>
@@ -34911,7 +23539,7 @@ whittier
 wildomar
 </td>
 <td style="text-align:right;">
-29
+35
 </td>
 </tr>
 <tr>
@@ -34927,7 +23555,7 @@ wildomor
 willits
 </td>
 <td style="text-align:right;">
-22
+23
 </td>
 </tr>
 <tr>
@@ -34940,18 +23568,10 @@ willow creek
 </tr>
 <tr>
 <td style="text-align:left;">
-willowbrook
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 willows
 </td>
 <td style="text-align:right;">
-17
+21
 </td>
 </tr>
 <tr>
@@ -34959,7 +23579,7 @@ willows
 wilmington
 </td>
 <td style="text-align:right;">
-5
+3
 </td>
 </tr>
 <tr>
@@ -34967,7 +23587,7 @@ wilmington
 winchester
 </td>
 <td style="text-align:right;">
-5
+6
 </td>
 </tr>
 <tr>
@@ -34983,7 +23603,7 @@ windsor
 winnetka
 </td>
 <td style="text-align:right;">
-5
+4
 </td>
 </tr>
 <tr>
@@ -35007,7 +23627,7 @@ winton
 wofford heights
 </td>
 <td style="text-align:right;">
-3
+2
 </td>
 </tr>
 <tr>
@@ -35023,7 +23643,7 @@ wonder valley
 woodland
 </td>
 <td style="text-align:right;">
-2
+3
 </td>
 </tr>
 <tr>
@@ -35031,7 +23651,7 @@ woodland
 woodland hills
 </td>
 <td style="text-align:right;">
-9
+6
 </td>
 </tr>
 <tr>
@@ -35040,14 +23660,6 @@ yermo
 </td>
 <td style="text-align:right;">
 1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yes
-</td>
-<td style="text-align:right;">
-29
 </td>
 </tr>
 <tr>
@@ -35071,7 +23683,7 @@ yorba linda
 yountville
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -35079,7 +23691,7 @@ yountville
 yreka
 </td>
 <td style="text-align:right;">
-18
+17
 </td>
 </tr>
 <tr>
@@ -35087,7 +23699,7 @@ yreka
 yuba county
 </td>
 <td style="text-align:right;">
-7
+8
 </td>
 </tr>
 <tr>
@@ -35103,7 +23715,7 @@ yuba county jail
 yucaipa
 </td>
 <td style="text-align:right;">
-40
+48
 </td>
 </tr>
 <tr>
@@ -35127,7 +23739,7 @@ yucca
 yucca valley
 </td>
 <td style="text-align:right;">
-92
+121
 </td>
 </tr>
 <tr>
@@ -35135,7 +23747,7 @@ yucca valley
 NA
 </td>
 <td style="text-align:right;">
-702
+566
 </td>
 </tr>
 </tbody>
@@ -35186,6 +23798,14 @@ auburn -95603
 </tr>
 <tr>
 <td style="text-align:left;">
+goleta-isla vista
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 lincoln 6/9/22- second home safe enrollment
 </td>
 <td style="text-align:right;">
@@ -35197,7 +23817,7 @@ lincoln 6/9/22- second home safe enrollment
 lincoln- home- grave disability hold
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -35213,7 +23833,7 @@ rocklin-
 twenty-nine palms
 </td>
 <td style="text-align:right;">
-1
+4
 </td>
 </tr>
 </tbody>
@@ -35330,7 +23950,18 @@ rancho cucamonga
 rancho cucamonga
 </td>
 <td style="text-align:right;">
-52
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rancho cucamongo
+</td>
+<td style="text-align:left;">
+rancho cucamongo
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 <tr>
@@ -35341,7 +23972,7 @@ rancho mirage
 rancho mirage
 </td>
 <td style="text-align:right;">
-42
+40
 </td>
 </tr>
 <tr>
@@ -35352,7 +23983,7 @@ rancho palos verdes
 rancho palos verdes
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -35385,7 +24016,7 @@ red bluff
 red bluff
 </td>
 <td style="text-align:right;">
-71
+72
 </td>
 </tr>
 <tr>
@@ -35418,7 +24049,7 @@ redlands
 redlands
 </td>
 <td style="text-align:right;">
-27
+34
 </td>
 </tr>
 <tr>
@@ -35429,7 +24060,7 @@ redondo beach
 redondo beach
 </td>
 <td style="text-align:right;">
-11
+8
 </td>
 </tr>
 <tr>
@@ -35451,7 +24082,7 @@ redwood city
 redwood city
 </td>
 <td style="text-align:right;">
-1
+3
 </td>
 </tr>
 <tr>
@@ -35473,40 +24104,29 @@ reedley
 reedley
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rent payment
-</td>
-<td style="text-align:left;">
-rent payment
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-renting a room at: 1437 stone hearth ,lincoln
-</td>
-<td style="text-align:left;">
-renting a room at: 1437 stone hearth ,lincoln
-</td>
-<td style="text-align:right;">
 1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
+renting a room at: 1437 stone hearth ,lincoln
+</td>
+<td style="text-align:left;">
+renting a room at: 1437 stone hearth ,lincoln
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 reseda
 </td>
 <td style="text-align:left;">
 reseda
 </td>
 <td style="text-align:right;">
-7
+3
 </td>
 </tr>
 <tr>
@@ -35517,7 +24137,7 @@ rialto
 rialto
 </td>
 <td style="text-align:right;">
-58
+71
 </td>
 </tr>
 <tr>
@@ -35528,7 +24148,7 @@ richmond
 richmond
 </td>
 <td style="text-align:right;">
-56
+50
 </td>
 </tr>
 <tr>
@@ -35561,7 +24181,7 @@ ridgecrest
 ridgecrest
 </td>
 <td style="text-align:right;">
-18
+17
 </td>
 </tr>
 <tr>
@@ -35570,105 +24190,6 @@ rio dell
 </td>
 <td style="text-align:left;">
 rio dell
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rio linda
-</td>
-<td style="text-align:left;">
-rio linda
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rio vista
-</td>
-<td style="text-align:left;">
-rio vista
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-river pines
-</td>
-<td style="text-align:left;">
-river pines
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverbank
-</td>
-<td style="text-align:left;">
-riverbank
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverdale
-</td>
-<td style="text-align:left;">
-riverdale
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverisde
-</td>
-<td style="text-align:left;">
-riverisde
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:right;">
-795
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riveside
-</td>
-<td style="text-align:left;">
-riveside
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rocklin
-</td>
-<td style="text-align:left;">
-rocklin
 </td>
 <td style="text-align:right;">
 9
@@ -35676,13 +24197,112 @@ rocklin
 </tr>
 <tr>
 <td style="text-align:left;">
+rio linda
+</td>
+<td style="text-align:left;">
+rio linda
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rio vista
+</td>
+<td style="text-align:left;">
+rio vista
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+river pines
+</td>
+<td style="text-align:left;">
+river pines
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverbank
+</td>
+<td style="text-align:left;">
+riverbank
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverdale
+</td>
+<td style="text-align:left;">
+riverdale
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverisde
+</td>
+<td style="text-align:left;">
+riverisde
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:left;">
+riverside
+</td>
+<td style="text-align:right;">
+810
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+riveside
+</td>
+<td style="text-align:left;">
+riveside
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rocklin
+</td>
+<td style="text-align:left;">
+rocklin
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 rocklin 95677
 </td>
 <td style="text-align:left;">
 rocklin 95677
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -35715,7 +24335,7 @@ rohnert park
 rohnert park
 </td>
 <td style="text-align:right;">
-41
+43
 </td>
 </tr>
 <tr>
@@ -35742,46 +24362,24 @@ rosamond
 </tr>
 <tr>
 <td style="text-align:left;">
-rosemead
-</td>
-<td style="text-align:left;">
-rosemead
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 rosevile snf oakridgere center
 </td>
 <td style="text-align:left;">
 roseville
 </td>
 <td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-roseville
-</td>
-<td style="text-align:left;">
-roseville
-</td>
-<td style="text-align:right;">
-44
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-roseville 95661
-</td>
-<td style="text-align:left;">
-roseville
-</td>
-<td style="text-align:right;">
 1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:left;">
+roseville
+</td>
+<td style="text-align:right;">
+51
 </td>
 </tr>
 <tr>
@@ -35814,7 +24412,7 @@ rough & ready
 rough & ready
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -35825,7 +24423,7 @@ rough and ready
 rough and ready
 </td>
 <td style="text-align:right;">
-10
+7
 </td>
 </tr>
 <tr>
@@ -35847,7 +24445,7 @@ rowland heights
 rowland heights
 </td>
 <td style="text-align:right;">
-4
+3
 </td>
 </tr>
 <tr>
@@ -35914,90 +24512,13 @@ n
 <tbody>
 <tr>
 <td style="text-align:left;">
-\#
+0
 </td>
 <td style="text-align:left;">
-\#
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44252
-</td>
-<td style="text-align:left;">
-rent leaseholder
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44376
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44515
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44519
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44600
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44769
-</td>
-<td style="text-align:left;">
-NA
+male
 </td>
 <td style="text-align:right;">
 2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-44774
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
 </td>
 </tr>
 <tr>
@@ -36008,7 +24529,7 @@ american indian/alaskan native
 female
 </td>
 <td style="text-align:right;">
-20
+22
 </td>
 </tr>
 <tr>
@@ -36019,7 +24540,7 @@ american indian/alaskan native
 male
 </td>
 <td style="text-align:right;">
-8
+11
 </td>
 </tr>
 <tr>
@@ -36041,7 +24562,7 @@ american indian/alaskan native/indigenous
 female
 </td>
 <td style="text-align:right;">
-71
+72
 </td>
 </tr>
 <tr>
@@ -36063,7 +24584,7 @@ asian
 female
 </td>
 <td style="text-align:right;">
-61
+57
 </td>
 </tr>
 <tr>
@@ -36072,798 +24593,6 @@ asian
 </td>
 <td style="text-align:left;">
 male
-</td>
-<td style="text-align:right;">
-32
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian/asian american
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian/asian american
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-100
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian/asian american
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-94
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-337
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-244
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-552
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-551
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american/african
-</td>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client doesn’t know
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-client refused
-</td>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-american indian/alaskan native
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-38
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-374
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-330
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:right;">
-66
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-29 palms
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-adelanto
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-alta loma
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-apple valley
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-bartsow
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-big bear lake
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-bloomington
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-bloomington/colton
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-blue jay
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-ca
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-ca 92284
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-chino
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-chino hills
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-colton
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-crestline
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-fontana
-</td>
-<td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-grand terrace
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-helendale
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-hemet
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-highland
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-homeless
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-joshua tree
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-lake arrowhead
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-landers
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-lucerne valley
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-montclair
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-morongo valley
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-muscoy
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-needles
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:right;">
-42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-pinon hills
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-rancho
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-rancho cucamonga
-</td>
-<td style="text-align:right;">
-34
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-redlands
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-rialto
-</td>
-<td style="text-align:right;">
-30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-san bernadino
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:right;">
-78
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-san bernrdino
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-sugarloaf
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-trona
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-twenty-nine palms
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-twentynine palms
 </td>
 <td style="text-align:right;">
 25
@@ -36871,10 +24600,21 @@ twentynine palms
 </tr>
 <tr>
 <td style="text-align:left;">
-female
+asian/asian american
 </td>
 <td style="text-align:left;">
-unk
+female
+</td>
+<td style="text-align:right;">
+114
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:left;">
+gender other than female/male
 </td>
 <td style="text-align:right;">
 1
@@ -36882,142 +24622,109 @@ unk
 </tr>
 <tr>
 <td style="text-align:left;">
+asian/asian american
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+102
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
 female
+</td>
+<td style="text-align:right;">
+319
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+209
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american
+</td>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+female
+</td>
+<td style="text-align:right;">
+622
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+604
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
+</td>
+<td style="text-align:left;">
+transgender
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+black/african american/african
 </td>
 <td style="text-align:left;">
 unknown
 </td>
 <td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-upland
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-victorville
-</td>
-<td style="text-align:right;">
-29
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-wonder valley
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-yucaipa
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-yucaipa ca 92399
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-yucca valley
-</td>
-<td style="text-align:right;">
-61
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-29 palms
-</td>
-<td style="text-align:right;">
 2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-male
+client doesn’t know
 </td>
 <td style="text-align:left;">
-adelanto
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-alta loma
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-apple valley
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-barstow
+female
 </td>
 <td style="text-align:right;">
 23
@@ -37025,285 +24732,10 @@ barstow
 </tr>
 <tr>
 <td style="text-align:left;">
-male
+client doesn’t know
 </td>
-<td style="text-align:left;">
-big bear
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
 <td style="text-align:left;">
 male
-</td>
-<td style="text-align:left;">
-bloomington
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-chino
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-chino hills
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-colton
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-crestline
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-fontana
-</td>
-<td style="text-align:right;">
-27
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-grand terrace
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-highland
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-homeless
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-joshua tree
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-landers
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-los angeles
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-lucerne valley
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-mentone
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-montclair
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-morongo valley
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-needles
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-newberry springs
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-rancho cucamong
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-rancho cucamonga
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-redlands
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-rialto
 </td>
 <td style="text-align:right;">
 19
@@ -37311,153 +24743,21 @@ rialto
 </tr>
 <tr>
 <td style="text-align:left;">
-male
+client refused
 </td>
 <td style="text-align:left;">
-running springs
+female
 </td>
 <td style="text-align:right;">
-4
+31
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-male
+client refused
 </td>
-<td style="text-align:left;">
-san beranrdino
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
 <td style="text-align:left;">
 male
-</td>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:right;">
-67
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-sugar loaf
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-sugarloaf
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-twenty nine palms
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-twentynine palms
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-upland
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-victirville
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-victorville
-</td>
-<td style="text-align:right;">
-37
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-yermo
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-yucaipa
-</td>
-<td style="text-align:right;">
-16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-yucca
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:left;">
-yucca valley
 </td>
 <td style="text-align:right;">
 24
@@ -37465,13 +24765,46 @@ yucca valley
 </tr>
 <tr>
 <td style="text-align:left;">
-male
+data not collected
 </td>
 <td style="text-align:left;">
-NA
+data not collected
 </td>
 <td style="text-align:right;">
-9
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+female
+</td>
+<td style="text-align:right;">
+373
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+307
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+transgender
+</td>
+<td style="text-align:right;">
+3
 </td>
 </tr>
 <tr>
@@ -37482,7 +24815,7 @@ native hawaiian/pacific islander
 female
 </td>
 <td style="text-align:right;">
-15
+22
 </td>
 </tr>
 <tr>
@@ -37493,7 +24826,7 @@ native hawaiian/pacific islander
 male
 </td>
 <td style="text-align:right;">
-17
+20
 </td>
 </tr>
 <tr>
@@ -37512,10 +24845,21 @@ unknown
 other
 </td>
 <td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+other
+</td>
+<td style="text-align:left;">
 female
 </td>
 <td style="text-align:right;">
-681
+579
 </td>
 </tr>
 <tr>
@@ -37526,7 +24870,7 @@ other
 male
 </td>
 <td style="text-align:right;">
-600
+525
 </td>
 </tr>
 <tr>
@@ -37553,10 +24897,32 @@ unknown
 </tr>
 <tr>
 <td style="text-align:left;">
-other
+pacific islander/native hawaiian
 </td>
 <td style="text-align:left;">
-NA
+female
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pacific islander/native hawaiian
+</td>
+<td style="text-align:left;">
+male
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown/not provided
+</td>
+<td style="text-align:left;">
+decline to state
 </td>
 <td style="text-align:right;">
 4
@@ -37564,79 +24930,13 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-pacific islander/native hawaiian
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pacific islander/native hawaiian
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 unknown/not provided
 </td>
 <td style="text-align:left;">
 female
 </td>
 <td style="text-align:right;">
-921
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-highland
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-joshua tree
-</td>
-<td style="text-align:right;">
-1
+593
 </td>
 </tr>
 <tr>
@@ -37647,40 +24947,7 @@ unknown/not provided
 male
 </td>
 <td style="text-align:right;">
-726
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-needles
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-redlands
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:right;">
-1
+455
 </td>
 </tr>
 <tr>
@@ -37691,7 +24958,7 @@ unknown/not provided
 transgender
 </td>
 <td style="text-align:right;">
-1
+2
 </td>
 </tr>
 <tr>
@@ -37702,18 +24969,7 @@ unknown/not provided
 unknown/not provided
 </td>
 <td style="text-align:right;">
-142
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:right;">
-8
+72
 </td>
 </tr>
 <tr>
@@ -37722,28 +24978,6 @@ unknown/not provided
 </td>
 <td style="text-align:left;">
 NA
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:left;">
-american indian/alaskan native
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:left;">
-asian
 </td>
 <td style="text-align:right;">
 1
@@ -37757,7 +24991,7 @@ white
 data not collected
 </td>
 <td style="text-align:right;">
-15
+13
 </td>
 </tr>
 <tr>
@@ -37768,7 +25002,7 @@ white
 female
 </td>
 <td style="text-align:right;">
-3906
+4175
 </td>
 </tr>
 <tr>
@@ -37779,7 +25013,7 @@ white
 male
 </td>
 <td style="text-align:right;">
-3296
+3481
 </td>
 </tr>
 <tr>
@@ -37798,21 +25032,10 @@ other/non-binary
 white
 </td>
 <td style="text-align:left;">
-pacific islander/native hawaiian
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:left;">
 transgender
 </td>
 <td style="text-align:right;">
-13
+12
 </td>
 </tr>
 <tr>
@@ -37823,7 +25046,7 @@ white
 unknown
 </td>
 <td style="text-align:right;">
-7
+5
 </td>
 </tr>
 <tr>
@@ -37834,18 +25057,7 @@ white
 unknown/not provided
 </td>
 <td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:right;">
-41
+9
 </td>
 </tr>
 <tr>
@@ -37856,7 +25068,7 @@ white
 NA
 </td>
 <td style="text-align:right;">
-22
+3
 </td>
 </tr>
 <tr>
@@ -37875,7 +25087,7 @@ female
 NA
 </td>
 <td style="text-align:left;">
-homeless
+data not collected
 </td>
 <td style="text-align:right;">
 1
@@ -37900,7 +25112,7 @@ NA
 NA
 </td>
 <td style="text-align:right;">
-196
+49
 </td>
 </tr>
 </tbody>
@@ -37938,1126 +25150,6 @@ n
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-29 palms
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-29 palms
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-adelanto
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-adelanto
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-alta loma
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-alta loma
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-apple valley
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-apple valley
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-23
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-barstow
-</td>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-bartsow
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-big bear
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-big bear lake
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-bloomington
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-bloomington
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-bloomington/colton
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-blue jay
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ca
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ca 92284
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-chino
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-chino
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-chino hills
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-chino hills
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-colton
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-7
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-colton
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-crestline
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-crestline
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fontana
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-28
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-fontana
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-27
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-grand terrace
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-grand terrace
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-helendale
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hemet
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-hesperia
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-highland
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-highland
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-homeless
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-homeless
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-joshua tree
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-joshua tree
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-9
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lake arrowhead
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-landers
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-landers
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-loma linda
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-los angeles
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lucerne valley
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-lucerne valley
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mentone
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-montclair
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-montclair
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-morongo valley
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-6
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-morongo valley
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-muscoy
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-needles
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-needles
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-newberry springs
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-42
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ontario
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pinon hills
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rancho
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rancho cucamong
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rancho cucamonga
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-34
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rancho cucamonga
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-redlands
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-15
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-redlands
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-10
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rialto
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rialto
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-19
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-riverside
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-running springs
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-san beranrdino
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-san bernadino
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-78
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-san bernardino
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-67
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-san bernrdino
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-sugar loaf
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-sugarloaf
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-sugarloaf
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-trona
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-twenty nine palms
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-2
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-twenty-nine palms
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-twentynine palms
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-25
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-twentynine palms
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unk
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-upland
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-11
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-upland
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-8
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-victirville
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-victorville
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-29
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-victorville
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-37
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-wonder valley
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yermo
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucaipa
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucaipa
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucaipa ca 92399
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucca
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucca valley
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-61
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-yucca valley
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-24
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-14
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-9
-</td>
 </tr>
 </tbody>
 </table>
@@ -39110,28 +25202,6 @@ n
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-female
-</td>
-<td style="text-align:right;">
-586
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-male
-</td>
-<td style="text-align:right;">
-401
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-transgender
-</td>
-<td style="text-align:right;">
-1
-</td>
 </tr>
 </tbody>
 </table>
@@ -39158,68 +25228,6 @@ n
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-american indian/alaskan native
-</td>
-<td style="text-align:right;">
-12
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-asian
-</td>
-<td style="text-align:right;">
-16
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-black/african american
-</td>
-<td style="text-align:right;">
-193
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-other
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-pacific islander/native hawaiian
-</td>
-<td style="text-align:right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-unknown/not provided
-</td>
-<td style="text-align:right;">
-143
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-white
-</td>
-<td style="text-align:right;">
-593
-</td>
 </tr>
 </tbody>
 </table>
@@ -39246,12 +25254,6 @@ n
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-data not collected
-</td>
-<td style="text-align:right;">
-988
-</td>
 </tr>
 </tbody>
 </table>
@@ -39276,6 +25278,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 14690    51
+    ## [1] 13087    53
 
 # Re-coding variables
