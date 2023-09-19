@@ -1,7 +1,7 @@
 Cleaning Demographic Data
 ================
 Sara Colom
-2023-09-12
+2023-09-13
 
 # Read in data & libraries
 
@@ -71,9 +71,11 @@ misspellings. Leaving combined cities or ones that seem similar
 that all of these are in fact cities (I only verified for ones I
 suspected having misspellings). Remove Zip codes from the end of cities
 listed. Combining all unknown’s into one (data not collected, refused,
-doesn’t know etc). Changing responses “ca” to “unknown”. Flagging , “2
-houses from corner tx”, “north side of parking lot”, “home” and
-“homeless”, “outside california”, not sure what to do with these.
+doesn’t know etc). Changing responses “ca” to “unknown”. Changed
+zipcodes to their associated post office city. Flagging “2 houses from
+corner tx”, “north side of parking lot”, “home” and “homeless”, “outside
+california”, “43920” (which is a zipcode for outside Ca) not sure what
+to do with these.
 
 ### Questions:
 
@@ -82,13 +84,11 @@ city” - do we think these are the same? (Made the change in the recode
 for now) responses i.e. “coulterville/la grange” (so combo of two
 cities) - leave as is? “north side of parking lot” - ? “sin city” -
 might be sun city? (there is no sin city in california it seems) “ylp” -
-? what to do with zipcodes? (shall I go look up the cities for those
-codes?) home, homeless - are in the data still outside california - ?
-exclude?
+? home, homeless - are in the data still outside california - ? exclude?
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california") ~ "flag",
+  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california|43920") ~ "flag",
                                                       str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, " ca|, ca", ""),
                                                       str_ends(location_of_participation, "california") ~ str_replace_all(location_of_participation, " california", ""),
                                                       str_detect(location_of_participation, ":") ~ "laguna beach",
@@ -104,8 +104,9 @@ demo_dat <- demo_dat %>%
                                                       str_detect(location_of_participation, "desesrt|desrt") ~ "desert hot springs",
                                                       str_detect(location_of_participation, "eurek") ~ "eureka",
                                                       str_detect(location_of_participation, "frasier") ~ "frazier park",
+                                                      str_detect(location_of_participation, "92543") ~ "hemet",
                                                       str_detect(location_of_participation, "idlewild") ~ "idyllwild",
-                                                      str_detect(location_of_participation, "jurupa") ~"jurupa valley",
+                                                      str_detect(location_of_participation, "jurupa|92509") ~"jurupa valley",
                                                       str_detect(location_of_participation, "mills hospital in b") ~ "burlingame",
                                                       str_detect(location_of_participation, "monti r") ~ "monte rio",
                                                       str_detect(location_of_participation, "moren") ~ "moreno valley",
@@ -224,7 +225,7 @@ twentynine palms
 43920
 </td>
 <td style="text-align:left;">
-43920
+flag
 </td>
 <td style="text-align:right;">
 1
@@ -235,7 +236,7 @@ twentynine palms
 92509
 </td>
 <td style="text-align:left;">
-92509
+jurupa valley
 </td>
 <td style="text-align:right;">
 2
@@ -246,7 +247,7 @@ twentynine palms
 92543
 </td>
 <td style="text-align:left;">
-92543
+hemet
 </td>
 <td style="text-align:right;">
 1
@@ -14887,14 +14888,13 @@ unknown
 
 </div>
 
-living situation upon entry - changing the numbers to unknown for now,
-I’m guessing many of them are rent amount, but will wait for column
-shift fix to verify. Matching responses with dropdown options: combining
-all “homeless” responses into “homeless.” Recoding “hotel” as temporary
-housing. Changing rent by client, rental by client, etc and “lease
-holder” into “rent leaseholder”. Recoding descriptions of owner, whether
-living alone or with others, as “owner” (excluding the records where it
-says rental by owner).Changing “programpermanent-residential program” to
+living situation upon entry - changing the numbers to unknown. Matching
+responses with dropdown options: combining all “homeless” responses into
+“homeless.” Recoding “hotel” as temporary housing. Changing rent by
+client, rental by client, etc and “lease holder” into “rent
+leaseholder”. Recoding descriptions of owner, whether living alone or
+with others, as “owner” (excluding the records where it says rental by
+owner).Changing “programpermanent-residential program” to
 “permanent-residential program” as that seems like a typo. Recoding
 “hospital facility” to “other”. Combining unknown, n/a, data not
 collected as unknown.
@@ -17233,18 +17233,16 @@ unknown? (like people were just using a very big number as a
 placeholder?) Or just a very large number of times someone (many people)
 were unhoused? (Putting in unknown for now) 0-3 - where to put this one?
 (putting in unknown for now) “currently homeless” - perhaps should just
-change to unknown? (unsure also if this is a column shift issue, same
-with “yes” and “no”, leaving alone for now)
+change to unknown (made this change, lmk if wrong)?
 
 ``` r
 demo_dat <- demo_dat %>% 
   mutate(number_times_homeless_recode = case_when(str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "0") ~ "client was not homeless",
-                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99") ~ "unknown",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99|currently homeless") ~ "unknown",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "1") ~ "one time",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
                                                   str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
-                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "currently") ~ "flag",
                                                   is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
                                                   TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
 ```
@@ -17498,7 +17496,7 @@ client was not homeless
 currently homeless
 </td>
 <td style="text-align:left;">
-flag
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -17610,13 +17608,10 @@ than a year”. changing “n” to “unknown”.
 months? (left as is for now) “within the last 3 years” - can’t really
 take a guess at duration, besides saying it’s not more than 3 years?
 “six months to one year” “7 months to one year” “less than 12 months”
-“two to six months” - what to do? “within the last year” “within the
-last 3 years” “currently homeless” - seems a response to the following
-question (last period of homelessness). Looking at what those records
-have for last period, both don’t really make sense, so double check
-after column issue fix? (Sara) - there must be a better way to code
-replacing numbers with the number written out? (i.e. 5 months –\> five
-months) “no” and “none” - change to client was not homeless?
+“two to six months” - what to do? “currently homeless” - change to
+unknown? (doing this for now) (Sara) - there must be a better way to
+code replacing numbers with the number written out? (i.e. 5 months –\>
+five months) “no” and “none” - change to client was not homeless?
 
 ``` r
 demo_dat <- demo_dat %>% 
@@ -17625,13 +17620,13 @@ demo_dat <- demo_dat %>%
                                                     str_equal(total_duration_of_homelessness, "no") ~ "flag",
                                                     str_ends(total_duration_of_homelessness, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
                                                     str_detect(total_duration_of_homelessness, "not homeless") ~ "client was not homeless",
-                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99") ~ "unknown",
+                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99|currently homeless") ~ "unknown",
                                                     str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a |years or longer|more than 12 mo") ~ "more than a year",
                                                     str_detect(total_duration_of_homelessness, "1 day to one month") ~"one day to one month",
                                                     str_detect(total_duration_of_homelessness, "5 mon") ~ "five months",
                                                     str_detect(total_duration_of_homelessness, "6 mon") ~ "six months",
                                                     str_detect(total_duration_of_homelessness, "one day to one m") ~ "one day to one month",
-                                                    str_detect(total_duration_of_homelessness, "less than 12 months|within the last|currently homeless|to ") ~ "flag",
+                                                    str_detect(total_duration_of_homelessness, "less than 12 months|to ") ~ "flag",
                                                     str_equal(total_duration_of_homelessness, "n") ~ "unknown",
                                                     is.na(total_duration_of_homelessness) ~ "unknown",
                                                     TRUE ~ total_duration_of_homelessness))
@@ -17787,7 +17782,7 @@ client was not homeless
 currently homeless
 </td>
 <td style="text-align:left;">
-flag
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -18107,6 +18102,351 @@ unknown
 
 </div>
 
+Last Period of homelessness - combining unknowns/refused. Correcting
+spelling of “client was not homeless”, “currently homeless” “within the
+last three years”. Marking numbers as unknown. Changing “none” to
+“client was not homeless”. Flagging “6 months to one year”.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(last_period_homelessness_recode = case_when(str_detect(last_period_of_homelessness, "4 years") ~ "three years or longer",
+                                                     str_equal(last_period_of_homelessness, "n") ~ "unknown",
+                                                     str_equal(last_period_of_homelessness, "no") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "client not homel|was ot h|none") ~ "client was not homeless", 
+                                                     str_detect(last_period_of_homelessness, "last three years") ~ "within the last three years",
+                                                     str_detect(last_period_of_homelessness, "current") ~ "currently homeless",
+                                                     str_detect(last_period_of_homelessness, "doesn't know|n/a|data not|refused|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "months to on") ~ "flag",
+                                                     is.na(last_period_of_homelessness) ~ "unknown",
+                                                     TRUE ~ last_period_of_homelessness))
+```
+
+check for last period of homelessness
+
+``` r
+demo_dat %>% 
+  count(last_period_of_homelessness, last_period_homelessness_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+last_period_of_homelessness
+</th>
+<th style="text-align:left;">
+last_period_homelessness_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+221
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4 years ago
+</td>
+<td style="text-align:left;">
+three years or longer
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44317
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44673
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client not homeless
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+3188
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client was ot homeless
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+current
+</td>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:left;">
+currently homeless
+</td>
+<td style="text-align:right;">
+3015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+4424
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+more than a year
+</td>
+<td style="text-align:left;">
+more than a year
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+none
+</td>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+six months to one year
+</td>
+<td style="text-align:left;">
+flag
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+three years or longer
+</td>
+<td style="text-align:left;">
+three years or longer
+</td>
+<td style="text-align:right;">
+257
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within last three years
+</td>
+<td style="text-align:left;">
+within the last three years
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last month
+</td>
+<td style="text-align:left;">
+within the last month
+</td>
+<td style="text-align:right;">
+396
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last three years
+</td>
+<td style="text-align:left;">
+within the last three years
+</td>
+<td style="text-align:right;">
+345
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+within the last year
+</td>
+<td style="text-align:left;">
+within the last year
+</td>
+<td style="text-align:right;">
+493
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+805
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
 Current eviction or foreclosure - combining unknown responses, and
 making “none” “no”. Leaving the rest for now.
 
@@ -18295,11 +18635,15 @@ unknown
 
 </div>
 
-Previous Evictions or Foreclosures - combining unknowns.
+Previous Evictions or Foreclosures - combining unknowns. Changing
+“client was not homeless” to “unknown” (checked that responses for
+number times homeless, total duration, last period of homeless match the
+response of client was not homeless for this record). Marked “client was
+not homeless” as “unknown”.
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0|client") ~ "unknown",
                                                str_detect(previous_evictions_or_foreclosures, "none") ~ "no",
                                                is.na(previous_evictions_or_foreclosures) ~ "unknown",
                                                TRUE ~ previous_evictions_or_foreclosures))
@@ -18309,7 +18653,7 @@ check for previous evictions
 
 ``` r
 demo_dat %>% 
-  count()
+  count(previous_evictions_or_foreclosures, previous_evictions_recode)
 ```
 
 <div class="kable-table">
@@ -18317,6 +18661,12 @@ demo_dat %>%
 <table>
 <thead>
 <tr>
+<th style="text-align:left;">
+previous_evictions_or_foreclosures
+</th>
+<th style="text-align:left;">
+previous_evictions_recode
+</th>
 <th style="text-align:right;">
 n
 </th>
@@ -18324,8 +18674,146 @@ n
 </thead>
 <tbody>
 <tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+unknown
+</td>
 <td style="text-align:right;">
-13087
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+99
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client doesn’t know
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client refused
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+26
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+client was not homeless
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+data not collected
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+3727
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+n/a
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+6041
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+none
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1853
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+1291
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+91
 </td>
 </tr>
 </tbody>
@@ -18334,11 +18822,13 @@ n
 </div>
 
 Discharge from institution in the last 6 months - combining all unknown,
-leaving much of the rest for post column issue fix
+including numbers. Changing “n” and “none” to “no”.
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a") ~ "unknown",
+  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "n") ~ "no",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "none") ~ "no",
                                                   is.na(discharge_from_institution_in_the_last_six_months) ~ "unknown",
                                                   TRUE ~ discharge_from_institution_in_the_last_six_months))
 ```
@@ -18372,7 +18862,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 2
@@ -18383,7 +18873,7 @@ n
 99
 </td>
 <td style="text-align:left;">
-99
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -18427,7 +18917,7 @@ unknown
 n
 </td>
 <td style="text-align:left;">
-n
+no
 </td>
 <td style="text-align:right;">
 3
@@ -18449,7 +18939,7 @@ no
 none
 </td>
 <td style="text-align:left;">
-none
+no
 </td>
 <td style="text-align:right;">
 9
@@ -18497,9 +18987,268 @@ APS report date -
 
 ### Question (for Sara): How do I code that we will want to check that the date is something between start of the program and the present?
 
-Reporting Source - comining unknown responses into a “unknown”
-(including not applicable). Correcting spelling of “self”, changing
-“client” to “self”. Recoding “relative” and “family” as “family
+## Skipping reporting location for now
+
+abuse by others (financial) - combining unknown and blank.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(abuse_financial_recode = case_when(str_detect(abuse_by_other_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_financial))
+```
+
+Check for financial abuse
+
+``` r
+demo_dat %>% 
+  count(abuse_by_other_financial, abuse_financial_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+abuse_by_other_financial
+</th>
+<th style="text-align:left;">
+abuse_financial_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+9761
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+122
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+1481
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1723
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+abuse by others (non-financial) - combining unknown and blank.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(abuse_non_financial_recode = case_when(str_detect(abuse_by_other_non_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_non_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_non_financial))
+```
+
+Check for non-financial abuse
+
+``` r
+demo_dat %>% 
+  count(abuse_by_other_non_financial, abuse_non_financial_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+abuse_by_other_non_financial
+</th>
+<th style="text-align:left;">
+abuse_non_financial_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+8591
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+2670
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1722
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+self_neglect - combining unknown and blank. changing “un” to “unknown”.
+
+``` r
+demo_dat <- demo_dat %>% 
+  mutate(self_neglect_recode = case_when(str_detect(self_neglect, "un|data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(self_neglect) ~ "unknown",
+                                                  TRUE ~ self_neglect))
+```
+
+Check for non-financial abuse
+
+``` r
+demo_dat %>% 
+  count(self_neglect, self_neglect_recode)
+```
+
+<div class="kable-table">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+self_neglect
+</th>
+<th style="text-align:left;">
+self_neglect_recode
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:left;">
+no
+</td>
+<td style="text-align:right;">
+2089
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+un
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:left;">
+yes
+</td>
+<td style="text-align:right;">
+9267
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+unknown
+</td>
+<td style="text-align:right;">
+1720
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Reporting Source - combining unknown responses into a “unknown”
+(including not applicable, numbers). Correcting spelling of “self”,
+changing “client” to “self”. Recoding “relative” and “family” as “family
 member”.Changing “community professional” to “other community
 professional” to match their drop down. Changing “financial institution”
 and “financial” to “financial service provider”. Combining mental health
@@ -18515,7 +19264,7 @@ interesting that some didn’t get referred?
 
 ``` r
 demo_dat <- demo_dat %>% 
-  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable") ~ "unknown",
+  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                              str_detect(reporting_source, "sel|client") ~"self",
                                              str_detect(reporting_source, "relative|family") ~ "family member",
                                              str_detect(reporting_source, "community pro") ~"other community professional",
@@ -18557,7 +19306,7 @@ n
 0
 </td>
 <td style="text-align:left;">
-0
+unknown
 </td>
 <td style="text-align:right;">
 1
@@ -26719,6 +27468,6 @@ demo_dat %>%
   dim()
 ```
 
-    ## [1] 13087    55
+    ## [1] 13087    59
 
 # Re-coding variables

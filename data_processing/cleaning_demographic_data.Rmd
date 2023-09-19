@@ -33,7 +33,7 @@ demo_dat <- demo_dat %>%
 
 ## Location of Participation:
 
-remove " ca" ", ca" and "california" from the end of responses. remove special characters like ":" before laguna beach. Combine and correct misspellings. Leaving combined cities or ones that seem similar (i.e. big bear and big bear valley) alone for now, also not verifying that all of these are in fact cities (I only verified for ones I suspected having misspellings). Remove Zip codes from the end of cities listed. Combining all unknown's into one (data not collected, refused, doesn't know etc). Changing responses "ca" to "unknown". Flagging , "2 houses from corner tx", "north side of parking lot", "home" and "homeless", "outside california", not sure what to do with these. 
+remove " ca" ", ca" and "california" from the end of responses. remove special characters like ":" before laguna beach. Combine and correct misspellings. Leaving combined cities or ones that seem similar (i.e. big bear and big bear valley) alone for now, also not verifying that all of these are in fact cities (I only verified for ones I suspected having misspellings). Remove Zip codes from the end of cities listed. Combining all unknown's into one (data not collected, refused, doesn't know etc). Changing responses "ca" to "unknown". Changed zipcodes to their associated post office city. Flagging "2 houses from corner tx", "north side of parking lot", "home" and "homeless", "outside california", "43920" (which is a zipcode for outside Ca) not sure what to do with these. 
 
 ### Questions:
   ca - perhaps best to change this to unknown?
@@ -42,12 +42,11 @@ remove " ca" ", ca" and "california" from the end of responses. remove special c
   "north side of parking lot" - ?
   "sin city" - might be sun city? (there is no sin city in california it seems)
   "ylp" - ?
-  what to do with zipcodes? (shall I go look up the cities for those codes?)
   home, homeless - are in the data still
   outside california - ? exclude?
 ```{r}
 demo_dat <- demo_dat %>% 
-  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california") ~ "flag",
+  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california|43920") ~ "flag",
                                                       str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, " ca|, ca", ""),
                                                       str_ends(location_of_participation, "california") ~ str_replace_all(location_of_participation, " california", ""),
                                                       str_detect(location_of_participation, ":") ~ "laguna beach",
@@ -63,8 +62,9 @@ demo_dat <- demo_dat %>%
                                                       str_detect(location_of_participation, "desesrt|desrt") ~ "desert hot springs",
                                                       str_detect(location_of_participation, "eurek") ~ "eureka",
                                                       str_detect(location_of_participation, "frasier") ~ "frazier park",
+                                                      str_detect(location_of_participation, "92543") ~ "hemet",
                                                       str_detect(location_of_participation, "idlewild") ~ "idyllwild",
-                                                      str_detect(location_of_participation, "jurupa") ~"jurupa valley",
+                                                      str_detect(location_of_participation, "jurupa|92509") ~"jurupa valley",
                                                       str_detect(location_of_participation, "mills hospital in b") ~ "burlingame",
                                                       str_detect(location_of_participation, "monti r") ~ "monte rio",
                                                       str_detect(location_of_participation, "moren") ~ "moreno valley",
@@ -318,7 +318,7 @@ demo_dat %>%
 ```
 
 
-living situation upon entry - changing the numbers to unknown for now, I'm guessing many of them are rent amount, but will wait for column shift fix to verify. Matching responses with dropdown options: combining all "homeless" responses into "homeless." Recoding "hotel" as temporary housing. Changing rent by client, rental by client, etc and "lease holder" into "rent leaseholder". Recoding descriptions of owner, whether living alone or with others, as "owner" (excluding the records where it says rental by owner).Changing "programpermanent-residential program" to "permanent-residential program" as that seems like a typo. Recoding "hospital facility" to "other". Combining unknown, n/a, data not collected as unknown. 
+living situation upon entry - changing the numbers to unknown. Matching responses with dropdown options: combining all "homeless" responses into "homeless." Recoding "hotel" as temporary housing. Changing rent by client, rental by client, etc and "lease holder" into "rent leaseholder". Recoding descriptions of owner, whether living alone or with others, as "owner" (excluding the records where it says rental by owner).Changing "programpermanent-residential program" to "permanent-residential program" as that seems like a typo. Recoding "hospital facility" to "other". Combining unknown, n/a, data not collected as unknown. 
 
 ###Questions for the group:
     "hotel with rights" - I'm thinking this shouldn't be temporary housing, what do you all think? 
@@ -392,17 +392,16 @@ Number of times homeless in the past 3 years - changing 0 to "client was not hom
 ### Question (Kenny, Angelica, Sara): 
   99 is a response with 1366 answers, I'm wondering if this is the same as unknown? (like people were just using a very big number as a placeholder?) Or just a very large number of times someone (many people) were unhoused? (Putting in unknown for now)
   0-3 - where to put this one? (putting in unknown for now)
-  "currently homeless" - perhaps should just change to unknown? (unsure also if this is a column shift issue, same with "yes" and "no", leaving alone for now)
+  "currently homeless" - perhaps should just change to unknown (made this change, lmk if wrong)?
   
 ```{r}
 demo_dat <- demo_dat %>% 
   mutate(number_times_homeless_recode = case_when(str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "0") ~ "client was not homeless",
-                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99") ~ "unknown",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99|currently homeless") ~ "unknown",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "1") ~ "one time",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
                                                   str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
                                                   str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
-                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "currently") ~ "flag",
                                                   is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
                                                   TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
 ```
@@ -421,7 +420,7 @@ Total duration of homelessness (in last 3 years) - Changing "0" to "client was n
   responses like "1", "2" "24" - no units.. so not sure. My guess would be those are the number of months? (left as is for now)
   "within the last 3 years" - can't really take a guess at duration, besides saying it's not more than 3 years?
   "six months to one year" "7 months to one year" "less than 12 months" "two to six months" - what to do?
-  "within the last year" "within the last 3 years" "currently homeless" - seems a response to the following question (last period of homelessness). Looking at what those records have for last period, both don't really make sense, so double check after column issue fix?
+  "currently homeless" - change to unknown? (doing this for now)
   (Sara) - there must be a better way to code replacing numbers with the number written out? (i.e. 5 months --> five months)
   "no" and "none" - change to client was not homeless?
   
@@ -432,13 +431,13 @@ demo_dat <- demo_dat %>%
                                                     str_equal(total_duration_of_homelessness, "no") ~ "flag",
                                                     str_ends(total_duration_of_homelessness, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
                                                     str_detect(total_duration_of_homelessness, "not homeless") ~ "client was not homeless",
-                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99") ~ "unknown",
+                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99|currently homeless") ~ "unknown",
                                                     str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a |years or longer|more than 12 mo") ~ "more than a year",
                                                     str_detect(total_duration_of_homelessness, "1 day to one month") ~"one day to one month",
                                                     str_detect(total_duration_of_homelessness, "5 mon") ~ "five months",
                                                     str_detect(total_duration_of_homelessness, "6 mon") ~ "six months",
                                                     str_detect(total_duration_of_homelessness, "one day to one m") ~ "one day to one month",
-                                                    str_detect(total_duration_of_homelessness, "less than 12 months|within the last|currently homeless|to ") ~ "flag",
+                                                    str_detect(total_duration_of_homelessness, "less than 12 months|to ") ~ "flag",
                                                     str_equal(total_duration_of_homelessness, "n") ~ "unknown",
                                                     is.na(total_duration_of_homelessness) ~ "unknown",
                                                     TRUE ~ total_duration_of_homelessness))
@@ -449,6 +448,28 @@ Check for total duration of homelessness in last 3 years
 demo_dat %>% 
   count(total_duration_of_homelessness, total_duration_homeless_recode)
 ```
+
+Last Period of homelessness - combining unknowns/refused. Correcting spelling of "client was not homeless", "currently homeless" "within the last three years". Marking numbers as unknown. Changing "none" to "client was not homeless". Flagging "6 months to one year". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(last_period_homelessness_recode = case_when(str_detect(last_period_of_homelessness, "4 years") ~ "three years or longer",
+                                                     str_equal(last_period_of_homelessness, "n") ~ "unknown",
+                                                     str_equal(last_period_of_homelessness, "no") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "client not homel|was ot h|none") ~ "client was not homeless", 
+                                                     str_detect(last_period_of_homelessness, "last three years") ~ "within the last three years",
+                                                     str_detect(last_period_of_homelessness, "current") ~ "currently homeless",
+                                                     str_detect(last_period_of_homelessness, "doesn't know|n/a|data not|refused|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "months to on") ~ "flag",
+                                                     is.na(last_period_of_homelessness) ~ "unknown",
+                                                     TRUE ~ last_period_of_homelessness))
+```
+
+check for last period of homelessness
+```{r}
+demo_dat %>% 
+  count(last_period_of_homelessness, last_period_homelessness_recode)
+```
+
 
 Current eviction or foreclosure - combining unknown responses, and making "none" "no". Leaving the rest for now. 
 
@@ -468,10 +489,10 @@ demo_dat %>%
   count(current_eviction_or_foreclosures, current_eviction_recode)
 ```
 
-Previous Evictions or Foreclosures - combining unknowns. 
+Previous Evictions or Foreclosures - combining unknowns. Changing "client was not homeless" to "unknown" (checked that responses for number times homeless, total duration, last period of homeless match the response of client was not homeless for this record). Marked "client was not homeless" as "unknown". 
 ```{r}
 demo_dat <- demo_dat %>% 
-  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0|client") ~ "unknown",
                                                str_detect(previous_evictions_or_foreclosures, "none") ~ "no",
                                                is.na(previous_evictions_or_foreclosures) ~ "unknown",
                                                TRUE ~ previous_evictions_or_foreclosures))
@@ -480,14 +501,16 @@ demo_dat <- demo_dat %>%
 check for previous evictions
 ```{r}
 demo_dat %>% 
-  count()
+  count(previous_evictions_or_foreclosures, previous_evictions_recode)
 ```
 
 
-Discharge from institution in the last 6 months - combining all unknown, leaving much of the rest for post column issue fix
+Discharge from institution in the last 6 months - combining all unknown, including numbers. Changing "n" and "none" to "no".
 ```{r}
 demo_dat <- demo_dat %>% 
-  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a") ~ "unknown",
+  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "n") ~ "no",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "none") ~ "no",
                                                   is.na(discharge_from_institution_in_the_last_six_months) ~ "unknown",
                                                   TRUE ~ discharge_from_institution_in_the_last_six_months))
 ```
@@ -502,7 +525,54 @@ APS report date -
 
 ### Question (for Sara): How do I code that we will want to check that the date is something between start of the program and the present? 
 
-Reporting Source - comining unknown responses into a "unknown" (including not applicable). Correcting spelling of "self", changing "client" to "self". Recoding "relative" and "family" as "family member".Changing "community professional" to "other community professional" to match their drop down. Changing "financial institution" and "financial" to "financial service provider". Combining mental health and mental health personnel.Changing "no relation" to "no relationship".
+## Skipping reporting location for now
+
+abuse by others (financial) - combining unknown and blank. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(abuse_financial_recode = case_when(str_detect(abuse_by_other_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_financial))
+```
+
+Check for financial abuse
+```{r}
+demo_dat %>% 
+  count(abuse_by_other_financial, abuse_financial_recode)
+```
+
+
+
+abuse by others (non-financial) - combining unknown and blank. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(abuse_non_financial_recode = case_when(str_detect(abuse_by_other_non_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_non_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_non_financial))
+```
+
+Check for non-financial abuse
+```{r}
+demo_dat %>% 
+  count(abuse_by_other_non_financial, abuse_non_financial_recode)
+```
+
+self_neglect - combining unknown and blank. changing "un" to "unknown". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(self_neglect_recode = case_when(str_detect(self_neglect, "un|data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(self_neglect) ~ "unknown",
+                                                  TRUE ~ self_neglect))
+```
+
+Check for non-financial abuse
+```{r}
+demo_dat %>% 
+  count(self_neglect, self_neglect_recode)
+```
+
+
+Reporting Source - combining unknown responses into a "unknown" (including not applicable, numbers). Correcting spelling of "self", changing "client" to "self". Recoding "relative" and "family" as "family member".Changing "community professional" to "other community professional" to match their drop down. Changing "financial institution" and "financial" to "financial service provider". Combining mental health and mental health personnel.Changing "no relation" to "no relationship".
 
 ### Question:
   mandated reporter - ? (could be many, i.e. social worker, medical personnel, mh personnel)
@@ -510,7 +580,7 @@ Reporting Source - comining unknown responses into a "unknown" (including not ap
   no APS referral, not applicable, no - (no might be column shift) but these, change to unknown? or is it interesting that some didn't get referred?
 ```{r}
 demo_dat <- demo_dat %>% 
-  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable") ~ "unknown",
+  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
                                              str_detect(reporting_source, "sel|client") ~"self",
                                              str_detect(reporting_source, "relative|family") ~ "family member",
                                              str_detect(reporting_source, "community pro") ~"other community professional",
