@@ -19,9 +19,14 @@ path_to_proj <- Sys.getenv("HOME_SAFE")
 raw <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
   janitor::clean_names()
 ```
+
+# Filters
+
 Filter for cases with `case_start_date` on or after `10/01/2022`
 
 ```{r}
+dim(raw)
+
 dat <- raw %>% 
   mutate(case_start_date_recode = case_when(str_detect(case_start_date, ".427") ~ "2019-04-16",
                                             str_detect(case_start_date, ".527") ~ "2022-01-14",
@@ -29,8 +34,69 @@ dat <- raw %>%
   mutate(case_start_date_recode = lubridate::ymd(case_start_date_recode)) %>% 
   
   filter(case_start_date_recode >= lubridate::ymd("2022-10-01"))
+
+dim(dat)
 ```
 
+Filter those where ALL intervention types are either `NA` or state `No Intervention`
+
+```{r}
+interv <- dat %>% 
+  select(id, case, ends_with("type")) %>% 
+  pivot_longer(ends_with("type"), names_to = "intervention", values_to = "intervention_type")
+
+interv %>% 
+  count(intervention_type)
+```
+
+To simplify the filter algorithim, I will make values binary where an intervention value = `1` and `NA` or `No Intervention` = `O`
+
+```{r}
+interv <- interv %>% 
+  mutate(intervention_binary = case_when(is.na(intervention_type) ~ 0L,
+                                         intervention_type == "No Intervention" ~ 0L,
+                                         TRUE ~ 1L))
+
+head(interv)
+
+interv_summary <- interv %>% 
+  group_by(id, case) %>% 
+  summarise(total_interventions = sum(intervention_binary, na.rm = T))
+
+```
+
+
+
+Based on this list, we want to `exclude` individuals with `No intervention` and where `intervention_type` is `NA`
+
+```{r}
+records_to_exclude <- interv_summary %>% 
+  filter(total_interventions == 0)
+
+records_to_exclude %>% 
+  length()
+```
+Only three unique `id` by `case` combinations have NO intervention data.
+
+```{r}
+exclude_these <- records_to_exclude %>% 
+  mutate(exclude_id_case = paste(id, case, sep = "_")) %>% 
+  pull(exclude_id_case) 
+```
+
+```{r}
+dim(dat)
+
+dat <- dat %>% 
+  mutate(id_case = paste(id, case, sep = "_")) %>% 
+  filter(!id_case %in% exclude_these)
+
+dim(dat)
+```
+
+
+
+# Data cleaning
 
 Do any `ids` occur more than once?
 
@@ -44,7 +110,7 @@ dat %>%
   nrow()
 ```
 
-It appears there are 105 `id`'s with more than once case.
+It appears there are 64 `id`'s with more than once case.
 
 In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_date_recode`, and finally `slice` for the first occurence (i.e. most recent case by `id`).
 
@@ -68,7 +134,7 @@ Evaluate `100251` to double check that the correct one was selected.
 
 ```{r}
 dat_subset %>% 
-  filter(id == 100251)
+  filter(id == 100315)
 ```
 Looks good.
 
