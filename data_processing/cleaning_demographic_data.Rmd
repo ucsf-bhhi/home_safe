@@ -12,8 +12,13 @@ output:
 
 ```{r, Read in Data & Libraries, warning = F, message = F}
 source("R/helpers.R")
+library(ggplot2)
 ```
 
+```{r}
+demo_dat %>% 
+  glimpse()
+```
 
 
 # Clean up demographic data
@@ -21,16 +26,599 @@ source("R/helpers.R")
 Make all variables of `character` lower case, trim trailing and starting white spaces and 'extra' inner spaces.
 
 ```{r}
-clean_characters <- function(x){
-  str_to_lower(x) %>% 
-    str_trim() %>% 
-    str_squish()
-}
-
 demo_dat <- demo_dat %>% 
   mutate(across(where(is.character), clean_characters))
 
 ```
+
+
+## Location of Participation:
+
+remove " ca" ", ca" and "california" from the end of responses. remove special characters like ":" before laguna beach. Combine and correct misspellings. Leaving combined cities or ones that seem similar (i.e. big bear and big bear valley) alone for now, also not verifying that all of these are in fact cities (I only verified for ones I suspected having misspellings). Remove Zip codes from the end of cities listed. Combining all unknown's into one (data not collected, refused, doesn't know etc). Changing responses "ca" to "unknown". Changed zipcodes to their associated post office city. Flagging "2 houses from corner tx", "north side of parking lot", "home" and "homeless", "outside california", "43920" (which is a zipcode for outside Ca) not sure what to do with these. 
+
+### Questions:
+  * ca - perhaps best to change this to unknown?
+  * "cal city", "california city" - do we think these are the same? (Made the change in the recode for now)
+  * responses i.e. "coulterville/la grange" (so combo of two cities) - leave as is?
+  * "north side of parking lot" - ?
+  * "sin city" - might be sun city? (there is no sin city in california it seems)
+  * "ylp" - ?
+  * home, homeless - are in the data still
+  * outside california - ? exclude?
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(location_of_participation_recode = case_when(str_detect(location_of_participation, "outside california|43920") ~ "flag",
+                                                      str_ends(location_of_participation, " ca") ~ str_replace_all(location_of_participation, " ca|, ca", ""),
+                                                      str_ends(location_of_participation, "california") ~ str_replace_all(location_of_participation, " california", ""),
+                                                      str_detect(location_of_participation, ":") ~ "laguna beach",
+                                                      str_detect(location_of_participation, "bakersf|bakerf") ~ "bakersfield",
+                                                      str_detect(location_of_participation, "bartso") ~ "barstow",
+                                                      str_detect(location_of_participation, "beam|beum") ~ "beaumont",
+                                                      str_detect(location_of_participation, "cal city") ~ "california city",
+                                                      str_detect(location_of_participation, "cailm") ~ "calimesa",
+                                                      str_detect(location_of_participation, "catherd") ~ "cathedral city",
+                                                      str_detect(location_of_participation, "cathey") ~ "catheys valley",
+                                                      str_detect(location_of_participation, "clairem") ~ "claremont",
+                                                      str_detect(location_of_participation, "cochell") ~ "coachella", 
+                                                      str_detect(location_of_participation, "desesrt|desrt") ~ "desert hot springs",
+                                                      str_detect(location_of_participation, "eurek") ~ "eureka",
+                                                      str_detect(location_of_participation, "frasier") ~ "frazier park",
+                                                      str_detect(location_of_participation, "92543") ~ "hemet",
+                                                      str_detect(location_of_participation, "idlewild") ~ "idyllwild",
+                                                      str_detect(location_of_participation, "jurupa|92509") ~"jurupa valley",
+                                                      str_detect(location_of_participation, "mills hospital in b") ~ "burlingame",
+                                                      str_detect(location_of_participation, "monti r") ~ "monte rio",
+                                                      str_detect(location_of_participation, "moren") ~ "moreno valley",
+                                                      str_detect(location_of_participation, "mountianview|mountainview|moutain v") ~"mountain view",
+                                                      str_detect(location_of_participation, "murreta") ~ "murrieta",
+                                                      str_detect(location_of_participation, "pachecc") ~ "pacheco",
+                                                      str_detect(location_of_participation, "north palm sp") ~ "north palm springs",
+                                                      str_detect(location_of_participation, "palms sp|palm spr|palm dpr") ~ "palm springs",
+                                                      str_detect(location_of_participation, "palo aal") ~ "palo alto",
+                                                      str_detect(location_of_participation, "ranch mira") ~ "rancho mirage",
+                                                      str_detect(location_of_participation, "rancho cucam") ~ "rancho cucamonga",
+                                                      str_detect(location_of_participation, "richomo") ~ "richmond",
+                                                      str_detect(location_of_participation, "ridegc") ~ "ridgecrest",
+                                                      str_detect(location_of_participation, "riverisd|riveside") ~ "riverside",
+                                                      str_detect(location_of_participation, "rough &|rough and re") ~ "rough and ready",
+                                                      str_detect(location_of_participation, "sacrment|sacarament|sarcamen") ~ "sacramento",
+                                                      str_detect(location_of_participation, "san berna|san bera|san bernr") ~ "san bernardino",
+                                                      str_detect(location_of_participation, "san dieg") ~ "san diego",
+                                                      str_detect(location_of_participation, "south san fran") ~ "south san francisco",
+                                                      str_detect(location_of_participation, "san fra|sf") ~ "san francisco",
+                                                      str_detect(location_of_participation, "slo") ~ "san luis obispo",
+                                                      str_detect(location_of_participation, "sugar l") ~ "sugarloaf",
+                                                      str_detect(location_of_participation, "tehac") ~ "tehachapi",
+                                                      str_detect(location_of_participation, "twenty|29 pal") ~ "twentynine palms",
+                                                      str_detect(location_of_participation, "vict") ~ "victorville",
+                                                      str_detect(location_of_participation, "weaverv") ~ "weaverville",
+                                                      str_detect(location_of_participation, "wildom") ~ "wildomar", 
+                                                      str_detect(location_of_participation, "yucca") ~ "yucca valley",
+                                                      # the following had zipcodes at the end of the string
+                                                      str_detect(location_of_participation, "indio") ~ "indio",
+                                                      str_detect(location_of_participation, "inglewood") ~ "inglewood",
+                                                      str_detect(location_of_participation, "marysvil") ~ "marysville",
+                                                      str_detect(location_of_participation, "turlock") ~ "turlock",
+                                                      str_detect(location_of_participation, "yuba") ~ "yuba city",
+                                                      str_detect(location_of_participation, "yucaipa") ~ "yucaipa",
+                                                      
+                                                      str_detect(location_of_participation, "data not col|doesn't know|refused|missing|unk") ~ "unknown",
+                                                      str_equal(location_of_participation, "ca") ~ "unknown",
+                                                      str_equal(location_of_participation, "0") ~ "unknown",
+                                                      str_equal(location_of_participation, "home") ~ "flag",
+                                                      str_detect(location_of_participation, "homeless|north side of parking|2 houses") ~ "flag",
+                                                      is.na(location_of_participation) ~ "unknown",
+                                                      TRUE ~ location_of_participation))
+```
+
+
+Check on location of participation
+```{r}
+demo_dat %>% 
+  count(location_of_participation, location_of_participation_recode)
+```
+
+For just a check on cutting out ca:
+```{r}
+demo_dat %>% 
+  filter(str_detect(location_of_participation, ", ca| ca|,|california")) %>% 
+  count(location_of_participation, location_of_participation_recode)
+```
+
+
+
+Race_1 - replace american indian/alaskan native with american indian/alaskan native/indigenous. Replace asian with asian/asian american. Replace black/african american with black/african american/african. Replace pacific islander/native hawaiian with native hawaiian/pacific islander. Replace whte with white. Change all unknowns, including data not collected and n/a to "unknown".
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_1_recode = case_when(str_detect(race_1,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_1, "asian") ~ "asian/asian american",
+                                      str_starts(race_1, "bla") ~ "black/african american/african",
+                                      str_starts(race_1, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_1, "wh") ~ "white",
+                                   str_detect(race_1, "unkn|#|client|collected|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                   is.na(race_1) ~ "unknown",
+                                      
+                                         TRUE ~ race_1))
+```
+
+check
+```{r}
+demo_dat %>% 
+  count(race_1, race_1_recode)
+```
+
+race_2 - doing the same as for race_1, and replacing no applicable with not applicable, updating "unknown". For those who put an ethnicity response in race_2, replacing with "unknown" and updating those in the ethnicity variable. There was someone with race information in ethnicity, moving that to race_2_recode. 
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(race_2_recode = case_when(str_starts(race_2,"americ") ~ "american indian/alaskan native/indigenous", 
+                                      str_starts(race_2, "asian") ~ "asian/asian american",
+                                      str_starts(race_2, "bla") ~ "black/african american/african",
+                                      str_starts(race_2, "pacific i") ~ "native hawaiian/pacific islander",
+                                      str_starts(race_2, "wh") ~ "white",
+                                   str_detect(race_2, "hisp") ~ "unknown",
+                                   str_detect(ethnicity, "american indian") ~ "american indian/alaskan native/indigenous",
+                                   str_detect(race_2, "unknown|unable|refused|not collected|applicable|verified|#|client|mex|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                   is.na(race_2) ~ "unknown",
+                                      
+                                         TRUE ~ race_2))
+```
+
+check for race_2
+```{r}
+demo_dat %>% 
+  count(race_2, race_2_recode)
+```
+Check that the race_2 variable was fixed for the one with response in ethnicity var
+```{r}
+demo_dat %>% 
+  filter(str_starts(ethnicity, "american")) %>% 
+  count(ethnicity, race_1, race_2, race_2_recode)
+```
+
+
+Ethnicity - replace all instances of different spellings or orders of hispanic/latino/a/x to hispanic/latinx. Changing mexican/chicano, cuban, other hispanic/latino, and puerto rican to hispanic/latinx. Also, replace all instances of different spellings or orders of not hispanic/latino to non-hispanic/latinx. Moving "american indian/alaskan native" to race_2 from ethnicity. 
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(ethnicity_recode = case_when(str_starts(ethnicity, "no") ~ "non-hispanic/latinx",
+                                      str_detect(ethnicity,"hispa") ~ "hispanic/latinx", 
+                                      str_detect(race_2, "not hispanic|no hispanic") ~ "non-hispanic/latinx",
+                                      str_detect(race_2, "hispanic") ~ "hispanic/latinx",
+                                      str_detect(race_2, "mex") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "mex|puerto|cuban") ~ "hispanic/latinx",
+                                      str_detect(ethnicity, "american ind") ~ "unknown",
+                                      str_detect(ethnicity, "unknown|#|applicable|data not|client|missing|rent|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                      is.na(ethnicity) ~ "unknown",
+                                      
+                                      
+                                         TRUE ~ ethnicity))
+```
+
+check for ethnicity 
+```{r}
+demo_dat %>% 
+  count(ethnicity, race_2, ethnicity_recode) 
+```
+
+current_martial_status - replace unknowns and data not collected with "unknown". Combining domestic partnership with married. Changing gay/lesbian and straight/heterosexual to unknown. 
+
+### Question: 
+* How would we like to recode domestic partnership? (Lump with married? did this for now) 
+* What to do with single? (100/103 records with single are from LA) 
+
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(current_marital_recode = case_when(str_detect(current_marital_status, "straight|gay|unknown|#|applicable|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                            str_detect(current_marital_status, "single") ~ "flag",
+                                            str_detect(current_marital_status, "domestic p") ~ "married",
+                                      is.na(current_marital_status) ~ "unknown",
+                                         TRUE ~ current_marital_status))
+```
+
+check for marital status
+```{r}
+demo_dat %>% 
+  count(current_marital_status, current_marital_recode)
+```
+Show what sexual_orientation is for current_marital status responses that are sexual orientation.
+```{r}
+demo_dat %>% 
+  filter(str_detect(current_marital_status, "gay|straight")) %>% 
+  count(current_marital_status, sexual_orientation, reporting_agency)
+```
+
+
+sexual_orientation - changed straight to "straight/heterosexual" to match CDSS variable. Changed all unknown or declined or missing responses to "unknown"
+
+### Question: do we want to lump "another sexual orientation" or "other" into something? Perhaps an "other sexual orientation" bucket?
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(sexual_orientation_recode = case_when(str_detect(sexual_orientation, "strai") ~ "straight/heterosexual",
+                                               str_detect(sexual_orientation, "unknown|#|client|decline|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                               str_detect(sexual_orientation, "other") ~ "flag",
+                                      is.na(sexual_orientation) ~ "unknown",
+                                         TRUE ~ sexual_orientation))
+```
+
+check for sexual orientation
+```{r}
+demo_dat %>% 
+  count(sexual_orientation, sexual_orientation_recode)
+```
+
+preferred_language - leaving alone the responses that don't appear to be languages for now. Combining the mandarin/cantonese responses. Changing unknowns and missings to "unknown". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(preferred_language_recode = case_when(str_detect(preferred_language, "mandarin") ~ "mandarin/cantonese",
+                                               str_detect(preferred_language, "unknown|#|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                               is.na(preferred_language) ~ "unknown",
+                                               TRUE ~ preferred_language))
+```
+
+check for preferred language
+```{r}
+demo_dat %>% 
+  count(preferred_language, preferred_language_recode)
+```
+
+veteran_status - combining client refused, unknown, missing, unable to verify, verified by staff, and "b" into "unknown". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(veteran_status_recode = case_when(str_detect(veteran_status, "client|unknown|#|verif|b|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                           is.na(veteran_status) ~ "unknown",
+                                           TRUE ~ veteran_status))
+```
+
+check for veteran status
+```{r}
+demo_dat %>% 
+  count(veteran_status, veteran_status_recode)
+```
+
+medi_cal - combining the unknowns into one "unknown"
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(medi_cal_recode = case_when(str_detect(medi_cal, "client|unknown|#|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                           is.na(medi_cal) ~ "unknown",
+                                           TRUE ~ medi_cal))
+```
+
+check medi-cal 
+```{r}
+demo_dat %>% 
+  count(medi_cal, medi_cal_recode)
+```
+
+
+doing the same for medicare, flagging "rent leaseholder" (should we move that to living situation upon entry?)
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(medicare_recode = case_when(str_detect(medicare, "client|unknown|#|data not|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                     str_detect(medicare, "leaseholder") ~ "flag",
+                                           is.na(medicare) ~ "unknown",
+                                           TRUE ~ medicare))
+```
+
+check for medicare 
+```{r}
+demo_dat %>% 
+  count(medicare, medicare_recode)
+```
+
+representative payee or conservator: data is real messy, all numbers are from LA. Combining all unknowns. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(representative_payee_recode = case_when(str_detect(representative_payee_or_conservator, "data not|unknown|n/a|client ref") ~ "unknown",
+                                                 str_detect(representative_payee_or_conservator, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
+                                                 is.na(representative_payee_or_conservator) ~ "unknown",
+                                                 TRUE ~ representative_payee_or_conservator))
+```
+
+check on representative payee 
+```{r}
+demo_dat %>% 
+  count(representative_payee_or_conservator, representative_payee_recode)
+```
+
+
+living situation upon entry - changing the numbers to unknown. Matching responses with dropdown options: combining all "homeless" responses into "homeless." Recoding "hotel" as temporary housing. Changing rent by client, rental by client, etc and "lease holder" into "rent leaseholder". Recoding descriptions of owner, whether living alone or with others, as "owner" (excluding the records where it says rental by owner).Changing "programpermanent-residential program" to "permanent-residential program" as that seems like a typo. Recoding "hospital facility" to "other". Combining unknown, n/a, data not collected as unknown. 
+
+###Questions for the group:
+    "hotel with rights" - I'm thinking this shouldn't be temporary housing, what do you all think? 
+    "with others no rent"/"with others" - Is this akin to "staying with friends/family on a temp basis (temporary housing), is it "other permanent housing"?
+    "board and care facility"/"residential care facility"/SNF - in the dropdown, these are in both temporary- residential program and permanent- residential program options. 
+    "rent by owner" - is this rent leaseholder? (that is where I put it for now)
+    "shared housing"/"living in shared house"/"living alone" - rent leaseholder? other permanent housing? Could also be owner I suppose?
+    "living with family"/"living with relative" - this could be either temporary housing or other permanent housing..
+    "with others rent" - my guess is this should go under "other permanent housing" which includes in () "renting a room without a lease? 
+    "fleeing dv" - ??
+    "permanent housing" - ?? other permanent housing? rent leaseholder? 
+    
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(living_sit_entry_recode = case_when(str_detect(living_situation_upon_entry, "1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                            str_detect(living_situation_upon_entry, "homeless|homless|unsheltered") ~ "homeless",
+                                             str_detect(living_situation_upon_entry, "hotel") ~ "temporary housing",
+                                             str_detect(living_situation_upon_entry, "rent by|rental by|lease holder") ~ "rent leaseholder",
+                                             str_detect(living_situation_upon_entry, "owned|owner") ~ "owner",
+                                             str_detect(living_situation_upon_entry, "programperm") ~ "permanent- residential program",
+                                            str_detect(living_situation_upon_entry, "temporary-") ~ "temporary- residential program",
+                                             str_detect(living_situation_upon_entry, "hospital") ~ "other",
+                                             str_detect(living_situation_upon_entry, "data not|unknown|not answer") ~ "unknown",
+                                            str_detect(living_situation_upon_entry, "hotel with rights|facility|shared hous|living with|live alone|with others|fleeing dv|permanent housing|yes|no") ~ "flag",
+                                             is.na(living_situation_upon_entry) ~ "unknown",
+                                          TRUE ~ living_situation_upon_entry))
+```
+
+
+check for living situation upon entry
+```{r}
+demo_dat %>% 
+  count(living_situation_upon_entry, living_sit_entry_recode)
+```
+
+And! for a breakdown of which counties these hard to classify ones are coming up (it's many different ones it seems):
+```{r}
+demo_dat %>% 
+  filter(str_detect(living_sit_entry_recode, "flag")) %>% 
+  count(living_situation_upon_entry, reporting_agency)
+```
+And for just a list of counties: 
+```{r}
+demo_dat %>% 
+  filter(str_detect(living_sit_entry_recode, "flag")) %>% 
+  count(reporting_agency)
+```
+
+
+client homeless within the last 3 years - answers should be yes or no. Changing 3 years or longer, within the last year, within the last 3 years, currently homeless to "yes". Changing client was not homeless to "no". Combining doesn't know, refused, data not collected, unknown, blank as "unknown".
+
+Question: one response that is "n" - I'm guessing this might be no? But there is another response with n/a, which is what they might've been going for? (changed to no for now)
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(client_homeless_last_three_years_recode = case_when(str_detect(client_homeless_within_the_last_three_years, "three years or|within the last|currently homeles") ~ "yes",
+                                                  str_detect(client_homeless_within_the_last_three_years, "client was not homeles") ~ "no",
+                                                  str_equal(client_homeless_within_the_last_three_years, "n") ~ "no",
+                                                  str_detect(client_homeless_within_the_last_three_years, "doesn't know|refused|n/a|data not|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                  is.na(client_homeless_within_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ client_homeless_within_the_last_three_years))
+```
+
+check for homeless in last 3 years
+```{r}
+demo_dat %>% 
+  count(client_homeless_within_the_last_three_years, client_homeless_last_three_years_recode)
+```
+
+Number of times homeless in the past 3 years - changing 0 to "client was not homeless", 1 to "one time", 2 to "two times", 3 to "three times" 4 and 4+ to "four or more times". Changing any "0-x" responses to unknown, since it seems the exact number is not known.. Changing refused, doesn't know, n/a, blank to "unknown". 
+
+### Question (Kenny, Angelica, Sara): 
+  99 is a response with 1366 answers, I'm wondering if this is the same as unknown? (like people were just using a very big number as a placeholder?) Or just a very large number of times someone (many people) were unhoused? (Putting in unknown for now)
+  0-3 - where to put this one? (putting in unknown for now)
+  "currently homeless" - perhaps should just change to unknown (made this change, lmk if wrong)?
+  
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(number_times_homeless_recode = case_when(str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "0") ~ "client was not homeless",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0-|doesn't know|refused|data not|free form te|99|currently homeless") ~ "unknown",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "1") ~ "one time",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "2") ~ "two times",
+                                                  str_equal(number_of_times_homelessness_occurred_in_the_last_three_years, "3") ~ "three times",
+                                                  str_detect(number_of_times_homelessness_occurred_in_the_last_three_years, "0|1|2|3|4|5|6|7|8|9|four") ~ "four or more times",
+                                                  is.na(number_of_times_homelessness_occurred_in_the_last_three_years) ~ "unknown",
+                                                  TRUE ~ number_of_times_homelessness_occurred_in_the_last_three_years))
+```
+
+check for number of times homeless in last 3 years
+```{r}
+demo_dat %>% 
+  count(number_of_times_homelessness_occurred_in_the_last_three_years, number_times_homeless_recode)
+```
+
+Total duration of homelessness (in last 3 years) - Changing "0" to "client was not homeless". Leaving "yes" and "no" responses for now, as I think they're a column shift issue. Combining unknown responses.Changing responses that are more than a year to all be "more than a year". changing "n" to "unknown".  
+
+
+### Questions:
+  99 - same question as number of times homeless
+  responses like "1", "2" "24" - no units.. so not sure. My guess would be those are the number of months? (left as is for now)
+  "within the last 3 years" - can't really take a guess at duration, besides saying it's not more than 3 years?
+  "six months to one year" "7 months to one year" "less than 12 months" "two to six months" - what to do?
+  "currently homeless" - change to unknown? (doing this for now)
+  (Sara) - there must be a better way to code replacing numbers with the number written out? (i.e. 5 months --> five months)
+  "no" and "none" - change to client was not homeless?
+  
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(total_duration_homeless_recode = case_when(str_equal(total_duration_of_homelessness, "0") ~ "client was not homeless",
+                                                    str_equal(total_duration_of_homelessness, "none") ~ "flag",
+                                                    str_equal(total_duration_of_homelessness, "no") ~ "flag",
+                                                    str_ends(total_duration_of_homelessness, "1|2|3|4|5|6|7|8|9|0") ~ "flag",
+                                                    str_detect(total_duration_of_homelessness, "not homeless") ~ "client was not homeless",
+                                                    str_detect(total_duration_of_homelessness, "blank|doesn't know|data no|refused|none|n/a|99|currently homeless") ~ "unknown",
+                                                    str_detect(total_duration_of_homelessness, "2 year|3 year|6 year|few year|more than a |years or longer|more than 12 mo") ~ "more than a year",
+                                                    str_detect(total_duration_of_homelessness, "1 day to one month") ~"one day to one month",
+                                                    str_detect(total_duration_of_homelessness, "5 mon") ~ "five months",
+                                                    str_detect(total_duration_of_homelessness, "6 mon") ~ "six months",
+                                                    str_detect(total_duration_of_homelessness, "one day to one m") ~ "one day to one month",
+                                                    str_detect(total_duration_of_homelessness, "less than 12 months|to ") ~ "flag",
+                                                    str_equal(total_duration_of_homelessness, "n") ~ "unknown",
+                                                    is.na(total_duration_of_homelessness) ~ "unknown",
+                                                    TRUE ~ total_duration_of_homelessness))
+```
+
+Check for total duration of homelessness in last 3 years
+```{r}
+demo_dat %>% 
+  count(total_duration_of_homelessness, total_duration_homeless_recode)
+```
+
+Last Period of homelessness - combining unknowns/refused. Correcting spelling of "client was not homeless", "currently homeless" "within the last three years". Marking numbers as unknown. Changing "none" to "client was not homeless". Flagging "6 months to one year". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(last_period_homelessness_recode = case_when(str_detect(last_period_of_homelessness, "4 years") ~ "three years or longer",
+                                                     str_equal(last_period_of_homelessness, "n") ~ "unknown",
+                                                     str_equal(last_period_of_homelessness, "no") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "client not homel|was ot h|none") ~ "client was not homeless", 
+                                                     str_detect(last_period_of_homelessness, "last three years") ~ "within the last three years",
+                                                     str_detect(last_period_of_homelessness, "current") ~ "currently homeless",
+                                                     str_detect(last_period_of_homelessness, "doesn't know|n/a|data not|refused|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                     str_detect(last_period_of_homelessness, "months to on") ~ "flag",
+                                                     is.na(last_period_of_homelessness) ~ "unknown",
+                                                     TRUE ~ last_period_of_homelessness))
+```
+
+check for last period of homelessness
+```{r}
+demo_dat %>% 
+  count(last_period_of_homelessness, last_period_homelessness_recode)
+```
+
+
+Current eviction or foreclosure - combining unknown responses, and making "none" "no". Leaving the rest for now. 
+
+### Question:
+  is 99 unknown here as well? (this one isn't a drop down menu, so wondering if I should treat the same)
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(current_eviction_recode = case_when(str_detect(current_eviction_or_foreclosures, "doesn't know|refused|data not|n/a|unknown|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                             str_detect(current_eviction_or_foreclosures, "none|n") ~ "no",
+                                             is.na(current_eviction_or_foreclosures) ~ "unknown",
+                                            TRUE ~ current_eviction_or_foreclosures ))
+```
+
+check for current eviction/foreclosure
+```{r}
+demo_dat %>% 
+  count(current_eviction_or_foreclosures, current_eviction_recode)
+```
+
+Previous Evictions or Foreclosures - combining unknowns. Changing "client was not homeless" to "unknown" (checked that responses for number times homeless, total duration, last period of homeless match the response of client was not homeless for this record). Marked "client was not homeless" as "unknown". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(previous_evictions_recode = case_when(str_detect(previous_evictions_or_foreclosures, "unknow|doesn't know|refused|data not|n/a|1|2|3|4|5|6|7|8|9|0|client") ~ "unknown",
+                                               str_detect(previous_evictions_or_foreclosures, "none") ~ "no",
+                                               is.na(previous_evictions_or_foreclosures) ~ "unknown",
+                                               TRUE ~ previous_evictions_or_foreclosures))
+```
+
+check for previous evictions
+```{r}
+demo_dat %>% 
+  count(previous_evictions_or_foreclosures, previous_evictions_recode)
+```
+
+
+Discharge from institution in the last 6 months - combining all unknown, including numbers. Changing "n" and "none" to "no".
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(discharge_institution_recode = case_when(str_detect(discharge_from_institution_in_the_last_six_months, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "n") ~ "no",
+                                                  str_equal(discharge_from_institution_in_the_last_six_months, "none") ~ "no",
+                                                  is.na(discharge_from_institution_in_the_last_six_months) ~ "unknown",
+                                                  TRUE ~ discharge_from_institution_in_the_last_six_months))
+```
+
+Check for discharge from institution
+```{r}
+demo_dat %>% 
+  count(discharge_from_institution_in_the_last_six_months, discharge_institution_recode)
+```
+
+APS report date - 
+
+### Question (for Sara): How do I code that we will want to check that the date is something between start of the program and the present? 
+
+## Skipping reporting location for now
+
+abuse by others (financial) - combining unknown and blank. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(abuse_financial_recode = case_when(str_detect(abuse_by_other_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_financial))
+```
+
+Check for financial abuse
+```{r}
+demo_dat %>% 
+  count(abuse_by_other_financial, abuse_financial_recode)
+```
+
+
+abuse by others (non-financial) - combining unknown and blank. 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(abuse_non_financial_recode = case_when(str_detect(abuse_by_other_non_financial, "data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(abuse_by_other_non_financial) ~ "unknown",
+                                                  TRUE ~ abuse_by_other_non_financial))
+```
+
+Check for non-financial abuse
+```{r}
+demo_dat %>% 
+  count(abuse_by_other_non_financial, abuse_non_financial_recode)
+```
+
+self_neglect - combining unknown and blank. changing "un" to "unknown". 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(self_neglect_recode = case_when(str_detect(self_neglect, "un|data not|refused|doesn't know|n/a|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                                is.na(self_neglect) ~ "unknown",
+                                                  TRUE ~ self_neglect))
+```
+
+Check for non-financial abuse
+```{r}
+demo_dat %>% 
+  count(self_neglect, self_neglect_recode)
+```
+
+
+Reporting Source - combining unknown responses into a "unknown" (including not applicable, numbers). Correcting spelling of "self", changing "client" to "self". Recoding "relative" and "family" as "family member".Changing "community professional" to "other community professional" to match their drop down. Changing "financial institution" and "financial" to "financial service provider". Combining mental health and mental health personnel.Changing "no relation" to "no relationship".
+
+### Question:
+  mandated reporter - ? (could be many, i.e. social worker, medical personnel, mh personnel)
+  paid caregiver - another where I am unsure, maybe professional service provider?
+  no APS referral, not applicable, no - (no might be column shift) but these, change to unknown? or is it interesting that some didn't get referred?
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(reporting_source_recode = case_when(str_detect(reporting_source, "data not|refused|doesn't know|#|not applicable|1|2|3|4|5|6|7|8|9|0") ~ "unknown",
+                                             str_detect(reporting_source, "sel|client") ~"self",
+                                             str_detect(reporting_source, "relative|family") ~ "family member",
+                                             str_detect(reporting_source, "community pro") ~"other community professional",
+                                             str_detect(reporting_source, "financial") ~ "financial service provider",
+                                             str_detect(reporting_source, "mental health") ~ "mental health personnel",
+                                             str_detect(reporting_source, "no relatio") ~"no relationship",
+                                             str_detect(reporting_source, "workshop|mandated report") ~ "flag",
+                                             is.na(reporting_source) ~ "unknown",
+                                             
+                                             TRUE ~ reporting_source))
+```
+
+Check for reporting source
+```{r}
+demo_dat %>% 
+  count(reporting_source, reporting_source_recode)
+```
+
+### Question: for previous APS involvement - seeing some responses that appear to fit in intervention, will this affect processing (given these are now subsets of data?) Hopefully this is just a column issue, but want to flag. 
+
+### Question - trying to plot the various income (income from benefits, income from pay, other income), but I think these are chr variables?  
+```{r}
+#demo_dat %>% 
+#  ggplot() %>% 
+#  geom_histogram(income_from_benefits)
+```
+
+
+
+
+
+
+
+
+## To come back to if needed:
 
 Clean APS Report Location indicator, remove "'",", ca" and " ca" from strings
 
@@ -52,9 +640,24 @@ demo_dat %>%
 Should we drop everything from " -" (i.e. space and then dash)
 ```{r}
 demo_dat %>%  
-  mutate(aps_report_location = str_replace(aps_report_location, "'", "")) %>% 
-  mutate(aps_report_location = str_replace(aps_report_location, ", ca|\\ ca|,ca", "")) %>%        count(aps_report_location) %>% filter(str_detect(aps_report_location, "-")) %>% 
+  count(aps_report_location) %>% 
+  filter(str_detect(aps_report_location, "-")) %>% 
   filter(str_detect(aps_report_location, "-"))
+```
+
+replace all locations that contain Roseville in the name to just Roseville as a new location variable 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(aps_location_recode = case_when(str_detect(aps_report_location,"rosev") ~ "roseville",
+                                      
+                                         TRUE ~ aps_report_location))
+```
+
+check
+```{r}
+demo_dat %>% 
+  count(aps_report_location, aps_location_recode) %>% 
+  filter(str_starts(aps_report_location, "r"))
 ```
 
 Counts of `gender`
