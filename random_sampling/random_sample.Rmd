@@ -16,9 +16,62 @@ library(stringr)
 
 path_to_proj <- Sys.getenv("HOME_SAFE")
 
-dat <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
+raw <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
   janitor::clean_names()
 ```
+Filter for cases with `case_start_date` on or after `10/01/2022`
+
+```{r}
+dat <- raw %>% 
+  mutate(case_start_date_recode = case_when(str_detect(case_start_date, ".427") ~ "2019-04-16",
+                                            str_detect(case_start_date, ".527") ~ "2022-01-14",
+                                            TRUE ~ case_start_date)) %>% 
+  mutate(case_start_date_recode = lubridate::ymd(case_start_date_recode)) %>% 
+  
+  filter(case_start_date_recode >= lubridate::ymd("2022-10-01"))
+```
+
+
+Do any `ids` occur more than once?
+
+```{r}
+dat <- dat %>% 
+  add_count(id, name = "id_count")
+
+dat %>% 
+  count(id) %>% 
+  filter(n > 1) %>% 
+  nrow()
+```
+
+It appears there are 105 `id`'s with more than once case.
+
+In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_date_recode`, and finally `slice` for the first occurence (i.e. most recent case by `id`).
+
+```{r}
+# Quick sanity check before running below
+
+dat %>% 
+    filter(id_count > 1) %>% 
+    group_by(id) %>% 
+    arrange(id, desc(case_start_date_recode)) %>% 
+    head()
+
+dat_subset <- dat %>% 
+  group_by(id) %>% 
+  arrange(id, desc(case_start_date_recode)) %>% 
+  slice(1) %>% 
+  ungroup()
+```
+
+Evaluate `100251` to double check that the correct one was selected.
+
+```{r}
+dat_subset %>% 
+  filter(id == 100251)
+```
+Looks good.
+
 
 
 # Random sample
@@ -26,7 +79,7 @@ dat <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/
 Group by agency and pull 15% of case numbers w/o replacement.
 
 ```{r}
-dat %>% 
+dat_subset %>% 
   count(reporting_agency) %>% 
   arrange(n) %>% 
   head()
@@ -37,15 +90,15 @@ Some reporting agencies have less than 10 cases.
 Assign agency as a `small_agency` (10 cases or less) or `not_small` (more than 10 cases)
 
 ```{r, message = FALSE}
-dat <- dat %>% 
+dat_subset <- dat_subset %>% 
   add_count(reporting_agency) %>% 
   mutate(`agency_size` = if_else(n <= 10, "small_agency", "not_small"))
 
-small_agencies <- dat %>% 
+small_agencies <- dat_subset %>% 
   filter(agency_size == "small_agency") %>% 
   droplevels()
 
-all_other_agencies <- dat %>% 
+all_other_agencies <- dat_subset %>% 
   anti_join(small_agencies) %>% 
   droplevels()
 ```
@@ -64,19 +117,6 @@ random_sample_small_agencies_i <- small_agencies %>%
 ```
 
 
-# Alternative II
-
-We pool all those with 10 or less cases as one giant 'small agency' pool, and select 10%, then for those > 10 cases randomly pool 10%.
-
-```{r}
-sample_n <- nrow(small_agencies)*.1 %>% 
-  round(1)
-
-set.seed(123)
-
-random_sample_small_agencies_ii <- small_agencies %>% 
-  sample_n(sample_n)
-```
 
 
 # Sample all other agencies
@@ -142,29 +182,8 @@ dist_small_i <- random_sample_small_agencies_i %>%
   select(variable, value, statistic, sample)
 
 
-dist_small_ii <- random_sample_small_agencies_ii %>% 
-  select(race_1, ethnicity, reporting_agency) %>% 
-  pivot_longer(everything(), names_to = "variable") %>% 
-  group_by(variable, value) %>% 
-  summarise(n = n()) %>% 
-  ungroup(value) %>% 
-  mutate(statistic = n/sum(n)) %>% 
-  bind_rows(
-    small_agencies %>% 
-    summarise(variable = "age",
-              sd = sd(age, na.rm = T),
-              statistic = mean(age, na.rm = T))
-  ) %>% 
-  mutate(across(where(is.numeric), ~round(.x, 2))) %>% 
-  mutate(sample = "Random Sample II") %>% 
-  mutate(statistic = case_when(variable == "age" ~ paste(statistic, " (", sd, ")", sep = ""),
-                               is.na(statistic) ~ NA,
-                               TRUE ~ paste(n, " ", "(", statistic*100, "%",")", sep = ""))) %>% 
-  select(variable, value, statistic, sample)
-
 full_stats_small_agency <- dist_small %>% 
   bind_rows(dist_small_i) %>% 
-  bind_rows(dist_small_ii) %>% 
   pivot_wider(names_from = sample, values_from = statistic)
 
 full_stats_small_agency
@@ -231,20 +250,46 @@ random_sample_other_agencies %>%
 
 random_sample_small_agencies_i %>% 
   nrow()
-
-random_sample_small_agencies_ii %>% 
-  nrow()
 ```
 
+Now--I will use the combination of `id` and `case` number to subset the first random sample from the `raw` (original) data.
+
+```{r}
+small_agencies_id <- paste(random_sample_small_agencies_i$id, random_sample_small_agencies_i$case, sep = "_")
+  
+other_agencies <- paste(random_sample_other_agencies$id, random_sample_other_agencies$case, sep = "_")  
+ 
+raw_sample <- raw %>% 
+  filter(paste(id, case, sep = "_") %in% c(small_agencies_id, other_agencies))
+```
+
+Make sure that only ONE `id` is selected in the raw sample.
+
+```{r}
+raw_sample %>% 
+  count(id) %>% 
+  arrange(desc(n)) %>% 
+  head()
+```
+
+Save the `id` and `case` selected in this iteration as a `tibble`
+
+```{r}
+selected_id_case <- tibble(
+  id_case = c(other_agencies, small_agencies_id)
+)
+```
 
 # Export samples and stats
 
 ```{r}
-output <- list(random_sample_small_agencies_i = random_sample_small_agencies_i, random_sample_small_agencies_ii = random_sample_small_agencies_ii,
-               random_sample_other_agencies = random_sample_other_agencies, stats_small_agency = full_stats_small_agency, stats_all_other_agency = full_stats_other_agency)
+output <- list(random_sample_w_raw_data = raw_sample, 
+               id_case_selected = selected_id_case,
+               stats_small_agency = full_stats_small_agency, 
+               stats_all_other_agency = full_stats_other_agency)
 
 writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/randomized_sample.xlsx", sep = ""))
 
-write.csv(dat, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
+#write.csv(dat, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
 ```
 
