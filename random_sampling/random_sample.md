@@ -1,7 +1,7 @@
 Random sample
 ================
 Sara Colom
-2023-10-02
+2023-10-03
 
 # Read libraries and data
 
@@ -219,7 +219,7 @@ dat_subset <- dat %>%
   ungroup()
 ```
 
-Evaluate `100251` to double check that the correct one was selected.
+Evaluate `100315` to double check that the correct one was selected.
 
 ``` r
 dat_subset %>% 
@@ -238,7 +238,8 @@ Looks good.
 
 # Random sample
 
-Group by agency and pull 15% of case numbers w/o replacement.
+First quickly glimpse at what the N is for reporting agencies w/ the
+smallest sizes.
 
 ``` r
 dat_subset %>% 
@@ -594,12 +595,13 @@ selected_id_case <- tibble(
 # Export samples and stats
 
 ``` r
-output <- list(random_sample_w_raw_data = raw_sample, 
-               id_case_selected = selected_id_case,
+output <- list(id_case_selected = selected_id_case,
                stats_small_agency = full_stats_small_agency, 
                stats_all_other_agency = full_stats_other_agency)
 
-writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/randomized_sample.xlsx", sep = ""))
+writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/stats_randomized_sample.xlsx", sep = ""))
 
-#write.csv(dat, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
+write.csv(raw_sample, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/randomized_sample.csv", sep = ""), row.names = F)
+
+write.csv(raw, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
 ```
