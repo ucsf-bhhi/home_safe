@@ -31,6 +31,28 @@ demo_dat <- demo_dat %>%
 
 ```
 
+Cleaning the date variable 
+```{r}
+demo_dat <- demo_dat %>% 
+  mutate(start_date_recode = case_when(str_detect(case_start_date, ".427") ~ "2019-04-16",
+                                       str_detect(case_start_date, ".527") ~ "2022-01-14",
+                                       TRUE ~ case_start_date)) %>% 
+  mutate(start_date_recode = lubridate::ymd(start_date_recode))
+```
+
+Filtering to records on or after 10/1/2022
+```{r}
+demo_dat %>% 
+    pull(start_date_recode) %>% summary()
+
+demo_dat <- demo_dat %>% 
+  filter(start_date_recode >= lubridate::ymd("2022-10-01"))
+
+demo_dat %>% 
+    pull(start_date_recode) %>% summary()
+```
+
+
 
 ## Location of Participation:
 
