@@ -22,7 +22,8 @@ raw <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/
 
 # Filters
 
-Filter for cases with `case_start_date` on or after `10/01/2022`
+  - Option 1: Filter for cases with `case_start_date` on or after `10/01/2022` with at least ONE intervention **OR**
+  - Option 2: Has at least one intervention with date 10/1/22 or later (regardless of case start date or blank start date)
 
 ```{r}
 dim(raw)
@@ -31,17 +32,22 @@ dat <- raw %>%
   mutate(case_start_date_recode = case_when(str_detect(case_start_date, ".427") ~ "2019-04-16",
                                             str_detect(case_start_date, ".527") ~ "2022-01-14",
                                             TRUE ~ case_start_date)) %>% 
-  mutate(case_start_date_recode = lubridate::ymd(case_start_date_recode)) %>% 
-  
-  filter(case_start_date_recode >= lubridate::ymd("2022-10-01"))
+  mutate(case_start_date_recode = lubridate::ymd(case_start_date_recode)) 
 
-dim(dat)
+dat <- dat %>% 
+  mutate(across(ends_with("_date") & starts_with("intervention"), lubridate::ymd))
+
+
+op_1 <- dat %>% 
+    filter(case_start_date_recode >= lubridate::ymd("2022-10-01"))
+
+dim(op_1)
 ```
 
 Filter those where ALL intervention types are either `NA` or state `No Intervention`
 
 ```{r}
-interv <- dat %>% 
+interv <- op_1 %>% 
   select(id, case, ends_with("type")) %>% 
   pivot_longer(ends_with("type"), names_to = "intervention", values_to = "intervention_type")
 
@@ -56,15 +62,12 @@ interv <- interv %>%
   mutate(intervention_binary = case_when(is.na(intervention_type) ~ 0L,
                                          intervention_type == "No Intervention" ~ 0L,
                                          TRUE ~ 1L))
-
 head(interv)
 
 interv_summary <- interv %>% 
   group_by(id, case) %>% 
   summarise(total_interventions = sum(intervention_binary, na.rm = T))
-
 ```
-
 
 
 Based on this list, we want to `exclude` individuals with `No intervention` and where `intervention_type` is `NA`
@@ -84,27 +87,79 @@ exclude_these <- records_to_exclude %>%
   pull(exclude_id_case) 
 ```
 
-```{r}
-dim(dat)
 
-dat <- dat %>% 
+```{r}
+dim(op_1)
+
+op_1 <- op_1 %>% 
   mutate(id_case = paste(id, case, sep = "_")) %>% 
   filter(!id_case %in% exclude_these)
 
-dim(dat)
+dim(op_1)
+```
+
+Now--let's exclude those selected already from the `op_1` pool to run our `op_2` pool, then apply the filters as above, and lastly combine them for sampling.
+
+  - Option 2: Has at least one intervention with date 10/1/22 or later (regardless of case start date or blank start date)
+
+```{r}
+op_2 <- dat %>% 
+  anti_join(op_1)
+
+op_2_inver_dates <- op_2 %>%
+  select(id, starts_with("intervention") & ends_with("date")) %>% 
+  pivot_longer(starts_with("intervention") & ends_with("date"), names_to = "intervention", values_to = "date")
+
+op_2_inver_dates %>% 
+  head()
+```
+
+```{r}
+op_2_inver_dates <- op_2_inver_dates %>% 
+  filter(date >= lubridate::ymd("2022-10-01"))
+
+summary(op_2_inver_dates$date)
+```
+
+For some strange reason, there is a date in year `3030`--I will drop this and then use applicable observations for the filter.
+
+```{r}
+op_2_inver_dates <- op_2_inver_dates %>% 
+  filter(date < lubridate::ymd("2024-01-01")) # Check in w/ Angelica
+
+summary(op_2_inver_dates$date)
+```
+
+```{r}
+include_these <- op_2_inver_dates %>% 
+  select(id) %>% 
+  unique() %>% 
+  pull(id)
+```
+
+```{r}
+op_2 <- dat %>% 
+  filter(id %in% include_these)
+```
+
+Combine `id`s from option 1 and 2.
+
+```{r}
+sample_subset <- op_1 %>% 
+  bind_rows(op_2)
 ```
 
 
 
-# Data cleaning
+# sample_subseta cleaning
 
 Do any `ids` occur more than once?
 
 ```{r}
-dat <- dat %>% 
+sample_subset <- sample_subset %>% 
   add_count(id, name = "id_count")
 
-dat %>% 
+sample_subset %>% 
   count(id) %>% 
   filter(n > 1) %>% 
   nrow()
@@ -112,20 +167,20 @@ dat %>%
 
 It appears there are 64 `id`'s with more than once case.
 
-In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_date_recode`, and finally `slice` for the first occurence (i.e. most recent case by `id`).
+In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_sample_subsete_recode`, and finally `slice` for the first occurrence (i.e. most recent case by `id`).
 
 ```{r}
 # Quick sanity check before running below
 
-dat %>% 
+sample_subset %>% 
     filter(id_count > 1) %>% 
     group_by(id) %>% 
-    arrange(id, desc(case_start_date_recode)) %>% 
+    arrange(id, desc(case_start_sample_subsete_recode)) %>% 
     head()
 
-dat_subset <- dat %>% 
+sample_subset_subset <- sample_subset %>% 
   group_by(id) %>% 
-  arrange(id, desc(case_start_date_recode)) %>% 
+  arrange(id, desc(case_start_sample_subsete_recode)) %>% 
   slice(1) %>% 
   ungroup()
 ```
@@ -133,7 +188,7 @@ dat_subset <- dat %>%
 Evaluate `100315` to double check that the correct one was selected.
 
 ```{r}
-dat_subset %>% 
+sample_subset_subset %>% 
   filter(id == 100315)
 ```
 Looks good.
@@ -145,7 +200,7 @@ Looks good.
 First quickly glimpse at what the N is for reporting agencies w/ the smallest sizes.
 
 ```{r}
-dat_subset %>% 
+sample_subset_subset %>% 
   count(reporting_agency) %>% 
   arrange(n) %>% 
   head()
@@ -156,15 +211,15 @@ Some reporting agencies have less than 10 cases.
 Assign agency as a `small_agency` (10 cases or less) or `not_small` (more than 10 cases)
 
 ```{r, message = FALSE}
-dat_subset <- dat_subset %>% 
+sample_subset_subset <- sample_subset_subset %>% 
   add_count(reporting_agency) %>% 
   mutate(`agency_size` = if_else(n <= 10, "small_agency", "not_small"))
 
-small_agencies <- dat_subset %>% 
+small_agencies <- sample_subset_subset %>% 
   filter(agency_size == "small_agency") %>% 
   droplevels()
 
-all_other_agencies <- dat_subset %>% 
+all_other_agencies <- sample_subset_subset %>% 
   anti_join(small_agencies) %>% 
   droplevels()
 ```
@@ -172,7 +227,7 @@ all_other_agencies <- dat_subset %>%
 # Alternative I.
 
 If N < 10 capture `10%  across all SMALL agencies or just capture 1 per agency 
-Anything more we capture `10%`
+Anything more we capture `15%`
 
 ```{r}
 set.seed(123)
@@ -189,7 +244,7 @@ random_sample_small_agencies_i <- small_agencies %>%
 
 ```{r}
 all_other_agencies <- all_other_agencies %>% 
-  mutate(sample_n = ceiling(n*0.1))
+  mutate(sample_n = ceiling(n*0.15))
 
 set.seed(123)
 
@@ -318,7 +373,7 @@ random_sample_small_agencies_i %>%
   nrow()
 ```
 
-Now--I will use the combination of `id` and `case` number to subset the first random sample from the `raw` (original) data.
+Now--I will use the combination of `id` and `case` number to subset the first random sample from the `raw` (original) sample_subseta.
 
 ```{r}
 small_agencies_id <- paste(random_sample_small_agencies_i$id, random_sample_small_agencies_i$case, sep = "_")
@@ -353,10 +408,10 @@ output <- list(id_case_selected = selected_id_case,
                stats_small_agency = full_stats_small_agency, 
                stats_all_other_agency = full_stats_other_agency)
 
-#writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/stats_randomized_sample.xlsx", sep = ""))
+#writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/stats_randomized_sample.xlsx", sep = ""))
 
-#write.csv(raw_sample, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/randomized_sample.csv", sep = ""), row.names = F)
+#write.csv(raw_sample, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/randomized_sample.csv", sep = ""), row.names = F)
 
-#write.csv(raw, paste(path_to_proj, "/Quantitative/data/random_sample_iteration_1/og_file_used.csv", sep = ""))
+#write.csv(raw, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/og_file_used.csv", sep = ""))
 ```
 
