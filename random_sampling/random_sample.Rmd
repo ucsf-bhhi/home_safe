@@ -19,7 +19,20 @@ path_to_proj <- Sys.getenv("HOME_SAFE")
 raw <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
   janitor::clean_names()
 ```
+Raw data size.
 
+```{r}
+raw %>% 
+  dim()
+```
+
+Number of unique ID's in the data.
+
+```{r}
+raw %>% 
+  count(id) %>% 
+  nrow()
+```
 # Filters
 
   - Option 1: Filter for cases with `case_start_date` on or after `10/01/2022` with at least ONE intervention **OR**
@@ -116,19 +129,15 @@ op_2_inver_dates %>%
 
 ```{r}
 op_2_inver_dates <- op_2_inver_dates %>% 
-  filter(date >= lubridate::ymd("2022-10-01"))
+  filter(date >= lubridate::ymd("2022-10-01") & date <= lubridate::ymd("2023-10-01"))
 
-summary(op_2_inver_dates$date)
 ```
 
-For some strange reason, there is a date in year `3030`--I will drop this and then use applicable observations for the filter.
 
 ```{r}
-op_2_inver_dates <- op_2_inver_dates %>% 
-  filter(date < lubridate::ymd("2024-01-01")) # Check in w/ Angelica
-
 summary(op_2_inver_dates$date)
 ```
+
 
 ```{r}
 include_these <- op_2_inver_dates %>% 
@@ -136,6 +145,7 @@ include_these <- op_2_inver_dates %>%
   unique() %>% 
   pull(id)
 ```
+
 
 ```{r}
 op_2 <- dat %>% 
@@ -145,13 +155,18 @@ op_2 <- dat %>%
 Combine `id`s from option 1 and 2.
 
 ```{r}
-sample_subset <- op_1 %>% 
+sample_subset <- op_1  %>% 
   bind_rows(op_2)
 ```
 
+Percent of those from original data who made the cut-off.
+
+```{r}
+nrow(sample_subset)/nrow(raw)
+```
 
 
-# sample_subseta cleaning
+# Data cleaning
 
 Do any `ids` occur more than once?
 
@@ -165,9 +180,9 @@ sample_subset %>%
   nrow()
 ```
 
-It appears there are 64 `id`'s with more than once case.
+It appears there are 205 `id`'s with more than once case.
 
-In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_sample_subsete_recode`, and finally `slice` for the first occurrence (i.e. most recent case by `id`).
+In order to limit the sampling to the most **recent** case per ID, I will first, `group_by` `id`, then sort descending by `case_start_date`, and finally `slice` for the first occurrence (i.e. most recent case by `id`).
 
 ```{r}
 # Quick sanity check before running below
@@ -175,12 +190,12 @@ In order to limit the sampling to the most **recent** case per ID, I will first,
 sample_subset %>% 
     filter(id_count > 1) %>% 
     group_by(id) %>% 
-    arrange(id, desc(case_start_sample_subsete_recode)) %>% 
+    arrange(id, desc(case_start_date_recode)) %>% 
     head()
 
-sample_subset_subset <- sample_subset %>% 
+sample_subset <- sample_subset %>% 
   group_by(id) %>% 
-  arrange(id, desc(case_start_sample_subsete_recode)) %>% 
+  arrange(id, desc(case_start_date_recode)) %>% 
   slice(1) %>% 
   ungroup()
 ```
@@ -188,7 +203,7 @@ sample_subset_subset <- sample_subset %>%
 Evaluate `100315` to double check that the correct one was selected.
 
 ```{r}
-sample_subset_subset %>% 
+sample_subset %>% 
   filter(id == 100315)
 ```
 Looks good.
@@ -200,7 +215,7 @@ Looks good.
 First quickly glimpse at what the N is for reporting agencies w/ the smallest sizes.
 
 ```{r}
-sample_subset_subset %>% 
+sample_subset %>% 
   count(reporting_agency) %>% 
   arrange(n) %>% 
   head()
@@ -211,15 +226,15 @@ Some reporting agencies have less than 10 cases.
 Assign agency as a `small_agency` (10 cases or less) or `not_small` (more than 10 cases)
 
 ```{r, message = FALSE}
-sample_subset_subset <- sample_subset_subset %>% 
+sample_subset <- sample_subset %>% 
   add_count(reporting_agency) %>% 
   mutate(`agency_size` = if_else(n <= 10, "small_agency", "not_small"))
 
-small_agencies <- sample_subset_subset %>% 
+small_agencies <- sample_subset %>% 
   filter(agency_size == "small_agency") %>% 
   droplevels()
 
-all_other_agencies <- sample_subset_subset %>% 
+all_other_agencies <- sample_subset %>% 
   anti_join(small_agencies) %>% 
   droplevels()
 ```
@@ -408,10 +423,10 @@ output <- list(id_case_selected = selected_id_case,
                stats_small_agency = full_stats_small_agency, 
                stats_all_other_agency = full_stats_other_agency)
 
-#writexl::write_xlsx(output, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/stats_randomized_sample.xlsx", sep = ""))
+writexl::write_xlsx(output, "stats_randomized_sample_v2.xlsx")
 
-#write.csv(raw_sample, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/randomized_sample.csv", sep = ""), row.names = F)
+write.csv(raw_sample, "randomized_sample_v2.csv", row.names = F)
 
-#write.csv(raw, paste(path_to_proj, "/Quantitative/sample_subseta/random_sample_iteration_1/og_file_used.csv", sep = ""))
+write.csv(raw, "og_file_used_v2.csv")
 ```
 
