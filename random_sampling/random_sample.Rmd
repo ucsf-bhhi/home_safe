@@ -16,7 +16,9 @@ library(stringr)
 
 path_to_proj <- Sys.getenv("HOME_SAFE")
 
-raw <- readxl::read_excel(paste(path_to_proj, "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", sep = "")) %>% 
+raw <- readxl::read_excel(paste(path_to_proj, 
+                                "/Quantitative/data/report_1_data/home_safe_data_upload_090623.xlsx", 
+                                sep = "")) %>% 
   janitor::clean_names()
 ```
 Raw data size.
